@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@ecoma-io/nx-typescript": ["packages/nx-typescript/src/index.ts"],
       "@ecoma-io/jest-helpers": ["packages/jest-helpers/src/index.ts"]
     }
   },

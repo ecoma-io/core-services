@@ -1,0 +1,7 @@
+{
+  "name": "<%= org %>/<%= name %>",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {}
+}
