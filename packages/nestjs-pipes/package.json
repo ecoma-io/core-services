@@ -1,0 +1,12 @@
+{
+  "name": "@ecoma-io/nestjs-pipes",
+  "type": "commonjs",
+  "types": "./src/index.d.ts",
+  "main": "./src/index.js",
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "class-validator": "^0.14.2",
+    "tslib": "^2.3.0",
+    "@ecoma-io/nestjs-exceptions": "*"
+  }
+}
