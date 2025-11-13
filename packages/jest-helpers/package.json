@@ -1,0 +1,13 @@
+{
+  "name": "@ecoma-io/jest-helpers",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": "./src/index.js",
+    "./suppress-log-stack-trace": "./src/suppress-log-stack-trace.js"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  }
+}
