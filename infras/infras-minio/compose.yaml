@@ -1,0 +1,39 @@
+networks:
+  default:
+    external:
+      name: dev-infras
+
+volumes:
+  minio_data:
+
+services:
+  minio:
+    build: .
+    container_name: minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET}
+      MINIO_BROWSER_REDIRECT: false
+    volumes:
+      - minio_data:/data
+    ports:
+      - '${MINIO_PORT}:9000'
+    command: server /data --console-address ":9001"
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.minio.rule=Host(`minio.fbi.com`)'
+      - 'traefik.http.routers.minio.entrypoints=websecure'
+      - 'traefik.http.routers.minio.service=minio'
+      - 'traefik.http.services.minio.loadbalancer.server.port=9001'
+      - 'traefik.http.routers.minio.tls=true'
+      - 'traefik.http.routers.files.rule=Host(`files.fbi.com`)'
+      - 'traefik.http.routers.files.entrypoints=websecure'
+      - 'traefik.http.routers.files.service=files'
+      - 'traefik.http.services.files.loadbalancer.server.port=9000'
+      - 'traefik.http.routers.files.tls=true'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 5s
+      retries: 30
