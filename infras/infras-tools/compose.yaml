@@ -1,0 +1,83 @@
+# Docker Compose configuration for dev tools extracted from dev-infras
+networks:
+  default:
+    external:
+      name: dev-infras
+
+services:
+  # Adminer database management tool
+  adminer:
+    build: ./adminer
+    container_name: adminer
+    restart: unless-stopped
+    environment:
+      ADMINER_DRIVER: pgsql
+      ADMINER_SERVER: 172.168.186.168:${POSTGRES_PORT}
+      ADMINER_USERNAME: ${POSTGRES_USERNAME}
+      ADMINER_PASSWORD: ${POSTGRES_PASSWORD}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.adminer.rule=Host(`adminer.fbi.com`)'
+      - 'traefik.http.routers.adminer.entrypoints=websecure'
+      - 'traefik.http.routers.adminer.service=adminer'
+      - 'traefik.http.services.adminer.loadbalancer.server.port=8080'
+      - 'traefik.http.routers.adminer.tls=true'
+
+  # Redis Commander (Redis Management Interface)
+  redis-commander:
+    build: ./redis-commander
+    container_name: redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: redis:172.168.186.168:${REDIS_PORT}:0:${REDIS_PASSWORD}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.commander.rule=Host(`redis.fbi.com`)'
+      - 'traefik.http.routers.commander.entrypoints=websecure'
+      - 'traefik.http.routers.commander.service=commander'
+      - 'traefik.http.services.commander.loadbalancer.server.port=8081'
+      - 'traefik.http.routers.commander.tls=true'
+
+  # Nginx documentation server
+  docs:
+    build: ./docs
+    container_name: docs
+    restart: unless-stopped
+    volumes:
+      - ./docs/index.html:/app/public/index.html
+      - ../../docs:/app/public/docs
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.docs.rule=Host(`docs.fbi.com`)'
+      - 'traefik.http.routers.docs.entrypoints=websecure'
+      - 'traefik.http.routers.docs.service=docs'
+      - 'traefik.http.routers.docs.tls=true'
+      - 'traefik.http.services.docs.loadbalancer.server.port=3000'
+
+  nx-graph:
+    build: ./nx-graph
+    container_name: nx-graph
+    restart: always
+    volumes:
+      - ../../:/node/app
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.nx-graph.rule=Host(`graph.fbi.com`)'
+      - 'traefik.http.routers.nx-graph.entrypoints=websecure'
+      - 'traefik.http.routers.nx-graph.service=nx-graph'
+      - 'traefik.http.services.nx-graph.loadbalancer.server.port=8080'
+      - 'traefik.http.routers.nx-graph.tls=true'
+
+  dev:
+    image: nginx:latest
+    container_name: tools
+    restart: unless-stopped
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.dev.rule=Host(`dev.fbi.com`)'
+      - 'traefik.http.routers.dev.entrypoints=websecure'
+      - 'traefik.http.routers.dev.service=dev'
+      - 'traefik.http.services.dev.loadbalancer.server.port=80'
+      - 'traefik.http.routers.dev.tls=true'
