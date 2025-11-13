@@ -1,0 +1,30 @@
+networks:
+  default:
+    external:
+      name: dev-infras
+
+services:
+  # MailDev email testing service
+  maildev:
+    build: .
+    container_name: maildev
+    restart: unless-stopped
+    ports:
+      - '${MAILDEV_PORT}:1025'
+      - '${MAILDEV_WEB_PORT}:1080'
+    environment:
+      MAILDEV_SMTP_USER: ${MAILDEV_USER}
+      MAILDEV_SMTP_PASS: ${MAILDEV_PASSWORD}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.maildev.rule=Host(`mail.fbi.com`)'
+      - 'traefik.http.routers.maildev.entrypoints=websecure'
+      - 'traefik.http.routers.maildev.service=maildev'
+      - 'traefik.http.services.maildev.loadbalancer.server.port=1080'
+      - 'traefik.http.routers.maildev.tls=true'
+    healthcheck:
+      # Kiểm tra cổng giao diện web của MailDev (1080)
+      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:1080']
+      interval: 30s
+      timeout: 5s
+      retries: 30
