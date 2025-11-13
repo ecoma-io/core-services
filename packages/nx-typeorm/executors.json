@@ -1,0 +1,24 @@
+{
+  "executors": {
+    "schema-drop": {
+      "implementation": "./src/executors/schema-drop/schema-drop",
+      "schema": "./src/executors/schema-drop/schema.json",
+      "description": "schema-drop executor"
+    },
+    "migration-run": {
+      "implementation": "./src/executors/migration-run/migration-run",
+      "schema": "./src/executors/migration-run/schema.json",
+      "description": "migration-run executor"
+    },
+    "migration-revert": {
+      "implementation": "./src/executors/migration-revert/migration-revert",
+      "schema": "./src/executors/migration-revert/schema.json",
+      "description": "migration-revert executor"
+    },
+    "migration-generate": {
+      "implementation": "./src/executors/migration-generate/migration-generate",
+      "schema": "./src/executors/migration-generate/schema.json",
+      "description": "migration-generate executor"
+    }
+  }
+}
