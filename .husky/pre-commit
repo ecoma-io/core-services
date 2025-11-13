@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Pre-commit hook to run Nx affected commands for linting, testing, building, and e2e tests
+# on the staged changes (not yet committed).
+# This ensures code quality checks before committing.
+# Exit with error if any command fails.
+
+npx nx affected -t lint test build e2e --uncommitted
