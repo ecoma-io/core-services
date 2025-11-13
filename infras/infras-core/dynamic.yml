@@ -1,0 +1,15 @@
+# TLS configuration for Traefik
+# Defines certificates and stores for secure connections
+tls:
+  # List of certificates to load
+  certificates:
+    - certFile: /certs/cert.crt
+      keyFile: /certs/cert.key
+  # Certificate stores configuration
+  stores:
+    # Default store for certificates
+    default:
+      # Default certificate to use when no specific match
+      defaultCertificate:
+        certFile: /certs/cert.crt
+        keyFile: /certs/cert.key

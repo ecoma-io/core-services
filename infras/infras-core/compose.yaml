@@ -1,0 +1,28 @@
+networks:
+  default:
+    driver: bridge
+    name: dev-infras
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.168.0.0/16
+          gateway: 172.168.186.168
+          ip_range: 172.168.0.0/24
+
+services:
+  # Traefik reverse proxy for routing and SSL termination
+  traefik:
+    build: .
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - '80:80' # HTTP port
+      - '443:443' # HTTPS port
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Access Docker socket for dynamic config
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.traefik.rule=Host(`traefik.fbi.com`)' # Route for Traefik dashboard
+      - 'traefik.http.routers.traefik.entrypoints=websecure'
+      - 'traefik.http.routers.traefik.service=api@internal'
+      - 'traefik.http.routers.traefik.tls=true' # Enable TLS
