@@ -1,0 +1,73 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":separateMajorReleases",
+    ":ignoreUnstable",
+    ":prImmediately",
+    ":rebaseStalePrs",
+    "group:monorepos",
+    "group:pnpm",
+    "group:nx-packages",
+    "schedule:weekly"
+  ],
+  "baseBranch": "dev",
+  "branchPrefix": "update-deps/",
+  "automerge": true,
+  "major": {
+    "automerge": false,
+    "separateMajorIssue": true
+  },
+  "dependencyDashboard": true,
+  "labels": ["dependencies"],
+
+  "commitMessageAction": "chore",
+  "commitMessageTopic": "general",
+  "commitMessageBody": "{{depName}}: {{currentVersion}} -> {{newVersion}}",
+  "commitMessageExtra": "",
+
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@nestjs/"],
+      "groupName": "nestjs",
+      "schedule": ["weekly"]
+    },
+    {
+      "matchPackagePatterns": ["^@types/"],
+      "groupName": "types",
+      "schedule": ["weekly"],
+      "automerge": true
+    },
+    {
+      "matchPackagePatterns": [
+        "^eslint",
+        "^@eslint",
+        "prettier",
+        "typescript",
+        "jest",
+        "^@commitlint",
+        "lint-staged"
+      ],
+      "groupName": "tooling",
+      "schedule": ["weekly"]
+    },
+    {
+      "matchPackagePatterns": ["@nx/", "^nx$"],
+      "groupName": "nx-packages",
+      "group:nx-packages": true,
+      "schedule": ["weekly"],
+      "automerge": false
+    },
+    {
+      "matchUpdateTypes": ["patch", "pin", "digest"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "matchUpdateTypes": ["minor"],
+      "automerge": true,
+      "automergeType": "pr",
+      "schedule": ["weekly"]
+    }
+  ]
+}
