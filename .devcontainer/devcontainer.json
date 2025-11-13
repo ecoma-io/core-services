@@ -73,7 +73,6 @@
         "eamodio.gitlens"
       ],
       "settings": {
-        "workbench.iconTheme": "material-icon-theme",
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true,
         "remote.autoForwardPorts": false,
