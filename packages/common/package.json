@@ -1,0 +1,9 @@
+{
+  "name": "@ecoma-io/common",
+  "type": "commonjs",
+  "types": "./src/index.d.ts",
+  "main": "./src/index.js",
+  "dependencies": {
+    "tslib": "^2.3.0"
+  }
+}
