@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the Docker image",
+      "default": "{projectName}"
+    },
+    "load": {
+      "type": "boolean",
+      "default": true,
+      "description": "When true, load the image into the Docker daemon after building"
+    },
+    "dockerfile": {
+      "type": "string",
+      "description": "Path to the Dockerfile"
+    }
+  },
+  "additionalProperties": true,
+  "required": []
+}
