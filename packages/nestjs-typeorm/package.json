@@ -1,0 +1,11 @@
+{
+  "name": "@ecoma-io/nestjs-typeorm",
+  "type": "commonjs",
+  "types": "./src/index.d.ts",
+  "main": "./src/index.js",
+  "dependencies": {
+    "typeorm": "^0.3.27",
+    "tslib": "^2.3.0",
+    "@ecoma-io/common": "*"
+  }
+}
