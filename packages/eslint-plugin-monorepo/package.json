@@ -1,0 +1,12 @@
+{
+  "name": "@ecoma-io/eslint-plugin-monorepo",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "@typescript-eslint/utils": "^7.16.0",
+    "jsonc-eslint-parser": "^2.1.0",
+    "tslib": "^2.3.0",
+    "@nx/devkit": "^22.0.2"
+  }
+}

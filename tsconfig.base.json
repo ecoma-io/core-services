@@ -16,7 +16,10 @@
     "baseUrl": ".",
     "paths": {
       "@ecoma-io/nx-typescript": ["packages/nx-typescript/src/index.ts"],
-      "@ecoma-io/jest-helpers": ["packages/jest-helpers/src/index.ts"]
+      "@ecoma-io/jest-helpers": ["packages/jest-helpers/src/index.ts"],
+      "@ecoma-io/eslint-plugin-monorepo": [
+        "packages/eslint-plugin-monorepo/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]
