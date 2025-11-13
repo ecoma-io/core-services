@@ -1,0 +1,13 @@
+{
+  "name": "@ecoma-io/nestjs-filters",
+  "type": "commonjs",
+  "types": "./src/index.d.ts",
+  "main": "./src/index.js",
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "tslib": "^2.3.0",
+    "@ecoma-io/common": "*",
+    "@ecoma-io/nestjs-exceptions": "*"
+  }
+}
