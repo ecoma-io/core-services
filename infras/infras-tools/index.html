@@ -1,324 +1,173 @@
 <!doctype html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ecoma Core Dashboard</title>
-    <!-- Load Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      /* Set default Inter font */
-      body {
-        font-family: 'Inter', sans-serif;
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        overflow: hidden; /* Prevent main page scrolling */
-      }
-      /* Iframe must occupy the entire remaining viewport */
-      .iframe-container {
-        height: calc(
-          100vh - 64px
-        ); /* 64px is the fixed height of the header (h-16) */
-        margin-top: 64px; /* Push content below the fixed header */
-        width: 100%;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Header (Fixed) -->
-    <header
-      class="fixed top-0 left-0 right-0 h-16 bg-white shadow-lg z-10 flex items-center justify-between px-6"
-    >
-      <!-- Ecoma Core Logo -->
-      <div class="flex items-center space-x-3">
-        <span class="text-2xl font-extrabold text-teal-600">Ecoma Core</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 text-teal-500"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M13 10V3L4 14h7v7l9-11h-7z"
-          />
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ecoma Core Dashboard</title>
+  <!-- Load Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Set default Inter font */
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      /* Prevent main page scrolling */
+    }
+
+    /* Iframe must occupy the entire remaining viewport */
+    .iframe-container {
+      height: calc(100vh - 64px);
+      /* 64px is the fixed height of the header (h-16) */
+      margin-top: 64px;
+      /* Push content below the fixed header */
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header (Fixed) -->
+  <header class="fixed top-0 left-0 right-0 h-16 bg-white shadow-lg z-10 flex items-center justify-between px-6">
+    <!-- Ecoma Core Logo -->
+    <div class="flex items-center space-x-3">
+      <span class="text-2xl font-extrabold text-teal-600">Ecoma Core</span>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-500" fill="none" viewBox="0 0 24 24"
+        stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    </div>
+
+    <!-- Menu Navigation -->
+    <nav class="flex space-x-2 overflow-x-auto pb-2 sm:pb-0">
+      <!-- Use appropriate icons for each service type -->
+
+      <!-- Document -->
+      <a href="#"
+        class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
+        data-url="https://docs.fbi.com" data-title="Document">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-      </div>
+        <span class="hidden sm:inline ml-1">Document</span>
+      </a>
 
-      <!-- Menu Navigation -->
-      <nav class="flex space-x-2 overflow-x-auto pb-2 sm:pb-0">
-        <!-- Use appropriate icons for each service type -->
+      <!-- Projects graph -->
+      <a href="#"
+        class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
+        data-url="https://graph.fbi.com" data-title="Projects">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+        </svg>
+        <span class="hidden sm:inline ml-1">Projects</span>
+      </a>
 
-        <!-- Document -->
-        <a
-          href="#"
-          class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
-          data-url="https://docs.fbi.com"
-          data-title="Document"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-          <span class="hidden sm:inline ml-1">Document</span>
-        </a>
+      <a href="#"
+        class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
+        data-url="https://traefik.fbi.com" data-title="Traefik">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+        </svg>
+        <span class="hidden sm:inline ml-1">Traefik</span>
+      </a>
 
-        <!-- Projects graph -->
-        <a
-          href="#"
-          class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
-          data-url="https://graph.fbi.com"
-          data-title="Projects"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-            />
-          </svg>
-          <span class="hidden sm:inline ml-1">Projects</span>
-        </a>
+      <!-- Postgres (Database) -->
+      <a href="#"
+        class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
+        data-url="https://postgres.fbi.com" data-title="Postgres">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4m0 0C16 4.79 12.418 3 8 3S0 4.79 0 7" />
+        </svg>
+        <span class="hidden sm:inline ml-1">Postgres</span>
+      </a>
 
-        <a
-          href="#"
-          class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
-          data-url="https://traefik.fbi.com"
-          data-title="Traefik"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
-            />
-          </svg>
-          <span class="hidden sm:inline ml-1">Traefik</span>
-        </a>
+      <!-- MongoDB (NoSQL) -->
+      <a href="#"
+        class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
+        data-url="https://mongo.fbci.com" data-title="Mongo">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+        </svg>
+        <span class="hidden sm:inline ml-1">Mongo</span>
+      </a>
 
-        <!-- Postgres (Database) -->
-        <a
-          href="#"
-          class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
-          data-url="https://postgres.fbi.com"
-          data-title="Postgres"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4m0 0C16 4.79 12.418 3 8 3S0 4.79 0 7"
-            />
-          </svg>
-          <span class="hidden sm:inline ml-1">Postgres</span>
-        </a>
+      <!-- Redis (Cache) -->
+      <a href="#"
+        class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
+        data-url="https://redis.fbi.com" data-title="Redis">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="hidden sm:inline ml-1">Redis</span>
+      </a>
 
-        <!-- MongoDB (NoSQL) -->
-        <a
-          href="#"
-          class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
-          data-url="https://mongo.fbci.com"
-          data-title="Mongo"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
-            />
-          </svg>
-          <span class="hidden sm:inline ml-1">Mongo</span>
-        </a>
+      <!-- Rabbit (Message Queue) -->
+      <a href="#"
+        class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
+        data-url="https://rabbitmq.fbi.com" data-title="Rabbit">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+        <span class="hidden sm:inline ml-1">Rabbit</span>
+      </a>
 
-        <!-- Redis (Cache) -->
-        <a
-          href="#"
-          class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
-          data-url="https://redis.fbi.com"
-          data-title="Redis"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span class="hidden sm:inline ml-1">Redis</span>
-        </a>
+      <!-- Elastic (Search) -->
+      <a href="#"
+        class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
+        data-url="https://elastic.fbi.com" data-title="Elastic">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <span class="hidden sm:inline ml-1">Elastic</span>
+      </a>
 
-        <!-- Rabbit (Message Queue) -->
-        <a
-          href="#"
-          class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
-          data-url="https://rabbitmq.fbi.com"
-          data-title="Rabbit"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
-          <span class="hidden sm:inline ml-1">Rabbit</span>
-        </a>
+      <!-- EventSourceDB -->
+      <a href="#"
+        class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
+        data-url="https://esdb.fbi.com" data-title="EventSourceDB">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span class="hidden sm:inline ml-1">ESDB</span>
+      </a>
 
-        <!-- Elastic (Search) -->
-        <a
-          href="#"
-          class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
-          data-url="https://elastic.fbi.com"
-          data-title="Elastic"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-          <span class="hidden sm:inline ml-1">Elastic</span>
-        </a>
+      <!-- Mail -->
+      <a href="#"
+        class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
+        data-url="https://mail.fbi.com" data-title="Mail">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-2 4v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+        </svg>
+        <span class="hidden sm:inline ml-1">Mail</span>
+      </a>
 
-        <!-- EventSourceDB -->
-        <a
-          href="#"
-          class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
-          data-url="https://esdb.fbi.com"
-          data-title="EventSourceDB"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-          <span class="hidden sm:inline ml-1">ESDB</span>
-        </a>
+      <!-- Docker -->
+      <a href="#"
+        class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
+        data-url="https://docker.fbi.com" data-title="Docker">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 10a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-2zM4 15a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-2z" />
+        </svg>
+        <span class="hidden sm:inline ml-1">Docker</span>
+      </a>
+    </nav>
 
-        <!-- Mail -->
-        <a
-          href="#"
-          class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
-          data-url="https://mail.fbi.com"
-          data-title="Mail"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-2 4v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
-            />
-          </svg>
-          <span class="hidden sm:inline ml-1">Mail</span>
-        </a>
-
-        <!-- Docker -->
-        <a
-          href="#"
-          class="menu-item text-gray-700 hover:text-teal-600 font-medium transition duration-150 p-2 rounded-md hover:bg-teal-50 flex items-center"
-          data-url="https://docker.fbi.com"
-          data-title="Docker"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 10a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-2zM4 15a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-2z"
-            />
-          </svg>
-          <span class="hidden sm:inline ml-1">Docker</span>
-        </a>
-      </nav>
-
-      <!-- GitHub Link -->
-      <!-- <a
+    <!-- GitHub Link -->
+    <!-- <a
         id="github-link"
         href="https://github.com/ecoma-io/ecoma-core"
         target="_blank"
@@ -338,235 +187,238 @@
         </svg>
         <span class="hidden md:inline">GitHub</span>
       </a> -->
-    </header>
+  </header>
 
-    <!-- Iframe Container (occupies the rest of the screen) -->
-    <div class="iframe-container relative">
-      <!-- Loading Overlay - Shown when the iframe is loading -->
-      <div
-        id="loading-overlay"
-        class="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-20 transition-opacity duration-300 opacity-0 pointer-events-none"
-      >
-        <!-- Spinner -->
-        <div
-          class="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"
-        ></div>
-        <span class="ml-4 text-teal-600 font-semibold">Loading content...</span>
-      </div>
-
-      <!-- Main Iframe - Initially empty, then replaced -->
-      <iframe
-        id="main-iframe"
-        src=""
-        frameborder="0"
-        class="w-full h-full opacity-0 transition-opacity duration-500"
-      ></iframe>
+  <!-- Iframe Container (occupies the rest of the screen) -->
+  <div class="iframe-container relative">
+    <!-- Loading Overlay - Shown when the iframe is loading -->
+    <div id="loading-overlay"
+      class="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-20 transition-opacity duration-300 opacity-0 pointer-events-none">
+      <!-- Spinner -->
+      <div class="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+      <span class="ml-4 text-teal-600 font-semibold">Loading content...</span>
     </div>
 
-    <script>
-      /**
-       * Adds a unique query parameter (cache-buster) to a URL.
-       * This forces the browser to reload the iframe, not use an old cache.
-       * @param {string} url - The original URL.
-       * @returns {string} The URL with the cache-buster added.
-       */
-      function addCacheBuster(url) {
-        if (!url) return '';
-        try {
-          const urlObj = new URL(url);
-          urlObj.searchParams.set('cb', Date.now());
-          return urlObj.toString();
-        } catch (e) {
-          const separator = url.includes('?') ? '&' : '?';
-          return `${url}${separator}cb=${Date.now()}`;
-        }
+    <!-- Main Iframe - Initially empty, then replaced -->
+    <iframe id="main-iframe" src="" frameborder="0"
+      class="w-full h-full opacity-0 transition-opacity duration-500"></iframe>
+  </div>
+
+  <script>
+    /**
+     * Adds a unique query parameter (cache-buster) to a URL.
+     * This forces the browser to reload the iframe, not use an old cache.
+     * @param {string} url - The original URL.
+     * @returns {string} The URL with the cache-buster added.
+     */
+    function addCacheBuster(url) {
+      if (!url) return '';
+      try {
+        const urlObj = new URL(url);
+        urlObj.searchParams.set('cb', Date.now());
+        return urlObj.toString();
+      } catch (e) {
+        const separator = url.includes('?') ? '&' : '?';
+        return `${url}${separator}cb=${Date.now()}`;
       }
+    }
 
-      // --- DOM Elements ---
-      let mainIframeContainer;
-      let loadingOverlay;
-      let currentIframe = null; // Variable to track the current iframe
+    // --- DOM Elements ---
+    let mainIframeContainer;
+    let loadingOverlay;
+    let currentIframe = null; // Variable to track the current iframe
 
-      function showLoading() {
-        loadingOverlay.classList.remove('opacity-0', 'pointer-events-none');
-      }
-
-      function hideLoading() {
-        loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
-      }
-
-      /**
-       * Removes the old iframe, shows loading, creates and loads a new iframe.
-       * @param {string} url - The new URL to load.
-       * @param {string} title - The new page title.
-       */
-      function loadNewIframe(url, title) {
-        if (!url || !mainIframeContainer) return;
-
-        // 1. Update Title
-        document.title = `${title} | Ecoma Core Dashboard`;
-
-        // 2. Remove old iframe if it exists
-        if (currentIframe) {
-          mainIframeContainer.removeChild(currentIframe);
-          currentIframe = null;
-        }
-
-        // 3. Show Loading Indicator
-        showLoading();
-
-        // 4. Create new iframe
-        const newIframe = document.createElement('iframe');
-        newIframe.id = 'main-iframe';
-        newIframe.src = addCacheBuster(url);
-        newIframe.frameBorder = '0';
-        // Start hidden, then fade in when loaded
-        newIframe.className =
-          'w-full h-full opacity-0 transition-opacity duration-500';
-        newIframe.style.display = 'none'; // Ensure no flash before onload
-
-        // 5. Add iframe to Container
-        mainIframeContainer.appendChild(newIframe);
-        currentIframe = newIframe;
-
-        // 6. Handle load event (onload)
-        newIframe.onload = () => {
-          newIframe.style.display = 'block'; // Show iframe
-          // Use setTimeout to ensure the browser has time to render before fading in
-          setTimeout(() => {
-            newIframe.classList.remove('opacity-0'); // Fade in
-            hideLoading(); // Hide loading after iframe is loaded and faded in
-          }, 50);
-        };
-
-        // 7. Handle load error (onerror) - Hard to catch accurately with iframes, but still good to have
-        newIframe.onerror = () => {
-          hideLoading();
-          newIframe.style.display = 'block';
-          newIframe.classList.remove('opacity-0');
-          showToast(
-            'Could not load iframe content. (X-Frame-Options or invalid URL)',
-            'error'
-          );
-        };
-      }
-
-      // --- Helper function: check if a URL is safe to load in iframe ---
-      function isSafeUrl(url) {
-        if (!url) return false;
-        try {
-          // Accept relative URLs (do not start with a scheme)
-          if (/^\/[^/\\]?/.test(url) || /^[^:\/?#]+(\?|#|$)/.test(url)) {
-            return true;
-          }
-          const parsed = new URL(url, window.location.origin);
-          // Only allow http(s) protocols
-          if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-            // Optionally, restrict host here if needed
-            return true;
-          }
-        } catch (e) {
-          // Invalid URL, do not allow
-        }
+    /**
+     * Strictly checks if a URL is safe to load in an iframe.
+     * - Only http(s) protocols allowed
+     * - Cannot be javascript:, data:, etc.
+     * - (Optionally) limit to same-origin or whitelisted hosts
+     * @param {string} url
+     * @returns {boolean}
+     */
+    function isSafeUrl(url) {
+      if (typeof url !== 'string' || !url) return false;
+      try {
+        const parsed = new URL(url, window.location.origin); // supports root-relative
+        // Restrict protocols
+        if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+        // Optionally: restrict domain
+        // Uncomment and add your trusted hosts as needed
+        // const trustedHosts = ['mydomain.com', window.location.hostname];
+        // if (!trustedHosts.includes(parsed.hostname)) return false;
+        return true;
+      } catch (e) {
         return false;
       }
+    }
 
-      document.addEventListener('DOMContentLoaded', () => {
-        const menuItems = document.querySelectorAll('.menu-item');
-        mainIframeContainer = document.querySelector('.iframe-container');
-        loadingOverlay = document.getElementById('loading-overlay');
+    // Function to show a notification (replaces alert)
+    function showToast(message, type) {
+      const toast = document.createElement('div');
+      toast.textContent = message;
+      toast.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-xl text-white ${type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+        } z-50 transition-transform transform translate-x-full`;
+      document.body.appendChild(toast);
 
-        // Remove the initial iframe created in HTML so JS can manage the entire lifecycle
-        const initialIframe = document.getElementById('main-iframe');
-        if (initialIframe) {
-          initialIframe.remove();
+      // Show toast
+      setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+        toast.classList.add('translate-x-0');
+      }, 10);
+
+      // Hide toast
+      setTimeout(() => {
+        toast.classList.remove('translate-x-0');
+        toast.classList.add('translate-x-full');
+        setTimeout(() => document.body.removeChild(toast), 300); // Wait for transition to end
+      }, 3000);
+    }
+
+    function showLoading() {
+      loadingOverlay.classList.remove('opacity-0', 'pointer-events-none');
+    }
+
+    function hideLoading() {
+      loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    /**
+     * Removes the old iframe, shows loading, creates and loads a new iframe.
+     * @param {string} url - The new URL to load.
+     * @param {string} title - The new page title.
+     */
+    function loadNewIframe(url, title) {
+      if (!url || !mainIframeContainer) return;
+      // Defensive: prevent even direct calls with dangerous URLs
+      if (!isSafeUrl(url)) {
+        showToast('Blocked loading of unsafe iframe URL.', 'error');
+        return;
+      }
+
+      // 1. Update Title
+      document.title = `${title} | Ecoma Core Dashboard`;
+
+      // 2. Remove old iframe if it exists
+      if (currentIframe) {
+        mainIframeContainer.removeChild(currentIframe);
+        currentIframe = null;
+      }
+
+      // 3. Show Loading Indicator
+      showLoading();
+
+      // 4. Create new iframe
+      const newIframe = document.createElement('iframe');
+      newIframe.id = 'main-iframe';
+      newIframe.src = addCacheBuster(url);
+      newIframe.frameBorder = '0';
+      // Start hidden, then fade in when loaded
+      newIframe.className =
+        'w-full h-full opacity-0 transition-opacity duration-500';
+      newIframe.style.display = 'none'; // Ensure no flash before onload
+
+      // 5. Add iframe to Container
+      mainIframeContainer.appendChild(newIframe);
+      currentIframe = newIframe;
+
+      // 6. Handle load event (onload)
+      newIframe.onload = () => {
+        newIframe.style.display = 'block'; // Show iframe
+        // Use setTimeout to ensure the browser has time to render before fading in
+        setTimeout(() => {
+          newIframe.classList.remove('opacity-0'); // Fade in
+          hideLoading(); // Hide loading after iframe is loaded and faded in
+        }, 50);
+      };
+
+      // 7. Handle load error (onerror) - Hard to catch accurately with iframes, but still good to have
+      newIframe.onerror = () => {
+        hideLoading();
+        newIframe.style.display = 'block';
+        newIframe.classList.remove('opacity-0');
+        showToast(
+          'Could not load iframe content. (X-Frame-Options or invalid URL)',
+          'error'
+        );
+      };
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const menuItems = document.querySelectorAll('.menu-item');
+      mainIframeContainer = document.querySelector('.iframe-container');
+      loadingOverlay = document.getElementById('loading-overlay');
+
+      // Remove the initial iframe created in HTML so JS can manage the entire lifecycle
+      const initialIframe = document.getElementById('main-iframe');
+      if (initialIframe) {
+        initialIframe.remove();
+      }
+
+      // --- Default URL Handling ---
+      if (menuItems.length > 0) {
+        const defaultItem = menuItems[0];
+        const defaultUrl = defaultItem.getAttribute('data-url');
+        const defaultTitle =
+          defaultItem.getAttribute('data-title') || 'Document';
+
+        // Load the default iframe if the URL is valid
+        if (isSafeUrl(defaultUrl)) {
+          loadNewIframe(defaultUrl, defaultTitle);
+        } else {
+          // Optionally, show error or fallback behaviour
+          console.warn('Unsafe URL blocked in data-url:', defaultUrl);
         }
 
-        // --- Default URL Handling ---
-        if (menuItems.length > 0) {
-          const defaultItem = menuItems[0];
-          const defaultUrl = defaultItem.getAttribute('data-url');
-          const defaultTitle =
-            defaultItem.getAttribute('data-title') || 'Document';
+        // Set active state for the first menu item
+        defaultItem.classList.add('bg-teal-100', 'text-teal-700');
+        defaultItem.classList.remove(
+          'text-gray-700',
+          'hover:text-teal-600',
+          'hover:bg-teal-50'
+        );
+      }
+      // ----------------------------------------------------
 
-          // Load the default iframe if the URL is valid
-          if (isSafeUrl(defaultUrl)) {
-            loadNewIframe(defaultUrl, defaultTitle);
-          } else {
-            // Optionally, show error or fallback behaviour
-            console.warn('Unsafe URL blocked in data-url:', defaultUrl);
-          }
+      // Handle click events for menu items
+      menuItems.forEach((item) => {
+        item.addEventListener('click', (event) => {
+          event.preventDefault();
 
-          // Set active state for the first menu item
-          defaultItem.classList.add('bg-teal-100', 'text-teal-700');
-          defaultItem.classList.remove(
-            'text-gray-700',
-            'hover:text-teal-600',
-            'hover:bg-teal-50'
-          );
-        }
-        // ----------------------------------------------------
+          const newUrl = item.getAttribute('data-url');
+          const title = item.getAttribute('data-title') || 'Dashboard';
 
-        // Handle click events for menu items
-        menuItems.forEach((item) => {
-          item.addEventListener('click', (event) => {
-            event.preventDefault();
+          if (isSafeUrl(newUrl)) {
+            // 1. Load new content
+            loadNewIframe(newUrl, title);
 
-            const newUrl = item.getAttribute('data-url');
-            const title = item.getAttribute('data-title') || 'Dashboard';
-
-            if (isSafeUrl(newUrl)) {
-              // 1. Load new content
-              loadNewIframe(newUrl, title);
-
-              // 2. Handle active state of the menu
-              menuItems.forEach((menu) => {
-                menu.classList.remove('bg-teal-100', 'text-teal-700');
-                menu.classList.add(
-                  'text-gray-700',
-                  'hover:text-teal-600',
-                  'hover:bg-teal-50'
-                );
-              });
-
-              item.classList.add('bg-teal-100', 'text-teal-700');
-              item.classList.remove(
+            // 2. Handle active state of the menu
+            menuItems.forEach((menu) => {
+              menu.classList.remove('bg-teal-100', 'text-teal-700');
+              menu.classList.add(
                 'text-gray-700',
                 'hover:text-teal-600',
                 'hover:bg-teal-50'
               );
-            } else {
-              console.error('Error: Unsafe or invalid URL blocked.', {
-                newUrl,
-              });
-              showToast('Path not found or is unsafe.', 'error');
-            }
-          });
+            });
+
+            item.classList.add('bg-teal-100', 'text-teal-700');
+            item.classList.remove(
+              'text-gray-700',
+              'hover:text-teal-600',
+              'hover:bg-teal-50'
+            );
+          } else {
+            console.error('Error: Unsafe or invalid URL blocked.', {
+              newUrl,
+            });
+            showToast('Path not found or is unsafe.', 'error');
+          }
         });
-
-        // Function to show a notification (replaces alert)
-        function showToast(message, type) {
-          const toast = document.createElement('div');
-          toast.textContent = message;
-          toast.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-xl text-white ${
-            type === 'error' ? 'bg-red-500' : 'bg-blue-500'
-          } z-50 transition-transform transform translate-x-full`;
-          document.body.appendChild(toast);
-
-          // Show toast
-          setTimeout(() => {
-            toast.classList.remove('translate-x-full');
-            toast.classList.add('translate-x-0');
-          }, 10);
-
-          // Hide toast
-          setTimeout(() => {
-            toast.classList.remove('translate-x-0');
-            toast.classList.add('translate-x-full');
-            setTimeout(() => document.body.removeChild(toast), 300); // Wait for transition to end
-          }, 3000);
-        }
       });
-    </script>
-  </body>
+
+
+    });
+  </script>
+</body>
+
 </html>
