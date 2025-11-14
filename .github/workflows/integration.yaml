@@ -26,24 +26,19 @@ jobs:
       - name: Setup project
         uses: ./.github/actions/setup-project
 
+      - name: Set NX_BASE and NX_HEAD SHAs
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: 'main'
+
       - name: Compute affected projects
         id: affected
         run: |
           set -euo pipefail
 
-          BRANCH_NAME="$GITHUB_REF_NAME"
-
-          if [ "$BRANCH_NAME" = "main" ] && [ "$(git rev-list --count HEAD)" -eq 1 ]; then
-            # Very first commit on main: show all projects
-            PROJECTS_JSON=$(npx nx show projects --json)
-          elif [ "$BRANCH_NAME" = "main" ]; then
-            # Main branch, not the first commit: use latest tag
-            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
-            PROJECTS_JSON=$(npx nx show projects --affected --base="$LATEST_TAG" --head=HEAD --json)
-          else
-            # Any other branch: compare against origin/main
-            PROJECTS_JSON=$(npx nx show projects --affected --base=origin/main --head=HEAD --json)
-          fi
+          # Use nx show projects --affected which now uses NX_BASE and NX_HEAD
+          # set by the nx-set-shas action
+          PROJECTS_JSON=$(npx nx show projects --affected --json)
 
           echo "projects=$PROJECTS_JSON" >> "$GITHUB_OUTPUT"
 
