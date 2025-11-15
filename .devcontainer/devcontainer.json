@@ -1,6 +1,6 @@
 {
   "name": "Ecoma core services devcontainer",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
   "runArgs": ["--name", "ecoma-core-services-devcontainer"],
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
