@@ -1,5 +1,5 @@
 # Use the official MongoDB 8 image based on Ubuntu Noble
-FROM mongo:8.0-noble
+FROM mongo:8.2-noble
 
 # Copy the database initialization script to the init directory
 # This script will be executed when the container starts for the first time
