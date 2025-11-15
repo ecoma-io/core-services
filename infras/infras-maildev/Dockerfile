@@ -1,6 +1,6 @@
 # MailDev - Email testing tool for development
 # Base image from official MailDev
-FROM maildev/maildev:2.0.5
+FROM maildev/maildev:2.2.1
 
 USER root
 
