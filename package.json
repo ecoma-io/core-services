@@ -45,7 +45,7 @@
     "@testcontainers/toxiproxy": "^11.7.2",
     "@types/amqplib": "^0.10.8",
     "@types/jest": "^30.0.0",
-    "@types/node": "20.19.9",
+    "@types/node": "24.10.1",
     "@types/semver": "^7.5.8",
     "@typescript-eslint/rule-tester": "^8.40.0",
     "@typescript-eslint/utils": "^7.16.0",
