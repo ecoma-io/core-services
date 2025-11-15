@@ -9,7 +9,7 @@
       "configureZshAsDefaultShell": true,
       "installOhMyZshConfig": true
     },
-    "ghcr.io/devcontainers/features/docker-in-docker:1": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
       "moby": true
     },
