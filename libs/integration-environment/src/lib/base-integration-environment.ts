@@ -318,7 +318,6 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
 
   /**
    * Gets a proxied or direct service for MongoDB.
-   * @param - No parameters.
    * @returns {Promise<(ProxiedService | Service) & { mongoClient: MongoClient; db: Db; databaseName: string }>} A promise resolving to the MongoDB service with initialized client and database.
    * @remarks Uses MONGO_PORT env var. Assumes proxy is configured if enabled. Creates a test database and returns a connected MongoClient.
    */
@@ -370,7 +369,7 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
 
     const db = mongoClient.db(databaseName);
 
-    this.waitToCloses.push(async () => {
+    this.waitToCloses.push(async (): Promise<void> => {
       await mongoClient.close();
     });
 
@@ -379,7 +378,6 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
 
   /**
    * Gets a proxied or direct service for Elasticsearch.
-   * @param - No parameters.
    * @returns {Promise<(ProxiedService | Service) & { elasticsearchClient: ElasticsearchClient; indexPrefix: string }>} A promise resolving to the Elasticsearch service with initialized client.
    * @remarks Uses ELASTIC_PORT env var. Assumes proxy is configured if enabled. Returns a connected Elasticsearch client with a test index prefix.
    */
@@ -431,7 +429,7 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
       throw new Error(`Failed to connect to Elasticsearch: ${error}`);
     }
 
-    this.waitToCloses.push(async () => {
+    this.waitToCloses.push(async (): Promise<void> => {
       await elasticsearchClient.close();
     });
 
@@ -440,7 +438,6 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
 
   /**
    * Gets a proxied or direct service for RabbitMQ.
-   * @param - No parameters.
    * @returns {Promise<(ProxiedService | Service) & { connection: amqp.ChannelModel; channel: amqp.Channel }>} A promise resolving to the RabbitMQ service with connection and channel.
    * @remarks Uses RABBITMQ_AMQP_PORT env var. Assumes proxy is configured if enabled. Returns a connected RabbitMQ connection and default channel.
    */
@@ -487,7 +484,7 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
       throw new Error(`Failed to connect to RabbitMQ: ${error}`);
     }
 
-    this.waitToCloses.push(async () => {
+    this.waitToCloses.push(async (): Promise<void> => {
       await channel.close();
       await connection.close();
     });
@@ -497,7 +494,6 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
 
   /**
    * Gets a proxied or direct service for EventStoreDB.
-   * @param - No parameters.
    * @returns {Promise<(ProxiedService | Service) & { eventStoreClient: EventStoreDBClient; streamPrefix: string }>} A promise resolving to the EventStoreDB service with initialized client.
    * @remarks Uses ESDB_HTTP_PORT env var. Assumes proxy is configured if enabled. Returns a connected EventStoreDB client with a test stream prefix.
    */
@@ -538,7 +534,7 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
       `esdb://${service.host}:${service.port}?tls=false`
     );
 
-    this.waitToCloses.push(() => {
+    this.waitToCloses.push((): void => {
       eventStoreClient.dispose();
     });
 

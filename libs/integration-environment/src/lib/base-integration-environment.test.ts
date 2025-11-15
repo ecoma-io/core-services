@@ -299,7 +299,7 @@ describe('BaseIntegrationEnvironment', () => {
       process.env['POSTGRES_PORT'] = '5432';
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
       const mockService = { host: 'localhost', port: 5432 };
-       
+
       (env as any).createService = mockCreateService;
       mockCreateService.mockResolvedValue(mockService);
 
@@ -328,7 +328,7 @@ describe('BaseIntegrationEnvironment', () => {
       process.env['POSTGRES_PORT'] = '5432';
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
       const mockService = { host: 'localhost', port: 5432 };
-       
+
       (env as any).createService = mockCreateService;
       mockCreateService.mockResolvedValue(mockService);
 
@@ -359,7 +359,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should create service for Redis, initialize Redis client, select database, set test key, and return with redis', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 6379 };
       mockCreateService.mockResolvedValue(mockService);
@@ -383,7 +383,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should cache the service and return the same instance on subsequent calls', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 6379 };
       mockCreateService.mockResolvedValue(mockService);
@@ -414,7 +414,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should create service for MinIO, initialize S3 client, create bucket, and return with bucketName and s3Client', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 9000 };
       mockCreateService.mockResolvedValue(mockService);
@@ -444,7 +444,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should set public policy when isPublicBucket is true', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 9000 };
       mockCreateService.mockResolvedValue(mockService);
@@ -460,7 +460,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should cache the service and return the same instance on subsequent calls', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 9000 };
       mockCreateService.mockResolvedValue(mockService);
@@ -477,7 +477,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should cache separately for different options', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 9000 };
       mockCreateService.mockResolvedValue(mockService);
@@ -493,7 +493,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should handle MinIO CreateBucket error', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 9000 };
       mockCreateService.mockResolvedValue(mockService);
@@ -508,7 +508,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should handle MinIO PutBucketPolicy error', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 9000 };
       mockCreateService.mockResolvedValue(mockService);
@@ -527,7 +527,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should create service for Maildev', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 1080 };
       mockCreateService.mockResolvedValue(mockService);
@@ -543,7 +543,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should cache the service and return the same instance on subsequent calls', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 1080 };
       mockCreateService.mockResolvedValue(mockService);
@@ -562,7 +562,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should clear service cache and call waitToCloses functions', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 5432 };
       mockCreateService.mockResolvedValue(mockService);
@@ -570,11 +570,11 @@ describe('BaseIntegrationEnvironment', () => {
       // Mock waitToCloses functions
       const closeFn1 = jest.fn();
       const closeFn2 = jest.fn();
-       
+
       (env as any).waitToCloses = [closeFn1, closeFn2];
 
       // Mock cache
-       
+
       (env as any).serviceCache.set('test', 'value');
 
       // Act
@@ -583,7 +583,7 @@ describe('BaseIntegrationEnvironment', () => {
       // Assert
       expect(closeFn1).toHaveBeenCalled();
       expect(closeFn2).toHaveBeenCalled();
-       
+
       expect((env as any).serviceCache.size).toBe(0);
     });
   });
@@ -592,7 +592,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should propagate errors from createService', async () => {
       // Arrange: Mock error
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       mockCreateService.mockRejectedValue(new Error('Service creation failed'));
 
@@ -605,7 +605,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should handle DataSource initialization error', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       mockCreateService.mockResolvedValue({ host: 'localhost', port: 5432 });
       const mockDataSource = {
@@ -626,7 +626,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should handle database creation error', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       mockCreateService.mockResolvedValue({ host: 'localhost', port: 5432 });
       const mockClientLocal = {
@@ -647,7 +647,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should handle final DataSource initialization error', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       mockCreateService.mockResolvedValue({ host: 'localhost', port: 5432 });
       const mockClientLocal = {
@@ -693,7 +693,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should create service for MongoDB, initialize MongoClient, connect, and return with client and database', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 27017 };
       mockCreateService.mockResolvedValue(mockService);
@@ -719,7 +719,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should cache the service and return the same instance on subsequent calls', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 27017 };
       mockCreateService.mockResolvedValue(mockService);
@@ -736,7 +736,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should handle MongoDB connection error', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 27017 };
       mockCreateService.mockResolvedValue(mockService);
@@ -767,7 +767,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should create service for Elasticsearch, initialize client, ping, and return with client and indexPrefix', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 9200 };
       mockCreateService.mockResolvedValue(mockService);
@@ -798,7 +798,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should cache the service and return the same instance on subsequent calls', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 9200 };
       mockCreateService.mockResolvedValue(mockService);
@@ -815,7 +815,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should handle Elasticsearch ping error', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 9200 };
       mockCreateService.mockResolvedValue(mockService);
@@ -850,7 +850,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should create service for RabbitMQ, connect, create channel, and return with connection and channel', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 5672 };
       mockCreateService.mockResolvedValue(mockService);
@@ -874,7 +874,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should cache the service and return the same instance on subsequent calls', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 5672 };
       mockCreateService.mockResolvedValue(mockService);
@@ -891,7 +891,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should handle RabbitMQ connection error', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 5672 };
       mockCreateService.mockResolvedValue(mockService);
@@ -908,7 +908,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should handle RabbitMQ channel creation error', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 5672 };
       mockCreateService.mockResolvedValue(mockService);
@@ -939,7 +939,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should create service for EventStoreDB, initialize client, and return with client and streamPrefix', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 2113 };
       mockCreateService.mockResolvedValue(mockService);
@@ -965,7 +965,7 @@ describe('BaseIntegrationEnvironment', () => {
     test('should cache the service and return the same instance on subsequent calls', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
-       
+
       (env as any).createService = mockCreateService;
       const mockService = { host: 'localhost', port: 2113 };
       mockCreateService.mockResolvedValue(mockService);
