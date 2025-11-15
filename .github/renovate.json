@@ -6,36 +6,32 @@
     ":ignoreUnstable",
     ":prImmediately",
     ":rebaseStalePrs",
-    "group:monorepos",
-    "group:pnpm",
-    "group:nx-packages",
-    "schedule:weekly"
+    "group:monorepos"
   ],
   "baseBranch": "dev",
   "branchPrefix": "update-deps/",
+  "schedule": ["after 1am on Monday"],
   "automerge": true,
   "major": {
-    "automerge": false,
-    "separateMajorIssue": true
+    "automerge": false
   },
   "dependencyDashboard": true,
   "labels": ["dependencies"],
 
   "commitMessageAction": "chore",
   "commitMessageTopic": "general",
-  "commitMessageBody": "{{depName}}: {{currentVersion}} -> {{newVersion}}",
   "commitMessageExtra": "",
 
   "packageRules": [
     {
       "matchPackagePatterns": ["^@nestjs/"],
       "groupName": "nestjs",
-      "schedule": ["weekly"]
+      "schedule": ["after 1am on Monday"]
     },
     {
       "matchPackagePatterns": ["^@types/"],
       "groupName": "types",
-      "schedule": ["weekly"],
+      "schedule": ["after 1am on Monday"],
       "automerge": true
     },
     {
@@ -49,13 +45,12 @@
         "lint-staged"
       ],
       "groupName": "tooling",
-      "schedule": ["weekly"]
+      "schedule": ["after 1am on Monday"]
     },
     {
       "matchPackagePatterns": ["@nx/", "^nx$"],
       "groupName": "nx-packages",
-      "group:nx-packages": true,
-      "schedule": ["weekly"],
+      "schedule": ["after 1am on Monday"],
       "automerge": false
     },
     {
@@ -67,7 +62,7 @@
       "matchUpdateTypes": ["minor"],
       "automerge": true,
       "automergeType": "pr",
-      "schedule": ["weekly"]
+      "schedule": ["after 1am on Monday"]
     }
   ]
 }
