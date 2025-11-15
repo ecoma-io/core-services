@@ -19,7 +19,7 @@ jobs:
       has_projects: ${{ steps.affected.outputs.has_projects }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -66,7 +66,7 @@ jobs:
         project: ${{ fromJson(needs.compute-affected.outputs.projects) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -97,7 +97,7 @@ jobs:
           private_key: ${{ secrets.RELEASE_BOT_KEY }}
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ steps.generate_token.outputs.token }}
 
