@@ -18,6 +18,11 @@ A monorepo of NestJS microservices for Ecoma, built with Nx. This repository con
 - **Language**: TypeScript
 - **Build Tool**: Nx
 - **Database**: TypeORM with PostgreSQL
+- **Cache & Session**: Redis
+- **Document Store**: MongoDB
+- **Search Engine**: Elasticsearch
+- **Message Broker**: RabbitMQ
+- **Event Store**: Event Store DB
 - **Testing**: Jest, Testcontainers
 - **Linting**: ESLint with custom monorepo rules
 - **Containerization**: Docker
@@ -30,7 +35,7 @@ A monorepo of NestJS microservices for Ecoma, built with Nx. This repository con
 ├── libs/                 # Internal shared libraries
 ├── packages/             # Publishable npm packages (DTOs, common types)
 ├── tools/                # Custom scripts and executors
-├── dev-infras/           # Development infrastructure (Docker Compose)
+├── infras/               # Development infrastructure (Docker Compose)
 ├── docs/                 # Documentation
 └── scripts/              # Utility scripts
 ```
@@ -60,7 +65,7 @@ A monorepo of NestJS microservices for Ecoma, built with Nx. This repository con
 3. **Start development infrastructure**:
 
    ```bash
-   docker-compose -f dev-infras/compose.yaml up -d
+   docker-compose -f infras/infras-core/compose.yaml up -d
    ```
 
 4. **Run a service**:
