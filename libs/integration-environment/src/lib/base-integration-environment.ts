@@ -13,6 +13,10 @@ import {
 } from '@ecoma-io/integration-hybridize';
 import { MaybeAsync } from '@ecoma-io/common';
 import { Client } from 'pg';
+import { MongoClient, Db } from 'mongodb';
+import { Client as ElasticsearchClient } from '@elastic/elasticsearch';
+import * as amqp from 'amqplib';
+import { EventStoreDBClient } from '@eventstore/db-client';
 
 export interface EnvironmentOptions {
   internalHost?: string;
@@ -21,8 +25,8 @@ export interface EnvironmentOptions {
 
 /**
  * Base implementation of IntegrationEnvironment for common services in the project.
- * Provides convenience methods for accessing proxied or direct services like Postgres, Redis, MinIO, and Maildev.
- * Also includes setup methods to initialize test databases and buckets.
+ * Provides convenience methods for accessing proxied or direct services like Postgres, Redis, MinIO, Maildev, MongoDB, Elasticsearch, RabbitMQ, and EventStoreDB.
+ * Also includes setup methods to initialize test databases, buckets, and connections.
  * @remarks This is an internal library tailored for the project's dev infrastructure. It assumes specific env vars are set.
  */
 export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment {
@@ -43,6 +47,15 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
       'MINIO_KEY',
       'MINIO_SECRET',
       'MAILDEV_WEB_PORT',
+      'MONGO_PORT',
+      'MONGO_USERNAME',
+      'MONGO_PASSWORD',
+      'RABBITMQ_AMQP_PORT',
+      'RABBITMQ_USERNAME',
+      'RABBITMQ_PASSWORD',
+      'ESDB_HTTP_PORT',
+      'ELASTIC_PORT',
+      'ELASTIC_PASSWORD',
     ];
 
     for (const envVar of requiredEnvVars) {
@@ -301,5 +314,234 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
     );
     this.serviceCache.set(cacheKey, promise);
     return promise;
+  }
+
+  /**
+   * Gets a proxied or direct service for MongoDB.
+   * @param - No parameters.
+   * @returns {Promise<(ProxiedService | Service) & { mongoClient: MongoClient; db: Db; databaseName: string }>} A promise resolving to the MongoDB service with initialized client and database.
+   * @remarks Uses MONGO_PORT env var. Assumes proxy is configured if enabled. Creates a test database and returns a connected MongoClient.
+   */
+  async getMongo(): Promise<
+    (ProxiedService | Service) & {
+      mongoClient: MongoClient;
+      db: Db;
+      databaseName: string;
+    }
+  > {
+    const cacheKey = 'mongo';
+    if (this.serviceCache.has(cacheKey)) {
+      return this.serviceCache.get(cacheKey) as Promise<
+        (ProxiedService | Service) & {
+          mongoClient: MongoClient;
+          db: Db;
+          databaseName: string;
+        }
+      >;
+    }
+
+    const promise = this.createMongoService();
+    this.serviceCache.set(cacheKey, promise);
+    return promise;
+  }
+
+  private async createMongoService(): Promise<
+    (ProxiedService | Service) & {
+      mongoClient: MongoClient;
+      db: Db;
+      databaseName: string;
+    }
+  > {
+    const service = await this.createService(
+      `mongo-${this.id}`,
+      process.env['MONGO_PORT']
+    );
+    const databaseName = `test_${this.id}`;
+
+    const connectionString = `mongodb://${process.env['MONGO_USERNAME']}:${process.env['MONGO_PASSWORD']}@${service.host}:${service.port}`;
+
+    let mongoClient: MongoClient;
+    try {
+      mongoClient = new MongoClient(connectionString);
+      await mongoClient.connect();
+    } catch (error) {
+      throw new Error(`Failed to connect to MongoDB: ${error}`);
+    }
+
+    const db = mongoClient.db(databaseName);
+
+    this.waitToCloses.push(async () => {
+      await mongoClient.close();
+    });
+
+    return { mongoClient, db, databaseName, ...service };
+  }
+
+  /**
+   * Gets a proxied or direct service for Elasticsearch.
+   * @param - No parameters.
+   * @returns {Promise<(ProxiedService | Service) & { elasticsearchClient: ElasticsearchClient; indexPrefix: string }>} A promise resolving to the Elasticsearch service with initialized client.
+   * @remarks Uses ELASTIC_PORT env var. Assumes proxy is configured if enabled. Returns a connected Elasticsearch client with a test index prefix.
+   */
+  async getElasticsearch(): Promise<
+    (ProxiedService | Service) & {
+      elasticsearchClient: ElasticsearchClient;
+      indexPrefix: string;
+    }
+  > {
+    const cacheKey = 'elasticsearch';
+    if (this.serviceCache.has(cacheKey)) {
+      return this.serviceCache.get(cacheKey) as Promise<
+        (ProxiedService | Service) & {
+          elasticsearchClient: ElasticsearchClient;
+          indexPrefix: string;
+        }
+      >;
+    }
+
+    const promise = this.createElasticsearchService();
+    this.serviceCache.set(cacheKey, promise);
+    return promise;
+  }
+
+  private async createElasticsearchService(): Promise<
+    (ProxiedService | Service) & {
+      elasticsearchClient: ElasticsearchClient;
+      indexPrefix: string;
+    }
+  > {
+    const service = await this.createService(
+      `elasticsearch-${this.id}`,
+      process.env['ELASTIC_PORT']
+    );
+    const indexPrefix = `test_${this.id}`;
+
+    const elasticsearchClient = new ElasticsearchClient({
+      node: `http://${service.host}:${service.port}`,
+      auth: {
+        username: 'elastic',
+        password: process.env['ELASTIC_PASSWORD'],
+      },
+    });
+
+    try {
+      // Verify connection
+      await elasticsearchClient.ping();
+    } catch (error) {
+      throw new Error(`Failed to connect to Elasticsearch: ${error}`);
+    }
+
+    this.waitToCloses.push(async () => {
+      await elasticsearchClient.close();
+    });
+
+    return { elasticsearchClient, indexPrefix, ...service };
+  }
+
+  /**
+   * Gets a proxied or direct service for RabbitMQ.
+   * @param - No parameters.
+   * @returns {Promise<(ProxiedService | Service) & { connection: amqp.ChannelModel; channel: amqp.Channel }>} A promise resolving to the RabbitMQ service with connection and channel.
+   * @remarks Uses RABBITMQ_AMQP_PORT env var. Assumes proxy is configured if enabled. Returns a connected RabbitMQ connection and default channel.
+   */
+  async getRabbitMQ(): Promise<
+    (ProxiedService | Service) & {
+      connection: amqp.ChannelModel;
+      channel: amqp.Channel;
+    }
+  > {
+    const cacheKey = 'rabbitmq';
+    if (this.serviceCache.has(cacheKey)) {
+      return this.serviceCache.get(cacheKey) as Promise<
+        (ProxiedService | Service) & {
+          connection: amqp.ChannelModel;
+          channel: amqp.Channel;
+        }
+      >;
+    }
+
+    const promise = this.createRabbitMQService();
+    this.serviceCache.set(cacheKey, promise);
+    return promise;
+  }
+
+  private async createRabbitMQService(): Promise<
+    (ProxiedService | Service) & {
+      connection: amqp.ChannelModel;
+      channel: amqp.Channel;
+    }
+  > {
+    const service = await this.createService(
+      `rabbitmq-${this.id}`,
+      process.env['RABBITMQ_AMQP_PORT']
+    );
+
+    const connectionString = `amqp://${process.env['RABBITMQ_USERNAME']}:${process.env['RABBITMQ_PASSWORD']}@${service.host}:${service.port}`;
+
+    let connection: amqp.ChannelModel;
+    let channel: amqp.Channel;
+    try {
+      connection = await amqp.connect(connectionString);
+      channel = await connection.createChannel();
+    } catch (error) {
+      throw new Error(`Failed to connect to RabbitMQ: ${error}`);
+    }
+
+    this.waitToCloses.push(async () => {
+      await channel.close();
+      await connection.close();
+    });
+
+    return { connection, channel, ...service };
+  }
+
+  /**
+   * Gets a proxied or direct service for EventStoreDB.
+   * @param - No parameters.
+   * @returns {Promise<(ProxiedService | Service) & { eventStoreClient: EventStoreDBClient; streamPrefix: string }>} A promise resolving to the EventStoreDB service with initialized client.
+   * @remarks Uses ESDB_HTTP_PORT env var. Assumes proxy is configured if enabled. Returns a connected EventStoreDB client with a test stream prefix.
+   */
+  async getEventStoreDB(): Promise<
+    (ProxiedService | Service) & {
+      eventStoreClient: EventStoreDBClient;
+      streamPrefix: string;
+    }
+  > {
+    const cacheKey = 'eventstoredb';
+    if (this.serviceCache.has(cacheKey)) {
+      return this.serviceCache.get(cacheKey) as Promise<
+        (ProxiedService | Service) & {
+          eventStoreClient: EventStoreDBClient;
+          streamPrefix: string;
+        }
+      >;
+    }
+
+    const promise = this.createEventStoreDBService();
+    this.serviceCache.set(cacheKey, promise);
+    return promise;
+  }
+
+  private async createEventStoreDBService(): Promise<
+    (ProxiedService | Service) & {
+      eventStoreClient: EventStoreDBClient;
+      streamPrefix: string;
+    }
+  > {
+    const service = await this.createService(
+      `eventstoredb-${this.id}`,
+      process.env['ESDB_HTTP_PORT']
+    );
+    const streamPrefix = `test_${this.id}`;
+
+    const eventStoreClient = EventStoreDBClient.connectionString(
+      `esdb://${service.host}:${service.port}?tls=false`
+    );
+
+    this.waitToCloses.push(() => {
+      eventStoreClient.dispose();
+    });
+
+    return { eventStoreClient, streamPrefix, ...service };
   }
 }

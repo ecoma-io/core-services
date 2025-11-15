@@ -1,6 +1,6 @@
 # Integration Environment
 
-An internal library providing a base implementation for integration testing environments in the Ecoma microservices monorepo. This library extends the `@ecoma-io/integration-hybridize` framework to offer convenient access to common infrastructure services like PostgreSQL, Redis, MinIO, and Maildev, with automatic setup of test databases, buckets, and keys.
+An internal library providing a base implementation for integration testing environments in the Ecoma microservices monorepo. This library extends the `@ecoma-io/integration-hybridize` framework to offer convenient access to common infrastructure services like PostgreSQL, Redis, MinIO, Maildev, MongoDB, Elasticsearch, RabbitMQ, and EventStoreDB, with automatic setup of test databases, buckets, and connections.
 
 ## Overview
 
@@ -10,10 +10,10 @@ The class is configured to work with the `dev-infras` Docker network (defined in
 
 ## Features
 
-- **Automatic Setup**: Methods that not only access services but also initialize test resources (databases, Redis databases, MinIO buckets)
+- **Automatic Setup**: Methods that not only access services but also initialize test resources (databases, Redis databases, MinIO buckets, MongoDB databases, Elasticsearch indices, RabbitMQ channels, EventStoreDB streams)
 - **Service Caching**: Services are initialized once and cached for subsequent calls, improving performance in test suites
-- **Convenience Methods**: Pre-built methods for common services (PostgreSQL, Redis, MinIO, Maildev)
-- **Environment Variable Integration**: Automatically uses env vars like `POSTGRES_PORT`, `REDIS_PORT`, etc.
+- **Convenience Methods**: Pre-built methods for common services (PostgreSQL, Redis, MinIO, Maildev, MongoDB, Elasticsearch, RabbitMQ, EventStoreDB)
+- **Environment Variable Integration**: Automatically uses env vars like `POSTGRES_PORT`, `REDIS_PORT`, `MONGO_PORT`, `ELASTIC_PORT`, etc.
 - **Hybrid Testing Support**: Compatible with both shared container and per-test isolation strategies
 - **Type Safety**: Full TypeScript support with TSDoc documentation
 - **Extensible**: Abstract base class that can be extended for project-specific needs
@@ -42,6 +42,12 @@ const { redis } = await env.getRedis(); // Selects DB and sets test key
 const { bucketName, s3Client } = await env.getMinio(); // Creates bucket
 const maildevService = await env.getMaildev(); // Simple service access
 
+// New services
+const { mongoClient, db } = await env.getMongo(); // Connects to MongoDB and creates test database
+const { elasticsearchClient, indexPrefix } = await env.getElasticsearch(); // Connects to Elasticsearch with index prefix
+const { connection, channel } = await env.getRabbitMQ(); // Connects to RabbitMQ and creates channel
+const { eventStoreClient, streamPrefix } = await env.getEventStoreDB(); // Connects to EventStoreDB with stream prefix
+
 await env.stop();
 ```
 
@@ -51,15 +57,39 @@ await env.stop();
 
 The library expects the following environment variables to be set:
 
+**PostgreSQL:**
 - `POSTGRES_PORT`: Port for PostgreSQL service
 - `POSTGRES_USERNAME`: Username for PostgreSQL
 - `POSTGRES_PASSWORD`: Password for PostgreSQL
+
+**Redis:**
 - `REDIS_PORT`: Port for Redis service
 - `REDIS_PASSWORD`: Password for Redis service
+
+**MinIO:**
 - `MINIO_PORT`: Port for MinIO service
 - `MINIO_KEY`: Access key for MinIO
 - `MINIO_SECRET`: Secret key for MinIO
+
+**Maildev:**
 - `MAILDEV_WEB_PORT`: Port for Maildev web interface
+
+**MongoDB:**
+- `MONGO_PORT`: Port for MongoDB service
+- `MONGO_USERNAME`: Username for MongoDB
+- `MONGO_PASSWORD`: Password for MongoDB
+
+**Elasticsearch:**
+- `ELASTIC_PORT`: Port for Elasticsearch service
+- `ELASTIC_PASSWORD`: Password for Elasticsearch (username is 'elastic')
+
+**RabbitMQ:**
+- `RABBITMQ_AMQP_PORT`: Port for RabbitMQ AMQP protocol
+- `RABBITMQ_USERNAME`: Username for RabbitMQ
+- `RABBITMQ_PASSWORD`: Password for RabbitMQ
+
+**EventStoreDB:**
+- `ESDB_HTTP_PORT`: Port for EventStoreDB HTTP interface
 
 **Note**: All environment variables are required. The constructor will throw an error if any required environment variable is not set.
 
@@ -89,6 +119,42 @@ const { bucketName, s3Client } = await env.getMinio({ isPublicBucket: true });
 // Use s3Client and bucketName for your tests
 ```
 
+#### MongoDB with Test Database
+
+```typescript
+const { mongoClient, db, databaseName } = await env.getMongo();
+// MongoDB client is connected to a test database
+// Use db for database operations
+// Example: await db.collection('users').insertOne({ name: 'test' });
+```
+
+#### Elasticsearch with Index Prefix
+
+```typescript
+const { elasticsearchClient, indexPrefix } = await env.getElasticsearch();
+// Elasticsearch client is connected and verified via ping
+// Use indexPrefix for creating test indices
+// Example: await elasticsearchClient.index({ index: `${indexPrefix}_users`, body: { name: 'test' } });
+```
+
+#### RabbitMQ with Channel
+
+```typescript
+const { connection, channel } = await env.getRabbitMQ();
+// RabbitMQ connection and channel are ready
+// Use channel for queue and exchange operations
+// Example: await channel.assertQueue('test_queue');
+```
+
+#### EventStoreDB with Stream Prefix
+
+```typescript
+const { eventStoreClient, streamPrefix } = await env.getEventStoreDB();
+// EventStoreDB client is connected
+// Use streamPrefix for creating test streams
+// Example: await eventStoreClient.appendToStream(`${streamPrefix}_events`, event);
+```
+
 ### Extending for Custom Services
 
 ```typescript
@@ -112,10 +178,14 @@ class CustomIntegrationEnvironment extends BaseIntegrationEnvironment {
 
 #### Methods
 
-- `getPostgres(): Promise<(ProxiedService | Service) & { dataSource: DataSource }>` - Gets PostgreSQL service with initialized DataSource and created test database
+- `getPostgres(): Promise<(ProxiedService | Service) & { dataSource: DataSource; databaseName: string }>` - Gets PostgreSQL service with initialized DataSource and created test database
 - `getRedis(): Promise<(ProxiedService | Service) & { redis: Redis }>` - Gets Redis service with initialized Redis client, selected database, and test key
 - `getMinio(options?: { isPublicBucket?: boolean }): Promise<(ProxiedService | Service) & { bucketName: string; s3Client: S3Client }>` - Gets MinIO service with created bucket and optional public policy
 - `getMaildev(): Promise<ProxiedService | Service>` - Gets Maildev service
+- `getMongo(): Promise<(ProxiedService | Service) & { mongoClient: MongoClient; db: Db; databaseName: string }>` - Gets MongoDB service with connected client and test database
+- `getElasticsearch(): Promise<(ProxiedService | Service) & { elasticsearchClient: ElasticsearchClient; indexPrefix: string }>` - Gets Elasticsearch service with connected client and index prefix for test indices
+- `getRabbitMQ(): Promise<(ProxiedService | Service) & { connection: ChannelModel; channel: Channel }>` - Gets RabbitMQ service with connection and channel ready for use
+- `getEventStoreDB(): Promise<(ProxiedService | Service) & { eventStoreClient: EventStoreDBClient; streamPrefix: string }>` - Gets EventStoreDB service with connected client and stream prefix for test streams
 
 All methods use the corresponding environment variables and create services with names prefixed by the environment ID.
 
@@ -157,6 +227,10 @@ The tests follow the Arrange-Act-Assert (AAA) pattern and include:
 - `typeorm`: For PostgreSQL database operations
 - `ioredis`: For Redis client operations
 - `@aws-sdk/client-s3`: For MinIO/S3 operations
+- `mongodb`: For MongoDB client operations
+- `@elastic/elasticsearch`: For Elasticsearch client operations
+- `amqplib`: For RabbitMQ AMQP protocol operations
+- `@eventstore/db-client`: For EventStoreDB client operations
 - `testcontainers`: For container management in tests
 
 ## Contributing
