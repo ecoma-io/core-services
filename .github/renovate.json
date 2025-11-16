@@ -17,16 +17,19 @@
   },
   "dependencyDashboard": true,
   "labels": ["dependencies"],
-  "commitMessageExtra": "",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["after 1pm on Tuesday"]
+  },
   "packageRules": [
     {
       "matchPackagePatterns": ["^@nestjs/"],
-      "groupName": "nestjs",
+      "groupName": "nestjs-packages",
       "schedule": ["after 1am on Monday"]
     },
     {
       "matchPackagePatterns": ["^@types/"],
-      "groupName": "types",
+      "groupName": "types-packages",
       "schedule": ["after 1am on Monday"],
       "automerge": true
     },
@@ -40,7 +43,7 @@
         "^@commitlint",
         "lint-staged"
       ],
-      "groupName": "tooling",
+      "groupName": "tooling-packages",
       "schedule": ["after 1am on Monday"]
     },
     {
