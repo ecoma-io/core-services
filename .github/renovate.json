@@ -1,14 +1,14 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
+    "config:recommended",
     ":separateMajorReleases",
     ":ignoreUnstable",
     ":prImmediately",
     ":rebaseStalePrs",
     "group:monorepos"
   ],
-  "baseBranch": "dev",
+  "baseBranchPatterns": ["dev"],
   "branchPrefix": "update-deps/",
   "schedule": ["after 1am on Monday"],
   "automerge": true,
@@ -23,34 +23,34 @@
   },
   "packageRules": [
     {
-      "matchPackagePatterns": ["^@nestjs/"],
       "groupName": "nestjs-packages",
-      "schedule": ["after 1am on Monday"]
+      "schedule": ["after 1am on Monday"],
+      "matchPackageNames": ["/^@nestjs//"]
     },
     {
-      "matchPackagePatterns": ["^@types/"],
       "groupName": "types-packages",
       "schedule": ["after 1am on Monday"],
-      "automerge": true
+      "automerge": true,
+      "matchPackageNames": ["/^@types//"]
     },
     {
-      "matchPackagePatterns": [
-        "^eslint",
-        "^@eslint",
-        "prettier",
-        "typescript",
-        "jest",
-        "^@commitlint",
-        "lint-staged"
-      ],
       "groupName": "tooling-packages",
-      "schedule": ["after 1am on Monday"]
+      "schedule": ["after 1am on Monday"],
+      "matchPackageNames": [
+        "/^eslint/",
+        "/^@eslint/",
+        "/prettier/",
+        "/typescript/",
+        "/jest/",
+        "/^@commitlint/",
+        "/lint-staged/"
+      ]
     },
     {
-      "matchPackagePatterns": ["@nx/", "^nx$"],
       "groupName": "nx-packages",
       "schedule": ["after 1am on Monday"],
-      "automerge": false
+      "automerge": false,
+      "matchPackageNames": ["/@nx//", "/^nx$/"]
     },
     {
       "matchUpdateTypes": ["patch", "pin", "digest"],
