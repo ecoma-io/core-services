@@ -2,7 +2,7 @@
 # This image sets up Traefik v3.5 with custom configuration files and SSL certificates.
 
 # Use the official Traefik v3.5 image as the base
-FROM traefik:v3.5
+FROM traefik:v3.6
 
 # Copy static configuration file to the Traefik configuration directory
 COPY traefik.yml /etc/traefik/traefik.yml
