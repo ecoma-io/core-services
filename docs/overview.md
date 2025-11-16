@@ -11,7 +11,7 @@ This document gives a short, practical overview. For deeper guides see the other
 - `libs/`: Internal libraries used by apps (utilities, integration helpers, TypeORM helpers, etc.).
 - `packages/`: Publishable packages (DTOs, shared config, exceptions, pipes, filters) consumed across repos or by frontend.
 - `tools/`: Internal development tools.
-- `infras/`: Internal development infrastructrure applications (eg. MongoDB, Posgres, Radis, RabbitMQ, Maildev, Minio ).
+- `infras/`: Internal development infrastructure applications (e.g., MongoDB, Postgres, Redis, RabbitMQ, Maildev, MinIO).
 
 Path aliases are configured in `tsconfig.base.json` and used throughout. Prefer imports like `@ecoma-io/<package>` instead of long relative paths.
 
@@ -19,7 +19,7 @@ Path aliases are configured in `tsconfig.base.json` and used throughout. Prefer 
 
 - Use path aliases from `tsconfig.base.json` for cross-project imports (`@ecoma-io/*`).
 - Use the shared exception helpers exported by the repository (see `packages/nestjs-exceptions/`) rather than Nest built-ins directly.
-- Avoid `console.log` in code;
+- Avoid `console.log` in code.
 
 ## Developer quick-start
 

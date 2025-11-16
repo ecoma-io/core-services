@@ -3,14 +3,14 @@
 ## Open project in devcontainer
 
 1. Install the [Dev Containers](vscode:extension/ms-vscode-remote.remote-containers) extension in VS Code.
-2. [Click here](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/ecoma-io/core-services) to checkout project with devcontainer. Or Open Vscode and From the Command Palette, choose: `Dev Containers: Clone Repository in Container Volume...`.
-3. Choose git branche
+2. [Click here](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/ecoma-io/core-services) to check out the project with a devcontainer. Or open VS Code and, from the Command Palette, choose: `Dev Containers: Clone Repository in Container Volume...`.
+3. Choose git branch
 
 **Notes**: `Clone Repository in Container Volume` is best to ensure performance. [See more](https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_use-clone-repository-in-container-volume)
 
 After the container is created, the project's dependencies will be installed and the development infrastructure services (MinIO, Postgres, Maildev, Redis, etc.) will be running.
 
-Visit http://dev.fbi.com and see document of projects and other tools:
+Visit http://dev.fbi.com to view project documentation and other tools:
 
 ## Monorepo structure & Nx usage
 
