@@ -1,0 +1,27 @@
+{
+  "name": "iam-command-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "e2e/iam-command-e2e/src",
+  "projectType": "application",
+  "tags": ["type:e2e"],
+  "implicitDependencies": [
+    "iam-command-service",
+    "infras-postgres",
+    "infras-rabbitmq",
+    "infras-redis",
+    "infras-esdb"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "e2e": {
+      "dependsOn": ["^up", "^docker:build"],
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "{projectRoot}/jest-e2e.config.mjs",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

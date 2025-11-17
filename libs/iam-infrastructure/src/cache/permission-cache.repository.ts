@@ -51,6 +51,17 @@ export class PermissionCacheRepository {
   }
 
   /**
+   * Alias for setUserPermissions (used by UserPermissionService)
+   */
+  async cacheUserPermissions(
+    userId: string,
+    tenantId: string,
+    permissions: string[]
+  ): Promise<void> {
+    return this.setUserPermissions(userId, tenantId, permissions);
+  }
+
+  /**
    * Invalidate user permissions cache.
    */
   async invalidateUserPermissions(
@@ -76,6 +87,13 @@ export class PermissionCacheRepository {
       this.logger.warn('Failed to parse combined permissions tree');
       return null;
     }
+  }
+
+  /**
+   * Alias for getCombinedPermissionsTree (backwards compatibility)
+   */
+  async getCombinedTree(): Promise<unknown | null> {
+    return this.getCombinedPermissionsTree();
   }
 
   /**

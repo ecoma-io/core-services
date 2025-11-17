@@ -38,6 +38,9 @@
       "@ecoma-io/integration-hybridize": [
         "packages/integration-hybridize/src/index.ts"
       ],
+      "@ecoma-io/integration-environment": [
+        "libs/integration-environment/src/index.ts"
+      ],
       "@ecoma-io/parse-env-file": ["packages/parse-env-file/src/index.ts"],
       "@ecoma-io/iam-domain": ["libs/iam-domain/src/index.ts"],
       "@ecoma-io/iam-worker-infrastructure": [

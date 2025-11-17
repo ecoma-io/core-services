@@ -1,0 +1,64 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "iam-projector-worker",
+  "sourceRoot": "apps/iam-projector-worker/src",
+  "projectType": "application",
+  "tags": ["type:apps", "scope:iam", "layer:presentation"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "webpack-cli build",
+        "args": ["--node-env=production"],
+        "cwd": "apps/resource-service"
+      },
+      "configurations": {
+        "development": {
+          "args": ["--node-env=development"]
+        }
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "resource-service:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "resource-service:build:development"
+        },
+        "production": {
+          "buildTarget": "resource-service:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{projectRoot}/coverage/"],
+      "options": {
+        "jestConfig": "apps/resource-service/jest.config.mjs"
+      }
+    },
+    "docker:build": {
+      "executor": "@ecoma-io/nx-docker:build",
+      "options": {
+        "name": "{projectName}"
+      }
+    },
+    "publish": {
+      "executor": "@ecoma-io/nx-docker:publish",
+      "options": {
+        "name": "ghcr.io/ecoma-io/{projectName}",
+        "syncRepoVersion": true
+      }
+    }
+  }
+}

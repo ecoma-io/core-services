@@ -70,4 +70,18 @@ export class MembershipReadRepository {
   async delete(membershipId: string): Promise<void> {
     await this.repo.delete({ membershipId });
   }
+
+  /**
+   * Find all memberships that have a specific role assigned.
+   * Used for cache invalidation when role permissions change.
+   *
+   * @param roleId - Role ID to search for
+   * @returns Array of memberships containing this role
+   */
+  async findByRoleId(roleId: string): Promise<MembershipEntity[]> {
+    return this.repo
+      .createQueryBuilder('membership')
+      .where(':roleId = ANY(membership.roleIds)', { roleId })
+      .getMany();
+  }
 }

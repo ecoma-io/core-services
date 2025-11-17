@@ -21,3 +21,9 @@ export * from './cache';
 
 // Search (Elasticsearch)
 export * from './search';
+
+// Authorization
+export * from './authorization';
+
+// Permissions
+export * from './permissions';
