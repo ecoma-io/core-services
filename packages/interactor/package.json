@@ -1,0 +1,11 @@
+{
+  "name": "@ecoma-io/interactor",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "@ecoma-io/common": "*",
+    "tslib": "^2.3.0",
+    "@ecoma-io/domain": "*"
+  }
+}

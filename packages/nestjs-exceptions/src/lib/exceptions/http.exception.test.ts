@@ -1,8 +1,7 @@
-import { ErrorResponse } from '@ecoma-io/common';
-import { IntrinsicException } from './intrinsic.exception';
+import { IntrinsicException, ErrorResponse } from '@ecoma-io/common';
 import { HttpException } from './http.exception';
 
-jest.mock('./intrinsic.exception');
+jest.mock('@ecoma-io/common');
 
 const mockIntrinsicException = IntrinsicException as jest.MockedClass<
   typeof IntrinsicException

@@ -1,4 +1,4 @@
-import { IntrinsicException } from '@ecoma-io/nestjs-exceptions';
+import { IntrinsicException } from '@ecoma-io/common';
 import { ClassConstructor, plainToClass } from 'class-transformer';
 import { validateSync } from 'class-validator';
 

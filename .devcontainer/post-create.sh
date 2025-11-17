@@ -13,9 +13,26 @@ CODE_TO_APPEND='
   precmd() { print -Pn "\e]133;D;%?\a" }
   preexec() { print -Pn "\e]133;C;\a" }
 '
-curl -L https://iterm2.com/shell_integration/zsh \-o ~/.iterm2_shell_integration.zsh
+curl -L https://iterm2.com/shell_integration/zsh -o ~/.iterm2_shell_integration.zsh || true
 echo "$CODE_TO_APPEND" >> "$ZSHRC_FILE"
-zsh -c "source ~/.zshrc"
+
+# Make sure pnpm is available. Prefer corepack if present, otherwise fallback to npm install -g pnpm
+if ! command -v pnpm >/dev/null 2>&1; then
+  if command -v corepack >/dev/null 2>&1; then
+    corepack enable
+    corepack prepare pnpm@latest --activate || true
+  else
+    npm install -g pnpm || true
+  fi
+fi
+
+# Reload zsh configuration so subsequent commands in this script can use updated PATH
+zsh -i -c "source ~/.zshrc"
+
+# Install dependencies and run project bootstrap
+pnpm install
+
+npx nx run-many -t up
 
 
 

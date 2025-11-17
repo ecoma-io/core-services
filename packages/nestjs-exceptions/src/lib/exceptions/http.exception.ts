@@ -1,5 +1,4 @@
-import { ErrorResponse } from '@ecoma-io/common';
-import { IntrinsicException } from './intrinsic.exception';
+import { IntrinsicException, ErrorResponse } from '@ecoma-io/common';
 
 /**
  * Generic HTTP exception used as a base for specific HTTP error classes.

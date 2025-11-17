@@ -7,7 +7,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "tslib": "^2.3.0",
-    "@ecoma-io/nestjs-exceptions": "*",
-    "@ecoma-io/expand-env": "*"
+    "@ecoma-io/expand-env": "*",
+    "@ecoma-io/common": "*"
   }
 }

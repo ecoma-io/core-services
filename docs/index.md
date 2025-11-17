@@ -1,3 +1,4 @@
 - [Overview](overview.md)
 - [Getting Started](getting-started.md)
 - [Architecture](architecture.md)
+- [ Identity and Access Management (IAM)](iam/architecture.md)

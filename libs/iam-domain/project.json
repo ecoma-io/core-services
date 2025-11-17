@@ -1,0 +1,20 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "iam-domain",
+  "root": "libs/iam-domain",
+  "sourceRoot": "libs/iam-domain/src",
+  "projectType": "library",
+  "tags": ["type:libs", "layer:domain", "scope:iam"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{projectRoot}/coverage/"],
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.mjs"
+      }
+    }
+  }
+}

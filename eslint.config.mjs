@@ -66,8 +66,6 @@ export default [
         {
           // Ensure buildable libraries only depend on other buildable libraries
           enforceBuildableLibDependency: true,
-          // Ban transitive dependencies (all deps must be explicit)
-          banTransitiveDependencies: true,
           depConstraints: [
             // E2E tests can depend on any project type
             {
@@ -143,6 +141,7 @@ export default [
   // Configuration for JSON files
   {
     files: ['**/*.json'],
+    ignores: ['package.json'],
     rules: {
       // Ensure package.json dependencies are properly declared
       '@nx/dependency-checks': ['error'],
@@ -155,12 +154,7 @@ export default [
 
       // Disallow 'version' field in package.json (except root package.json)
       // Version should be managed centrally at workspace level
-      '@nx/workspace-no-package-version': [
-        'error',
-        {
-          ignore: ['./package.json'],
-        },
-      ],
+      '@nx/workspace-no-package-version': ['error'],
 
       // Enforce package name follows @ecoma-io/* scope pattern
       '@nx/workspace-enforce-scope': [

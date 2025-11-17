@@ -6,7 +6,7 @@
   "dependencies": {
     "@testcontainers/toxiproxy": "^11.7.2",
     "testcontainers": "^11.7.2",
-    "uuid": "^13.0.0",
+    "uuid": "^10.0.0",
     "tslib": "^2.3.0"
   }
 }

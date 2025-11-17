@@ -1,0 +1,11 @@
+{
+  "name": "@ecoma-io/domain",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "@ecoma-io/common": "*",
+    "tslib": "^2.3.0",
+    "uuid": "^10.0.0"
+  }
+}

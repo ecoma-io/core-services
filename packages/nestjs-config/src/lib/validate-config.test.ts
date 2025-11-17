@@ -1,5 +1,6 @@
+import 'reflect-metadata';
 import { validateConfig } from './validate-config';
-import { IntrinsicException } from '@ecoma-io/nestjs-exceptions';
+import { IntrinsicException } from '@ecoma-io/common';
 import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 class TestConfig {
