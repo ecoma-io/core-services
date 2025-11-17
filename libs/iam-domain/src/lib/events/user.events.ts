@@ -8,8 +8,8 @@ export type EventMetadata = Record<string, unknown> | undefined;
 
 function ensureMetadata(md?: EventMetadata): Record<string, unknown> {
   const base: Record<string, unknown> = md ? { ...md } : {};
-  if (!base.correlationId) base.correlationId = uuidv7();
-  if (!base.causationId) base.causationId = uuidv7();
+  if (!base['correlationId']) base['correlationId'] = uuidv7();
+  if (!base['causationId']) base['causationId'] = uuidv7();
   return base;
 }
 

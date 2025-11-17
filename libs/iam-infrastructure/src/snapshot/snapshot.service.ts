@@ -171,11 +171,11 @@ export class SnapshotService {
     const state = (aggregate as any)._state as Record<string, unknown>;
     // Try common ID fields
     const id =
-      (state.userId as string) ||
-      (state.tenantId as string) ||
-      (state.roleId as string) ||
-      (state.membershipId as string) ||
-      (state.id as string);
+      (state['userId'] as string) ||
+      (state['tenantId'] as string) ||
+      (state['roleId'] as string) ||
+      (state['membershipId'] as string) ||
+      (state['id'] as string);
 
     if (!id) {
       throw new Error('Cannot determine aggregate ID from state');

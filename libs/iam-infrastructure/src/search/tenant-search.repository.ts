@@ -104,15 +104,13 @@ export class TenantSearchRepository {
     if (!exists) {
       await this.client.indices.create({
         index: this.indexName,
-        body: {
-          mappings: {
-            properties: {
-              tenantId: { type: 'keyword' },
-              name: { type: 'text' },
-              namespace: { type: 'keyword' },
-              metadata: { type: 'object', enabled: false },
-              createdAt: { type: 'date' },
-            },
+        mappings: {
+          properties: {
+            tenantId: { type: 'keyword' },
+            name: { type: 'text' },
+            namespace: { type: 'keyword' },
+            metadata: { type: 'object', enabled: false },
+            createdAt: { type: 'date' },
           },
         },
       });

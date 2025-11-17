@@ -1,10 +1,6 @@
 import { DataSource } from 'typeorm';
 import { Redis } from 'ioredis';
-import {
-  S3Client,
-  CreateBucketCommand,
-  PutBucketPolicyCommand,
-} from '@aws-sdk/client-s3';
+import { S3Client, CreateBucketCommand } from '@aws-sdk/client-s3';
 import {
   IntegrationEnvironment,
   ProxiedService,
@@ -15,6 +11,7 @@ import { MaybeAsync } from '@ecoma-io/common';
 import { Client } from 'pg';
 import { MongoClient, Db } from 'mongodb';
 import { Client as ElasticsearchClient } from '@elastic/elasticsearch';
+import * as http from 'http';
 import * as amqp from 'amqplib';
 import { EventStoreDBClient } from '@eventstore/db-client';
 
@@ -53,6 +50,7 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
       'RABBITMQ_AMQP_PORT',
       'RABBITMQ_USERNAME',
       'RABBITMQ_PASSWORD',
+      'RABBITMQ_MANAGEMENT_PORT',
       'ESDB_HTTP_PORT',
       'ELASTIC_PORT',
       'ELASTIC_PASSWORD',
@@ -214,33 +212,26 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
 
   /**
    * Gets a proxied or direct service for MinIO.
-   * @param options {object} - Configuration options for the MinIO service.
-   * @param options.isPublicBucket {boolean} - Whether to make the bucket public. Defaults to false.
+   * Always creates a private bucket for the current test environment.
    * @returns {Promise<(ProxiedService | Service) & { bucketName: string; s3Client: S3Client }>} A promise resolving to the MinIO service with bucket name and S3 client.
-   * @remarks Uses MINIO_PORT env var. Assumes proxy is configured if enabled. Creates a test bucket and optionally sets a public policy.
+   * @remarks Uses MINIO_PORT env var. Assumes proxy is configured if enabled. Creates a private test bucket.
    */
-  async getMinio(
-    options: { isPublicBucket: boolean } = {
-      isPublicBucket: false,
-    }
-  ): Promise<
+  async getMinio(): Promise<
     (ProxiedService | Service) & { bucketName: string; s3Client: S3Client }
   > {
-    const cacheKey = `minio-${options.isPublicBucket}`;
+    const cacheKey = 'minio';
     if (this.serviceCache.has(cacheKey)) {
       return this.serviceCache.get(cacheKey) as Promise<
         (ProxiedService | Service) & { bucketName: string; s3Client: S3Client }
       >;
     }
 
-    const promise = this.createMinioService(options);
+    const promise = this.createMinioService();
     this.serviceCache.set(cacheKey, promise);
     return promise;
   }
 
-  private async createMinioService(options: {
-    isPublicBucket: boolean;
-  }): Promise<
+  private async createMinioService(): Promise<
     (ProxiedService | Service) & { bucketName: string; s3Client: S3Client }
   > {
     const service = await this.createService(
@@ -257,32 +248,11 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
       forcePathStyle: true,
     });
 
-    const bucketName = `test-${options.isPublicBucket ? 'public' : 'private'}-${this.id}`;
+    const bucketName = `test-private-${this.id}`;
 
     try {
-      // Create bucket
+      // Create private bucket (no public policy applied)
       await s3Client.send(new CreateBucketCommand({ Bucket: bucketName }));
-
-      // If public, set bucket policy
-      if (options.isPublicBucket) {
-        const policy = {
-          Version: '2012-10-17',
-          Statement: [
-            {
-              Effect: 'Allow',
-              Principal: '*',
-              Action: 's3:GetObject',
-              Resource: `arn:aws:s3:::${bucketName}/*`,
-            },
-          ],
-        };
-        await s3Client.send(
-          new PutBucketPolicyCommand({
-            Bucket: bucketName,
-            Policy: JSON.stringify(policy),
-          })
-        );
-      }
     } catch (error) {
       throw new Error(`Failed to setup MinIO bucket: ${error}`);
     }
@@ -384,7 +354,7 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
   async getElasticsearch(): Promise<
     (ProxiedService | Service) & {
       elasticsearchClient: ElasticsearchClient;
-      indexPrefix: string;
+      indexName: string;
     }
   > {
     const cacheKey = 'elasticsearch';
@@ -392,7 +362,7 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
       return this.serviceCache.get(cacheKey) as Promise<
         (ProxiedService | Service) & {
           elasticsearchClient: ElasticsearchClient;
-          indexPrefix: string;
+          indexName: string;
         }
       >;
     }
@@ -405,14 +375,14 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
   private async createElasticsearchService(): Promise<
     (ProxiedService | Service) & {
       elasticsearchClient: ElasticsearchClient;
-      indexPrefix: string;
+      indexName: string;
     }
   > {
     const service = await this.createService(
       `elasticsearch-${this.id}`,
       process.env['ELASTIC_PORT']
     );
-    const indexPrefix = `test_${this.id}`;
+    const indexName = `test_${this.id}`;
 
     const elasticsearchClient = new ElasticsearchClient({
       node: `http://${service.host}:${service.port}`,
@@ -425,6 +395,21 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
     try {
       // Verify connection
       await elasticsearchClient.ping();
+      // Create a dedicated index for this test environment
+      // Ignore errors if index already exists in rare reuse scenarios
+      try {
+        // indices API is available on the client; cast narrowly to avoid any
+        const indicesApi = (
+          elasticsearchClient as unknown as {
+            indices?: { create: (args: { index: string }) => Promise<unknown> };
+          }
+        ).indices;
+        if (indicesApi?.create) {
+          await indicesApi.create({ index: indexName });
+        }
+      } catch {
+        // no-op
+      }
     } catch (error) {
       throw new Error(`Failed to connect to Elasticsearch: ${error}`);
     }
@@ -433,7 +418,7 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
       await elasticsearchClient.close();
     });
 
-    return { elasticsearchClient, indexPrefix, ...service };
+    return { elasticsearchClient, indexName, ...service };
   }
 
   /**
@@ -466,14 +451,31 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
     (ProxiedService | Service) & {
       connection: amqp.ChannelModel;
       channel: amqp.Channel;
+      vhost: string;
     }
   > {
     const service = await this.createService(
       `rabbitmq-${this.id}`,
       process.env['RABBITMQ_AMQP_PORT']
     );
+    const mgmtService = await this.createService(
+      `rabbitmq-management-${this.id}`,
+      process.env['RABBITMQ_MANAGEMENT_PORT']
+    );
 
-    const connectionString = `amqp://${process.env['RABBITMQ_USERNAME']}:${process.env['RABBITMQ_PASSWORD']}@${service.host}:${service.port}`;
+    const vhost = `test_${this.id}`;
+
+    await this.ensureRabbitMqVhost(
+      mgmtService.host,
+      Number(process.env['RABBITMQ_MANAGEMENT_PORT']),
+      vhost,
+      process.env['RABBITMQ_USERNAME'] as string,
+      process.env['RABBITMQ_PASSWORD'] as string
+    );
+
+    const connectionString = `amqp://${process.env['RABBITMQ_USERNAME']}:${process.env['RABBITMQ_PASSWORD']}@${service.host}:${service.port}/${encodeURIComponent(
+      vhost
+    )}`;
 
     let connection: amqp.ChannelModel;
     let channel: amqp.Channel;
@@ -489,7 +491,73 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
       await connection.close();
     });
 
-    return { connection, channel, ...service };
+    return { connection, channel, vhost, ...service };
+  }
+
+  private async ensureRabbitMqVhost(
+    host: string,
+    port: number,
+    vhost: string,
+    username: string,
+    password: string
+  ): Promise<void> {
+    const auth = Buffer.from(`${username}:${password}`).toString('base64');
+
+    // Create vhost
+    await new Promise<void>((resolve, reject) => {
+      const req = http.request(
+        {
+          host,
+          port,
+          method: 'PUT',
+          path: `/api/vhosts/${encodeURIComponent(vhost)}`,
+          headers: {
+            Authorization: `Basic ${auth}`,
+          },
+        },
+        (res) => {
+          const ok =
+            (res.statusCode ?? 0) >= 200 && (res.statusCode ?? 0) < 300;
+          if (ok) resolve();
+          else
+            reject(new Error(`Failed to create vhost: HTTP ${res.statusCode}`));
+        }
+      );
+      req.on('error', reject);
+      req.end();
+    });
+
+    // Set permissions for the user on that vhost
+    await new Promise<void>((resolve, reject) => {
+      const body = JSON.stringify({ configure: '.*', write: '.*', read: '.*' });
+      const req = http.request(
+        {
+          host,
+          port,
+          method: 'PUT',
+          path: `/api/permissions/${encodeURIComponent(vhost)}/${encodeURIComponent(
+            username
+          )}`,
+          headers: {
+            Authorization: `Basic ${auth}`,
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(body),
+          },
+        },
+        (res) => {
+          const ok =
+            (res.statusCode ?? 0) >= 200 && (res.statusCode ?? 0) < 300;
+          if (ok) resolve();
+          else
+            reject(
+              new Error(`Failed to set permissions: HTTP ${res.statusCode}`)
+            );
+        }
+      );
+      req.on('error', reject);
+      req.write(body);
+      req.end();
+    });
   }
 
   /**

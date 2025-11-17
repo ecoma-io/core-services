@@ -10,7 +10,7 @@ The class is configured to work with the `dev-infras` Docker network (defined in
 
 ## Features
 
-- **Automatic Setup**: Methods that not only access services but also initialize test resources (databases, Redis databases, MinIO buckets, MongoDB databases, Elasticsearch indices, RabbitMQ channels, EventStoreDB streams)
+- **Automatic Setup**: Methods that not only access services but also initialize test resources (databases, Redis DB selection, MinIO buckets, MongoDB databases, dedicated Elasticsearch indices, RabbitMQ vhosts/channels, EventStoreDB streams)
 - **Service Caching**: Services are initialized once and cached for subsequent calls, improving performance in test suites
 - **Convenience Methods**: Pre-built methods for common services (PostgreSQL, Redis, MinIO, Maildev, MongoDB, Elasticsearch, RabbitMQ, EventStoreDB)
 - **Environment Variable Integration**: Automatically uses env vars like `POSTGRES_PORT`, `REDIS_PORT`, `MONGO_PORT`, `ELASTIC_PORT`, etc.
@@ -39,13 +39,13 @@ await env.start();
 // Access services with automatic setup
 const { dataSource } = await env.getPostgres(); // Creates test database
 const { redis } = await env.getRedis(); // Selects DB and sets test key
-const { bucketName, s3Client } = await env.getMinio(); // Creates bucket
+const { bucketName, s3Client } = await env.getMinio(); // Creates private bucket
 const maildevService = await env.getMaildev(); // Simple service access
 
 // New services
 const { mongoClient, db } = await env.getMongo(); // Connects to MongoDB and creates test database
-const { elasticsearchClient, indexPrefix } = await env.getElasticsearch(); // Connects to Elasticsearch with index prefix
-const { connection, channel } = await env.getRabbitMQ(); // Connects to RabbitMQ and creates channel
+const { elasticsearchClient, indexName } = await env.getElasticsearch(); // Creates dedicated index per env
+const { connection, channel, vhost } = await env.getRabbitMQ(); // Creates vhost per env and connects
 const { eventStoreClient, streamPrefix } = await env.getEventStoreDB(); // Connects to EventStoreDB with stream prefix
 
 await env.stop();
@@ -58,37 +58,46 @@ await env.stop();
 The library expects the following environment variables to be set:
 
 **PostgreSQL:**
+
 - `POSTGRES_PORT`: Port for PostgreSQL service
 - `POSTGRES_USERNAME`: Username for PostgreSQL
 - `POSTGRES_PASSWORD`: Password for PostgreSQL
 
 **Redis:**
+
 - `REDIS_PORT`: Port for Redis service
 - `REDIS_PASSWORD`: Password for Redis service
 
 **MinIO:**
+
 - `MINIO_PORT`: Port for MinIO service
 - `MINIO_KEY`: Access key for MinIO
 - `MINIO_SECRET`: Secret key for MinIO
 
 **Maildev:**
+
 - `MAILDEV_WEB_PORT`: Port for Maildev web interface
 
 **MongoDB:**
+
 - `MONGO_PORT`: Port for MongoDB service
 - `MONGO_USERNAME`: Username for MongoDB
 - `MONGO_PASSWORD`: Password for MongoDB
 
 **Elasticsearch:**
+
 - `ELASTIC_PORT`: Port for Elasticsearch service
 - `ELASTIC_PASSWORD`: Password for Elasticsearch (username is 'elastic')
 
 **RabbitMQ:**
+
 - `RABBITMQ_AMQP_PORT`: Port for RabbitMQ AMQP protocol
 - `RABBITMQ_USERNAME`: Username for RabbitMQ
 - `RABBITMQ_PASSWORD`: Password for RabbitMQ
+- `RABBITMQ_MANAGEMENT_PORT`: Port for RabbitMQ Management HTTP API (used to create per-env vhosts)
 
 **EventStoreDB:**
+
 - `ESDB_HTTP_PORT`: Port for EventStoreDB HTTP interface
 
 **Note**: All environment variables are required. The constructor will throw an error if any required environment variable is not set.
@@ -111,12 +120,11 @@ const { redis } = await env.getRedis();
 // Use redis client for your tests
 ```
 
-#### MinIO with Public Bucket
+#### MinIO (always private)
 
 ```typescript
-const { bucketName, s3Client } = await env.getMinio({ isPublicBucket: true });
-// Bucket is created with public read policy
-// Use s3Client and bucketName for your tests
+const { bucketName, s3Client } = await env.getMinio();
+// Private bucket `test-private-${env.id}` is created
 ```
 
 #### MongoDB with Test Database
@@ -128,22 +136,22 @@ const { mongoClient, db, databaseName } = await env.getMongo();
 // Example: await db.collection('users').insertOne({ name: 'test' });
 ```
 
-#### Elasticsearch with Index Prefix
+#### Elasticsearch with Dedicated Index
 
 ```typescript
-const { elasticsearchClient, indexPrefix } = await env.getElasticsearch();
+const { elasticsearchClient, indexName } = await env.getElasticsearch();
 // Elasticsearch client is connected and verified via ping
-// Use indexPrefix for creating test indices
-// Example: await elasticsearchClient.index({ index: `${indexPrefix}_users`, body: { name: 'test' } });
+// Dedicated index is created: `test_${env.id}`
+// Example: await elasticsearchClient.index({ index: indexName, document: { name: 'test' } });
 ```
 
-#### RabbitMQ with Channel
+#### RabbitMQ with Per-Env Vhost
 
 ```typescript
-const { connection, channel } = await env.getRabbitMQ();
-// RabbitMQ connection and channel are ready
-// Use channel for queue and exchange operations
-// Example: await channel.assertQueue('test_queue');
+const { connection, channel, vhost } = await env.getRabbitMQ();
+// Management API created vhost: `test_${env.id}` and granted permissions
+// AMQP connection is opened against that vhost; channel is ready
+// Example: await channel.assertQueue(`${vhost}::test_queue`);
 ```
 
 #### EventStoreDB with Stream Prefix
@@ -180,11 +188,11 @@ class CustomIntegrationEnvironment extends BaseIntegrationEnvironment {
 
 - `getPostgres(): Promise<(ProxiedService | Service) & { dataSource: DataSource; databaseName: string }>` - Gets PostgreSQL service with initialized DataSource and created test database
 - `getRedis(): Promise<(ProxiedService | Service) & { redis: Redis }>` - Gets Redis service with initialized Redis client, selected database, and test key
-- `getMinio(options?: { isPublicBucket?: boolean }): Promise<(ProxiedService | Service) & { bucketName: string; s3Client: S3Client }>` - Gets MinIO service with created bucket and optional public policy
+- `getMinio(): Promise<(ProxiedService | Service) & { bucketName: string; s3Client: S3Client }>` - Gets MinIO service and creates a private bucket per env
 - `getMaildev(): Promise<ProxiedService | Service>` - Gets Maildev service
 - `getMongo(): Promise<(ProxiedService | Service) & { mongoClient: MongoClient; db: Db; databaseName: string }>` - Gets MongoDB service with connected client and test database
-- `getElasticsearch(): Promise<(ProxiedService | Service) & { elasticsearchClient: ElasticsearchClient; indexPrefix: string }>` - Gets Elasticsearch service with connected client and index prefix for test indices
-- `getRabbitMQ(): Promise<(ProxiedService | Service) & { connection: ChannelModel; channel: Channel }>` - Gets RabbitMQ service with connection and channel ready for use
+- `getElasticsearch(): Promise<(ProxiedService | Service) & { elasticsearchClient: ElasticsearchClient; indexName: string }>` - Gets Elasticsearch service and creates a dedicated index per env
+- `getRabbitMQ(): Promise<(ProxiedService | Service) & { connection: ChannelModel; channel: Channel; vhost: string }>` - Gets RabbitMQ service, creates a per-env vhost via management API, and returns the connection, channel, and vhost
 - `getEventStoreDB(): Promise<(ProxiedService | Service) & { eventStoreClient: EventStoreDBClient; streamPrefix: string }>` - Gets EventStoreDB service with connected client and stream prefix for test streams
 
 All methods use the corresponding environment variables and create services with names prefixed by the environment ID.

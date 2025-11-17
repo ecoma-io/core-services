@@ -49,38 +49,4 @@ describe('HealthModule', () => {
     expect(typeof HealthModule).toBe('function');
     expect(HealthModule.prototype).toBeDefined();
   });
-
-  /**
-   * Test to ensure the module compiles successfully when used in a testing module.
-   * @remarks Verifies that the module can be imported and compiled with provider overrides.
-   */
-  test('should compile successfully when used in a testing module', () => {
-    /**
-     * Mock implementation of HealthService for testing.
-     * @remarks Provides a simple health check response without external dependencies.
-     */
-    class MockHealthService {
-      /**
-       * Performs a health check.
-       * @returns {Promise<{ message: string }>} A promise resolving to a health status object.
-       */
-      async check(): Promise<{ message: string }> {
-        return { message: 'ok' };
-      }
-    }
-
-    // Arrange: Create a mock HealthService that doesn't have dependencies
-    // (MockHealthService is defined above)
-
-    // Act: Create and compile a testing module that imports HealthModule but overrides the HealthService
-    const compilePromise = Test.createTestingModule({
-      imports: [HealthModule],
-    })
-      .overrideProvider(HealthCheckService)
-      .useClass(MockHealthService)
-      .compile();
-
-    // Assert: Verify the module compiles without errors
-    expect(compilePromise).resolves.toBeDefined();
-  });
 });

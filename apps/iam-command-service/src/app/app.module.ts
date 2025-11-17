@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { CommandsController } from './controllers/commands.controller';
-import { HealthModule } from '../health/health.module';
+import { HealthModule } from '@ecoma-io/iam-infrastructure';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppConfigService } from './app.config-service';
 
 /**
  * IAM Command Service - Write Side (CQRS)
@@ -19,6 +21,13 @@ import { HealthModule } from '../health/health.module';
  */
 @Module({
   imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      ...new AppConfigService().getDatabaseConfig(),
+      entities: [], // Read models will be added later
+      synchronize: false, // Use migrations for schema management
+      logging: process.env['NODE_ENV'] === 'development',
+    }),
     // TODO: Wire infrastructure modules when ready
     // EventStoreModule.forRootAsync({ ... }),
     // RabbitMQInfraModule.forRootAsync({ ... }),

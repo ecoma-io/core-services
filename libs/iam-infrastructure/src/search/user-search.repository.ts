@@ -103,16 +103,14 @@ export class UserSearchRepository {
     if (!exists) {
       await this.client.indices.create({
         index: this.indexName,
-        body: {
-          mappings: {
-            properties: {
-              userId: { type: 'keyword' },
-              email: { type: 'text' },
-              firstName: { type: 'text' },
-              lastName: { type: 'text' },
-              status: { type: 'keyword' },
-              createdAt: { type: 'date' },
-            },
+        mappings: {
+          properties: {
+            userId: { type: 'keyword' },
+            email: { type: 'text' },
+            firstName: { type: 'text' },
+            lastName: { type: 'text' },
+            status: { type: 'keyword' },
+            createdAt: { type: 'date' },
           },
         },
       });

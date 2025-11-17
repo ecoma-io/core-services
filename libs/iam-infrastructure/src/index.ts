@@ -27,3 +27,6 @@ export * from './authorization';
 
 // Permissions
 export * from './permissions';
+
+// Health
+export * from './health';

@@ -14,7 +14,7 @@
       "options": {
         "command": "webpack-cli build",
         "args": ["--node-env=production"],
-        "cwd": "apps/resource-service"
+        "cwd": "{projectRoot}"
       },
       "configurations": {
         "development": {

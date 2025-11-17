@@ -58,7 +58,7 @@ export class PermissionCacheModule {
           db: config.db ?? 0,
         });
       },
-      inject: options.inject,
+      inject: options.inject as never[],
     };
 
     return {

@@ -38,10 +38,10 @@ export class TestEnvironment extends BaseIntegrationEnvironment {
 
   /**
    * Initializes and starts the required application containers for the test environment.
-   * Sets up PostgreSQL, MinIO, resource migration, and resource service containers.
+   * Sets up PostgreSQL, Redis, EventStore, RabbitMQ, and IAM command service containers.
    * @returns {Promise<Array<StartedTestContainer>>} A promise that resolves to an array of started test containers.
    * @remarks This method configures environment variables for each container, applies wait strategies for readiness,
-   * and ensures the DataSource is available for database operations. Containers include a migration runner and the main service.
+   * and ensures the DataSource is available for database operations. All services are proxied via ToxiProxy for resilience testing.
    */
   protected async initAppContainers(): Promise<Array<StartedTestContainer>> {
     // Retrieve PostgreSQL configuration and DataSource
@@ -53,9 +53,15 @@ export class TestEnvironment extends BaseIntegrationEnvironment {
     } = await this.getPostgres();
     this.dataSource = dataSource;
 
-    // Retrieve MinIO configuration
+    // Retrieve Redis configuration
     const { host: redisHost, port: redistPort, redis } = await this.getRedis();
     this.redis = redis;
+
+    // Retrieve EventStoreDB configuration
+    const { host: esdbHost, port: esdbPort } = await this.getEventStoreDB();
+
+    // Retrieve RabbitMQ configuration
+    const { host: rabbitmqHost, port: rabbitmqPort } = await this.getRabbitMQ();
 
     const iamCommandService = await new GenericContainer('iam-command-service')
       .withEnvironment({
@@ -70,6 +76,9 @@ export class TestEnvironment extends BaseIntegrationEnvironment {
         REDIS_HOST: redisHost,
         REDIS_PORT: redistPort.toString(),
         REDIS_PASSWORD: process.env['REDIS_PASSWORD'],
+        // EventStore and RabbitMQ configuration via ToxiProxy
+        EVENTSTORE_CONNECTION_STRING: `esdb://${esdbHost}:${esdbPort}?tls=false`,
+        RABBITMQ_URI: `amqp://${process.env['RABBITMQ_USERNAME']}:${process.env['RABBITMQ_PASSWORD']}@${rabbitmqHost}:${rabbitmqPort}`,
       })
       .withExposedPorts(3000)
       .withLogConsumer(this.createLogConsumer('resource-service'))

@@ -1,5 +1,6 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import type { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
 import {
   UserEntity,
   TenantEntity,
@@ -25,10 +26,10 @@ import {
 @Module({})
 export class ReadModelModule {
   static forRoot(options?: {
-    entities?: unknown[];
+    entities?: EntityClassOrSchema[];
     synchronize?: boolean;
   }): DynamicModule {
-    const entities = [
+    const entities: EntityClassOrSchema[] = [
       UserEntity,
       TenantEntity,
       RoleEntity,

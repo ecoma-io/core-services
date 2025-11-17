@@ -2,13 +2,11 @@ import axios from 'axios';
 import { TestEnvironment } from '../support/test.environment';
 import { ProxiedService } from '@ecoma-io/integration-hybridize';
 import { DataSource } from 'typeorm';
-import { S3Client } from '@aws-sdk/client-s3';
 
 interface Context {
   baseUrl: string;
   postgresProxy: ProxiedService;
-  minioProxy: ProxiedService;
-  minioBucketName: string;
+  redisProxy: ProxiedService;
   postgres: {
     getHost(): string;
     getPort(): number;
@@ -19,7 +17,7 @@ interface Context {
 }
 
 /**
- * Test suite for health check endpoints in the resource service.
+ * Test suite for health check endpoints in the IAM command service.
  * This suite verifies liveness and readiness health checks, including scenarios with simulated failures using ToxiProxy.
  */
 describe('Healthcheck', () => {
@@ -36,15 +34,11 @@ describe('Healthcheck', () => {
       dataSource: DataSource;
       databaseName: string;
     };
-    const minio = (await environment.getMinio()) as ProxiedService & {
-      bucketName: string;
-      s3Client: S3Client;
-    };
+    const redis = (await environment.getRedis()) as ProxiedService;
     context = {
       baseUrl: `http://localhost:${environment.resourceServiceContainer.getMappedPort(3000)}`,
       postgresProxy: postgres,
-      minioProxy: minio,
-      minioBucketName: minio.bucketName,
+      redisProxy: redis,
       postgres: {
         getHost: () => postgres.host,
         getPort: () => postgres.port,
@@ -79,7 +73,7 @@ describe('Healthcheck', () => {
   });
 
   /**
-   * Tests the readiness health check endpoint when database and storage are up.
+   * Tests the readiness health check endpoint when database is up.
    */
   it('GET /health/readiness -> 200 with database UP', async () => {
     // Arrange: No specific setup needed beyond environment
@@ -88,13 +82,11 @@ describe('Healthcheck', () => {
     // Act: Make GET request to readiness endpoint
     const res = await axios.get(`${context.baseUrl}/health/readiness`);
 
-    // Assert: Verify response status, message, and health of database and storage
+    // Assert: Verify response status, message, and health of database
     expect(res.status).toBe(200);
     expect(res.data?.message).toBe(expectedMessage);
     expect(res.data?.data?.database).toBeDefined();
     expect(String(res.data.data.database)).toBe('up');
-    expect(res.data?.data?.storage).toBeDefined();
-    expect(String(res.data.data.storage)).toBe('up');
   });
 
   /**
@@ -116,7 +108,6 @@ describe('Healthcheck', () => {
       expect(status).toBe(503);
       expect(data?.message).toBe('Service is not ready');
       expect(data?.details?.database).toBe('down');
-      expect(data?.details?.storage).toBeDefined();
     } finally {
       // Cleanup: Re-enable proxy after test
       await context.postgresProxy.setEnabled(true);
@@ -124,28 +115,132 @@ describe('Healthcheck', () => {
   });
 
   /**
-   * Tests the readiness health check endpoint when S3 storage connection is down using ToxiProxy.
+   * Edge Case: Tests readiness recovery after database comes back online.
+   * Verifies that health check can recover from failure state.
    */
-  it('GET /health/readiness -> 503 when S3 storage connection is DOWN (ToxiProxy)', async () => {
-    // Arrange: Disable Minio proxy to simulate storage failure
-    await context.minioProxy.setEnabled(false);
+  it('GET /health/readiness -> recovers to 200 after database reconnects', async () => {
+    // Arrange: Disable database to cause failure
+    await context.postgresProxy.setEnabled(false);
+
+    // Act 1: Verify service is unhealthy
+    try {
+      await axios.get(`${context.baseUrl}/health/readiness`);
+      fail('Expected service to be unhealthy');
+    } catch (error) {
+      expect(error.response.status).toBe(503);
+    }
+
+    // Act 2: Re-enable database
+    await context.postgresProxy.setEnabled(true);
+    // Wait a bit for connection to re-establish
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Act 3: Verify service recovers
+    const res = await axios.get(`${context.baseUrl}/health/readiness`);
+
+    // Assert: Service should be healthy again
+    expect(res.status).toBe(200);
+    expect(res.data?.message).toBe('Service is ready');
+    expect(String(res.data.data.database)).toBe('up');
+  });
+
+  /**
+   * Edge Case: Tests liveness endpoint remains accessible even when database is down.
+   * Liveness should not depend on external dependencies.
+   */
+  it('GET /health/liveness -> 200 even when database is DOWN', async () => {
+    // Arrange: Disable database
+    await context.postgresProxy.setEnabled(false);
 
     try {
-      // Act: Attempt GET request to readiness endpoint, expecting failure
-      await axios.get(`${context.baseUrl}/health/readiness`);
+      // Act: Request liveness endpoint
+      const res = await axios.get(`${context.baseUrl}/health/liveness`);
 
-      // Assert: Fail the test if request succeeds unexpectedly
-      fail('Expected request to fail, but it succeeded');
-    } catch (error) {
-      // Assert: Verify 503 status and error details for storage down
-      const { status, data } = error.response;
-      expect(status).toBe(503);
-      expect(data?.message).toBe('Service is not ready');
-      expect(data?.details?.storage).toBe('down');
-      expect(data?.details?.database).toBeDefined();
+      // Assert: Liveness should still return 200 (independent of database)
+      expect(res.status).toBe(200);
+      expect(res.data).toEqual({ message: 'Service still alive' });
     } finally {
-      // Cleanup: Re-enable proxy after test
-      await context.minioProxy.setEnabled(true);
+      // Cleanup: Re-enable database
+      await context.postgresProxy.setEnabled(true);
     }
+  });
+
+  /**
+   * Edge Case: Tests concurrent readiness checks.
+   * Verifies thread-safety and proper handling of parallel requests.
+   */
+  it('GET /health/readiness -> handles concurrent requests correctly', async () => {
+    // Arrange: Prepare multiple concurrent requests
+    const requestCount = 10;
+    const requests = Array.from({ length: requestCount }, () =>
+      axios.get(`${context.baseUrl}/health/readiness`)
+    );
+
+    // Act: Execute all requests concurrently
+    const results = await Promise.all(requests);
+
+    // Assert: All requests should succeed with consistent response
+    results.forEach((res) => {
+      expect(res.status).toBe(200);
+      expect(res.data?.message).toBe('Service is ready');
+      expect(String(res.data.data.database)).toBe('up');
+    });
+  });
+
+  /**
+   * Edge Case: Tests readiness check response structure consistency.
+   * Verifies all required fields are present in healthy response.
+   */
+  it('GET /health/readiness -> returns complete response structure', async () => {
+    // Act: Request readiness endpoint
+    const res = await axios.get(`${context.baseUrl}/health/readiness`);
+
+    // Assert: Verify complete response structure
+    expect(res.status).toBe(200);
+    expect(res.data).toHaveProperty('message');
+    expect(res.data).toHaveProperty('data');
+    expect(res.data.data).toHaveProperty('database');
+    expect(typeof res.data.message).toBe('string');
+    expect(['up', 'down']).toContain(String(res.data.data.database));
+  });
+
+  /**
+   * Edge Case: Tests liveness endpoint response time.
+   * Liveness should be fast since it has no external dependencies.
+   */
+  it('GET /health/liveness -> responds quickly (< 100ms)', async () => {
+    // Arrange: Record start time
+    const startTime = Date.now();
+
+    // Act: Request liveness endpoint
+    const res = await axios.get(`${context.baseUrl}/health/liveness`);
+    const responseTime = Date.now() - startTime;
+
+    // Assert: Verify fast response
+    expect(res.status).toBe(200);
+    expect(responseTime).toBeLessThan(100);
+  });
+
+  /**
+   * Edge Case: Tests readiness with multiple rapid requests during database recovery.
+   * Simulates scenarios where database is flapping.
+   */
+  it('GET /health/readiness -> handles rapid state changes gracefully', async () => {
+    // Arrange & Act: Rapidly toggle database state
+    await context.postgresProxy.setEnabled(false);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await context.postgresProxy.setEnabled(true);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await context.postgresProxy.setEnabled(false);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await context.postgresProxy.setEnabled(true);
+    await new Promise((resolve) => setTimeout(resolve, 500)); // Wait for stabilization
+
+    // Act: Request readiness after state changes
+    const res = await axios.get(`${context.baseUrl}/health/readiness`);
+
+    // Assert: Service should eventually report correct state
+    expect(res.status).toBe(200);
+    expect(String(res.data.data.database)).toBe('up');
   });
 });

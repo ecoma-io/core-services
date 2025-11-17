@@ -43,6 +43,9 @@ jest.mock('@elastic/elasticsearch', () => ({
   Client: jest.fn().mockImplementation(() => ({
     ping: jest.fn().mockResolvedValue(undefined),
     close: jest.fn().mockResolvedValue(undefined),
+    indices: {
+      create: jest.fn().mockResolvedValue(undefined),
+    },
   })),
 }));
 
@@ -62,6 +65,31 @@ jest.mock('@eventstore/db-client', () => ({
     }),
   },
 }));
+
+// Mock http for RabbitMQ management API at top-level
+let httpRequestCalls: any[] = [];
+jest.mock('http', () => {
+  const request = jest.fn((options: any, cb: any) => {
+    httpRequestCalls.push(options);
+    // simulate a successful response; vary status for vhost/permissions per call order
+    const callIndex = httpRequestCalls.length;
+    const statusCode = callIndex % 2 === 1 ? 201 : 204; // 1st vhost create, 2nd permissions
+    const res = {
+      statusCode,
+      on: jest.fn((event: string, handler: any) => {
+        if (event === 'data') return;
+        if (event === 'end') handler();
+      }),
+    } as any;
+    setImmediate(() => cb(res));
+    return {
+      write: jest.fn(),
+      end: jest.fn(),
+      on: jest.fn(),
+    } as any;
+  });
+  return { request };
+});
 
 // Mock integration-hybridize
 jest.mock('@ecoma-io/integration-hybridize', () => {
@@ -103,6 +131,7 @@ describe('BaseIntegrationEnvironment', () => {
     process.env['RABBITMQ_AMQP_PORT'] = '5672';
     process.env['RABBITMQ_USERNAME'] = 'rabbitmq';
     process.env['RABBITMQ_PASSWORD'] = 'rabbitmq';
+    process.env['RABBITMQ_MANAGEMENT_PORT'] = '15672';
     process.env['ESDB_HTTP_PORT'] = '2113';
     process.env['ELASTIC_PORT'] = '9200';
     process.env['ELASTIC_PASSWORD'] = 'elastic';
@@ -128,6 +157,7 @@ describe('BaseIntegrationEnvironment', () => {
     delete process.env['RABBITMQ_AMQP_PORT'];
     delete process.env['RABBITMQ_USERNAME'];
     delete process.env['RABBITMQ_PASSWORD'];
+    delete process.env['RABBITMQ_MANAGEMENT_PORT'];
     delete process.env['ESDB_HTTP_PORT'];
     delete process.env['ELASTIC_PORT'];
     delete process.env['ELASTIC_PASSWORD'];
@@ -236,6 +266,13 @@ describe('BaseIntegrationEnvironment', () => {
       delete process.env['RABBITMQ_PASSWORD'];
       expect(() => new TestBaseIntegrationEnvironment({ proxy: true })).toThrow(
         'Environment variable RABBITMQ_PASSWORD is required but not set'
+      );
+    });
+
+    test('should throw error if RABBITMQ_MANAGEMENT_PORT is not set', () => {
+      delete process.env['RABBITMQ_MANAGEMENT_PORT'];
+      expect(() => new TestBaseIntegrationEnvironment({ proxy: true })).toThrow(
+        'Environment variable RABBITMQ_MANAGEMENT_PORT is required but not set'
       );
     });
 
@@ -441,21 +478,7 @@ describe('BaseIntegrationEnvironment', () => {
       });
     });
 
-    test('should set public policy when isPublicBucket is true', async () => {
-      // Arrange
-      const env = new TestBaseIntegrationEnvironment({ proxy: true });
-
-      (env as any).createService = mockCreateService;
-      const mockService = { host: 'localhost', port: 9000 };
-      mockCreateService.mockResolvedValue(mockService);
-
-      // Act
-      const result = await env.getMinio({ isPublicBucket: true });
-
-      // Assert
-      expect(mockS3Client.send).toHaveBeenCalledTimes(2); // CreateBucket and PutBucketPolicy
-      expect(result.bucketName).toBe('test-public-mock-id');
-    });
+    // Public bucket option removed: always private bucket
 
     test('should cache the service and return the same instance on subsequent calls', async () => {
       // Arrange
@@ -474,21 +497,7 @@ describe('BaseIntegrationEnvironment', () => {
       expect(result1).toBe(result2); // Same reference
     });
 
-    test('should cache separately for different options', async () => {
-      // Arrange
-      const env = new TestBaseIntegrationEnvironment({ proxy: true });
-
-      (env as any).createService = mockCreateService;
-      const mockService = { host: 'localhost', port: 9000 };
-      mockCreateService.mockResolvedValue(mockService);
-
-      // Act: Call with different options
-      await env.getMinio({ isPublicBucket: false });
-      await env.getMinio({ isPublicBucket: true });
-
-      // Assert: createService called twice
-      expect(mockCreateService).toHaveBeenCalledTimes(2);
-    });
+    // Caching is unified regardless of options (removed)
 
     test('should handle MinIO CreateBucket error', async () => {
       // Arrange
@@ -505,22 +514,7 @@ describe('BaseIntegrationEnvironment', () => {
       );
     });
 
-    test('should handle MinIO PutBucketPolicy error', async () => {
-      // Arrange
-      const env = new TestBaseIntegrationEnvironment({ proxy: true });
-
-      (env as any).createService = mockCreateService;
-      const mockService = { host: 'localhost', port: 9000 };
-      mockCreateService.mockResolvedValue(mockService);
-      mockS3Client.send
-        .mockResolvedValueOnce(undefined) // CreateBucket succeeds
-        .mockRejectedValueOnce(new Error('PutBucketPolicy failed')); // Policy fails
-
-      // Act & Assert
-      await expect(env.getMinio({ isPublicBucket: true })).rejects.toThrow(
-        'Failed to setup MinIO bucket: Error: PutBucketPolicy failed'
-      );
-    });
+    // No PutBucketPolicy path anymore (always private)
   });
 
   describe('getMaildev', () => {
@@ -758,13 +752,16 @@ describe('BaseIntegrationEnvironment', () => {
       mockElasticsearchClient = {
         ping: jest.fn().mockResolvedValue(undefined),
         close: jest.fn().mockResolvedValue(undefined),
+        indices: {
+          create: jest.fn().mockResolvedValue(undefined),
+        },
       };
-      (require('@elastic/elasticsearch').Client as jest.Mock).mockImplementation(
-        () => mockElasticsearchClient
-      );
+      (
+        require('@elastic/elasticsearch').Client as jest.Mock
+      ).mockImplementation(() => mockElasticsearchClient);
     });
 
-    test('should create service for Elasticsearch, initialize client, ping, and return with client and indexPrefix', async () => {
+    test('should create service for Elasticsearch, initialize client, ping, create index, and return with client and indexName', async () => {
       // Arrange
       const env = new TestBaseIntegrationEnvironment({ proxy: true });
 
@@ -788,9 +785,12 @@ describe('BaseIntegrationEnvironment', () => {
         },
       });
       expect(mockElasticsearchClient.ping).toHaveBeenCalled();
+      expect(mockElasticsearchClient.indices.create).toHaveBeenCalledWith({
+        index: 'test_mock-id',
+      });
       expect(result).toEqual({
         elasticsearchClient: mockElasticsearchClient,
-        indexPrefix: 'test_mock-id',
+        indexName: 'test_mock-id',
         ...mockService,
       });
     });
@@ -835,6 +835,7 @@ describe('BaseIntegrationEnvironment', () => {
     let mockChannel: any;
 
     beforeEach(() => {
+      httpRequestCalls = [];
       mockChannel = {
         close: jest.fn().mockResolvedValue(undefined),
       };
@@ -859,14 +860,65 @@ describe('BaseIntegrationEnvironment', () => {
       const result = await env.getRabbitMQ();
 
       // Assert
-      expect(mockCreateService).toHaveBeenCalledWith('rabbitmq-mock-id', '5672');
+      expect(mockCreateService).toHaveBeenCalledWith(
+        'rabbitmq-mock-id',
+        '5672'
+      );
       expect(require('amqplib').connect).toHaveBeenCalledWith(
-        'amqp://rabbitmq:rabbitmq@localhost:5672'
+        'amqp://rabbitmq:rabbitmq@localhost:5672/test_mock-id'
       );
       expect(mockConnection.createChannel).toHaveBeenCalled();
       expect(result).toEqual({
         connection: mockConnection,
         channel: mockChannel,
+        vhost: 'test_mock-id',
+        ...mockService,
+      });
+    });
+    test('should create service for RabbitMQ, create vhost+permissions, connect to vhost, create channel, and return with connection, channel, vhost', async () => {
+      // Arrange
+      const env = new TestBaseIntegrationEnvironment({ proxy: true });
+
+      (env as any).createService = mockCreateService;
+      const mockService = { host: 'localhost', port: 5672 };
+      const mockMgmtService = { host: 'localhost', port: 15672 };
+      mockCreateService
+        .mockResolvedValueOnce(mockService) // amqp
+        .mockResolvedValueOnce(mockMgmtService); // management
+
+      // Act
+      const result = await env.getRabbitMQ();
+
+      // Assert
+      expect(mockCreateService).toHaveBeenCalledWith(
+        'rabbitmq-mock-id',
+        '5672'
+      );
+      expect(mockCreateService).toHaveBeenCalledWith(
+        'rabbitmq-management-mock-id',
+        '15672'
+      );
+      // validate management HTTP calls
+      expect(httpRequestCalls[0]).toMatchObject({
+        host: 'localhost',
+        port: 15672,
+        method: 'PUT',
+        path: '/api/vhosts/test_mock-id',
+      });
+      expect(httpRequestCalls[1]).toMatchObject({
+        host: 'localhost',
+        port: 15672,
+        method: 'PUT',
+        path: '/api/permissions/test_mock-id/rabbitmq',
+      });
+      expect(require('amqplib').connect).toHaveBeenCalledWith(
+        'amqp://rabbitmq:rabbitmq@localhost:5672/test_mock-id'
+      );
+      expect(mockConnection.createChannel).toHaveBeenCalled();
+      expect(result).toEqual({
+        connection: mockConnection,
+        channel: mockChannel,
+        vhost: 'test_mock-id',
         ...mockService,
       });
     });
@@ -884,7 +936,7 @@ describe('BaseIntegrationEnvironment', () => {
       const result2 = await env.getRabbitMQ();
 
       // Assert: createService called only once
-      expect(mockCreateService).toHaveBeenCalledTimes(1);
+      expect(mockCreateService).toHaveBeenCalledTimes(2); // AMQP + Management only on first call
       expect(result1).toBe(result2); // Same reference
     });
 
