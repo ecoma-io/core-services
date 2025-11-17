@@ -430,6 +430,7 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
     (ProxiedService | Service) & {
       connection: amqp.ChannelModel;
       channel: amqp.Channel;
+      vhost: string;
     }
   > {
     const cacheKey = 'rabbitmq';
@@ -438,6 +439,7 @@ export abstract class BaseIntegrationEnvironment extends IntegrationEnvironment 
         (ProxiedService | Service) & {
           connection: amqp.ChannelModel;
           channel: amqp.Channel;
+          vhost: string;
         }
       >;
     }

@@ -10,7 +10,7 @@ async function bootstrap() {
   const appConfig = configService.getAppConfig();
 
   Logger.log(
-    'Starting IAM Command Service with environment: ' + appConfig.nodeEnv
+    'Starting IAM Query Service with environment: ' + appConfig.nodeEnv
   );
 
   const app = await NestFactory.create(AppModule);
@@ -21,7 +21,7 @@ async function bootstrap() {
 
   await app.listen(appConfig.port, appConfig.host, () => {
     Logger.log(
-      `IAM Command Service is running on: ${appConfig.host}:${appConfig.port}/`
+      `IAM Query Service is running on: ${appConfig.host}:${appConfig.port}/`
     );
   });
 }

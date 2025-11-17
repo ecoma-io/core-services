@@ -65,11 +65,21 @@ describe('Healthcheck', () => {
     const expectedMessage = { message: 'Service still alive' };
 
     // Act: Make GET request to liveness endpoint
-    const res = await axios.get(`${context.baseUrl}/health/liveness`);
+    try {
+      const res = await axios.get(`${context.baseUrl}/health/liveness`);
 
-    // Assert: Verify response status and data
-    expect(res.status).toBe(200);
-    expect(res.data).toEqual(expectedMessage);
+      // Assert: Verify response status and data
+      expect(res.status).toBe(200);
+      expect(res.data).toEqual(expectedMessage);
+    } catch (error) {
+      // Debug: Print actual error to understand what's wrong
+      console.error('Error response:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers,
+      });
+      throw error;
+    }
   });
 
   /**

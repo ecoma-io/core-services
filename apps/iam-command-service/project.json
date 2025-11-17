@@ -3,6 +3,12 @@
   "name": "iam-command-service",
   "sourceRoot": "apps/iam-command-service/src",
   "projectType": "application",
+  "implicitDependencies": [
+    "infras-postgres",
+    "infras-redis",
+    "infras-esdb",
+    "infras-rabbitmq"
+  ],
   "tags": ["type:apps", "scope:iam", "layer:presentation"],
   "targets": {
     "lint": {
@@ -26,17 +32,17 @@
       "continuous": true,
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": ["build"],
+      "dependsOn": ["build", "^up"],
       "options": {
-        "buildTarget": "resource-service:build",
+        "buildTarget": "{projectName}:build",
         "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {
-          "buildTarget": "resource-service:build:development"
+          "buildTarget": "{projectName}:build:development"
         },
         "production": {
-          "buildTarget": "resource-service:build:production"
+          "buildTarget": "{projectName}:build:production"
         }
       }
     },
@@ -44,7 +50,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{projectRoot}/coverage/"],
       "options": {
-        "jestConfig": "apps/resource-service/jest.config.mjs"
+        "jestConfig": "{projectRoot}/jest.config.mjs"
       }
     },
     "docker:build": {

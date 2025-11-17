@@ -1,4 +1,5 @@
 import { AggregateRoot, DomainEventEnvelope } from '@ecoma-io/domain';
+import { v7 as uuidv7 } from 'uuid';
 
 export interface TenantState {
   tenantId?: string;
@@ -27,7 +28,7 @@ export class TenantAggregate extends AggregateRoot<TenantState> {
 
   create(name: string, namespace: string, metadata?: Record<string, unknown>) {
     const ev: DomainEventEnvelope = {
-      id: `${Date.now()}-${Math.random()}`,
+      id: uuidv7(),
       type: 'TenantCreated',
       aggregateId: this._id ?? (this._state.tenantId as string) ?? '',
       occurredAt: new Date().toISOString(),

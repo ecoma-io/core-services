@@ -46,45 +46,71 @@ export class TestEnvironment extends BaseIntegrationEnvironment {
   protected async initAppContainers(): Promise<Array<StartedTestContainer>> {
     // Retrieve PostgreSQL configuration and DataSource
     const {
-      host: postgresHost,
-      port: postgresPort,
+      host: dbHost,
+      port: dbPort,
       databaseName,
       dataSource,
     } = await this.getPostgres();
     this.dataSource = dataSource;
 
-    // Retrieve Redis configuration
-    const { host: redisHost, port: redistPort, redis } = await this.getRedis();
+    // ...existing code...
+
+    // Retrieve service configurations sequentially to avoid ToxiProxy port conflicts
+    const { host: cacheHost, port: cachePort, redis } = await this.getRedis();
     this.redis = redis;
 
-    // Retrieve EventStoreDB configuration
-    const { host: esdbHost, port: esdbPort } = await this.getEventStoreDB();
+    const {
+      host: esdbHost,
+      port: esdbPort,
+      streamPrefix: esdbStreamPrefix,
+    } = await this.getEventStoreDB();
 
-    // Retrieve RabbitMQ configuration
-    const { host: rabbitmqHost, port: rabbitmqPort } = await this.getRabbitMQ();
+    const {
+      host: mqHost,
+      port: mqPort,
+      vhost: mqVhost,
+    } = await this.getRabbitMQ();
+
+    // ...existing code...
+
+    const serviceEnv = {
+      NODE_ENV: 'test',
+      PORT: '3000',
+      HOST: '0.0.0.0',
+      // Connect via ToxiProxy (exposed host/port)
+      DB_HOST: dbHost,
+      DB_PORT: dbPort.toString(),
+      DB_DATABASE: databaseName,
+      DB_USERNAME: process.env['POSTGRES_USERNAME'] || '',
+      DB_PASSWORD: process.env['POSTGRES_PASSWORD'] || '',
+      CACHE_HOST: cacheHost,
+      CACHE_PORT: cachePort.toString(),
+      CACHE_PASSWORD: process.env['REDIS_PASSWORD'] || '',
+      CACHE_DB: '0',
+      ESDB_HOST: esdbHost,
+      ESDB_PORT: esdbPort.toString(),
+      ESDB_USERNAME: process.env['EVENTSTOREDB_USERNAME'] || '',
+      ESDB_PASSWORD: process.env['EVENTSTOREDB_PASSWORD'] || '',
+      EVENTSTORE_CONNECTION_STRING: `esdb://${esdbHost}:${esdbPort}?tls=false&streamPrefix=${encodeURIComponent(esdbStreamPrefix)}`,
+      MQ_HOST: mqHost,
+      MQ_PORT: mqPort.toString(),
+      MQ_USERNAME: process.env['RABBITMQ_USERNAME'] || '',
+      MQ_PASSWORD: process.env['RABBITMQ_PASSWORD'] || '',
+      MQ_EXCHANGE: 'iam.events',
+      MQ_URI: `amqp://${process.env['RABBITMQ_USERNAME']}:${process.env['RABBITMQ_PASSWORD']}@${mqHost}:${mqPort}/${encodeURIComponent(mqVhost)}`,
+    };
+
+    // ...existing code...
 
     const iamCommandService = await new GenericContainer('iam-command-service')
-      .withEnvironment({
-        NODE_ENV: 'test',
-        PORT: '3000',
-        // Connect via ToxiProxy (exposed host/port)
-        DB_HOST: postgresHost,
-        DB_PORT: postgresPort.toString(),
-        DB_NAME: databaseName,
-        DB_USERNAME: process.env['POSTGRES_USERNAME'],
-        DB_PASSWORD: process.env['POSTGRES_PASSWORD'],
-        REDIS_HOST: redisHost,
-        REDIS_PORT: redistPort.toString(),
-        REDIS_PASSWORD: process.env['REDIS_PASSWORD'],
-        // EventStore and RabbitMQ configuration via ToxiProxy
-        EVENTSTORE_CONNECTION_STRING: `esdb://${esdbHost}:${esdbPort}?tls=false`,
-        RABBITMQ_URI: `amqp://${process.env['RABBITMQ_USERNAME']}:${process.env['RABBITMQ_PASSWORD']}@${rabbitmqHost}:${rabbitmqPort}`,
-      })
+      .withEnvironment(serviceEnv)
       .withExposedPorts(3000)
-      .withLogConsumer(this.createLogConsumer('resource-service'))
-      .withWaitStrategy(Wait.forListeningPorts().withStartupTimeout(30000)) // 30 seconds for port listening
+      .withLogConsumer(this.createLogConsumer('iam-command-service'))
+      .withWaitStrategy(Wait.forListeningPorts().withStartupTimeout(60000)) // 60 seconds for port listening
       .withStartupTimeout(180000) // 3 minutes total startup timeout
       .start();
+
+    // ...existing code...
 
     this.iamCommandService = iamCommandService;
 

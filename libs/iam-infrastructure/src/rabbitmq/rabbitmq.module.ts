@@ -66,7 +66,7 @@ export class RabbitMQInfraModule {
               exchangeType: options.exchangeType,
             });
           },
-          inject: ['AMQP_CONNECTION'],
+          inject: [AmqpConnection],
         },
       ],
       exports: [RabbitMQEventPublisher],
@@ -122,7 +122,7 @@ export class RabbitMQInfraModule {
               exchangeType: config.exchangeType,
             });
           },
-          inject: ['AMQP_CONNECTION', ...(options.inject || [])],
+          inject: [AmqpConnection, ...(options.inject || [])],
         },
       ],
       exports: [RabbitMQEventPublisher],

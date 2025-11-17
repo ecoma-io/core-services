@@ -22,11 +22,12 @@ export class CreateTenantHandler
     const namespaceVO = NamespaceId.create(namespace);
 
     // Create new tenant aggregate
-    const tenant = new TenantAggregate();
-    tenant.createTenant(tenantId, name, namespaceVO, metadata);
+    const tenant = new TenantAggregate(tenantId);
+    // NamespaceId VO to string for domain aggregate API
+    tenant.create(name, namespaceVO.toString(), metadata);
 
     // Get uncommitted events
-    const events = tenant.getUncommittedEvents();
+    const events = Array.from(tenant.uncommittedEvents);
 
     // Commit via unit of work
     const streamVersion = await this.unitOfWork.commit(
