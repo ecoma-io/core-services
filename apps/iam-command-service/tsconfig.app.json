@@ -1,10 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../dist/out-tsc",
     "module": "commonjs",
     "types": ["node"],
-    "emitDecoratorMetadata": true,
     "target": "ES2021"
   },
   "exclude": ["jest.config.mjs", "src/**/*.spec.ts", "src/**/*.test.ts"],
