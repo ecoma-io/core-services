@@ -434,7 +434,3 @@ Phần này mô tả các Ports (Interfaces) và cách NestJS Modules được s
 | `iam-command-service`        | Write API | `EventStoreModule`, `MessagingModule`                                             | Cần Lưu (Store) và Phát (Publish) sự kiện.                                       |
 | `iam-query-service`          | Read API  | `ReadModelModule`, `PermissionCacheModule`, `CheckpointModule`                    | Cần Đọc (Read Model Repos), Kiểm tra Quyền (Auth), và Kiểm tra Phiên bản (RYOW). |
 | `apps/iam-projector-workers` | Worker    | `MessagingModule`, `ReadModelModule`, `PermissionCacheModule`, `CheckpointModule` | Cần Tiêu thụ Events, Cập nhật Read Models, và Cập nhật Checkpoint (RYOW).        |
-
-```
-
-```

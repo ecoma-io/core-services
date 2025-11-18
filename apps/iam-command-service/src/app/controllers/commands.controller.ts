@@ -29,6 +29,11 @@ import {
   CreateMembershipHandler,
   makeCreateMembershipCommand,
 } from '@ecoma-io/iam-command-interactor';
+import { RegisterServiceVersionDto } from '../dtos/register-service-version.dto';
+import {
+  RegisterServiceVersionHandler,
+  makeRegisterServiceVersionCommand,
+} from '@ecoma-io/iam-command-interactor';
 
 /**
  * Commands Controller - Write Side Endpoints
@@ -42,7 +47,8 @@ export class CommandsController {
     private readonly registerUserHandler: RegisterUserHandler,
     private readonly createTenantHandler: CreateTenantHandler,
     private readonly createRoleHandler: CreateRoleHandler,
-    private readonly createMembershipHandler: CreateMembershipHandler
+    private readonly createMembershipHandler: CreateMembershipHandler,
+    private readonly registerServiceVersionHandler: RegisterServiceVersionHandler
   ) {}
   /**
    * Example: Register a new user
@@ -144,6 +150,42 @@ export class CommandsController {
       };
     } catch (err) {
       Logger.error(`CreateMembership failed: ${body.membershipId}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Register a new service version
+   * POST /commands/register-service-version
+   */
+  @Post('register-service-version')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  async registerServiceVersion(@Body() body: RegisterServiceVersionDto) {
+    const command = makeRegisterServiceVersionCommand({
+      serviceId: body.serviceId,
+      version: body.version,
+      name: body.name,
+      permissionsTree: body.permissionsTree,
+    });
+    Logger.debug(
+      `RegisterServiceVersion start: ${body.serviceId} v${body.version}`
+    );
+    try {
+      const streamVersion =
+        await this.registerServiceVersionHandler.handle(command);
+      Logger.debug(
+        `RegisterServiceVersion done: ${body.serviceId} v${body.version} stream@${streamVersion}`
+      );
+      return {
+        serviceId: body.serviceId,
+        version: body.version,
+        streamVersion,
+      };
+    } catch (err) {
+      Logger.error(
+        `RegisterServiceVersion failed: ${body.serviceId} v${body.version}`
+      );
       throw err;
     }
   }

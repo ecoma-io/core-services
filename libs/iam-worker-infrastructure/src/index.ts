@@ -8,5 +8,6 @@ export * from './projectors/tenant.projector';
 export * from './projectors/user.projector';
 export * from './projectors/role.projector';
 export * from './projectors/membership.projector';
+export * from './projectors/service-definition.projector';
 // export * from './projectors/permission.projector'; // TODO: Fix to match BaseProjector signature
 export * from './entities';

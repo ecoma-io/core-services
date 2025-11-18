@@ -1,4 +1,5 @@
 import { AggregateRoot, DomainEventEnvelope } from '@ecoma-io/domain';
+import { v7 as uuidv7 } from 'uuid';
 
 export interface ServiceDefinitionState {
   serviceId?: string;
@@ -31,15 +32,16 @@ export class ServiceDefinitionAggregate extends AggregateRoot<ServiceDefinitionS
   registerVersion(
     serviceId: string,
     version: string,
-    permissionsTree: unknown
+    permissionsTree: unknown,
+    name?: string
   ) {
     const ev: DomainEventEnvelope = {
-      id: `${Date.now()}-${Math.random()}`,
+      id: uuidv7(),
       type: 'ServiceVersionRegistered',
       aggregateId: this._id ?? serviceId,
       occurredAt: new Date().toISOString(),
       eventVersion: '1.0.0',
-      payload: { serviceId, version, permissionsTree },
+      payload: { serviceId, version, permissionsTree, name },
       metadata: {},
     };
     this.recordEvent(ev);

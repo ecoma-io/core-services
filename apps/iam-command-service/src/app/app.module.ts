@@ -13,11 +13,13 @@ import { UserAggregateRepository } from './application/user-aggregate.repository
 import { TenantAggregateRepository } from './application/tenant-aggregate.repository';
 import { RoleAggregateRepository } from './application/role-aggregate.repository';
 import { MembershipAggregateRepository } from './application/membership-aggregate.repository';
+import { ServiceDefinitionAggregateRepository } from './application/service-definition-aggregate.repository';
 import {
   RegisterUserHandler,
   CreateTenantHandler,
   CreateRoleHandler,
   CreateMembershipHandler,
+  RegisterServiceVersionHandler,
 } from '@ecoma-io/iam-command-interactor';
 
 export const EVENT_STORE_CLIENT = Symbol('EVENT_STORE_CLIENT');
@@ -25,6 +27,9 @@ export const USER_AGG_REPO = Symbol('USER_AGG_REPO');
 export const TENANT_AGG_REPO = Symbol('TENANT_AGG_REPO');
 export const ROLE_AGG_REPO = Symbol('ROLE_AGG_REPO');
 export const MEMBERSHIP_AGG_REPO = Symbol('MEMBERSHIP_AGG_REPO');
+export const SERVICE_DEFINITION_AGG_REPO = Symbol(
+  'SERVICE_DEFINITION_AGG_REPO'
+);
 export const APP_UOW = Symbol('APP_UOW');
 
 /**
@@ -103,6 +108,13 @@ export const APP_UOW = Symbol('APP_UOW');
         new MembershipAggregateRepository(esRepo),
       inject: [EventStoreDbRepository],
     },
+    // Aggregate Repository for ServiceDefinition
+    {
+      provide: SERVICE_DEFINITION_AGG_REPO,
+      useFactory: (esRepo: EventStoreDbRepository) =>
+        new ServiceDefinitionAggregateRepository(esRepo),
+      inject: [EventStoreDbRepository],
+    },
     // Application Unit of Work (persist + publish)
     {
       provide: APP_UOW,
@@ -136,6 +148,14 @@ export const APP_UOW = Symbol('APP_UOW');
       useFactory: (repo: MembershipAggregateRepository, uow: AppUnitOfWork) =>
         new CreateMembershipHandler(repo as any, uow as any),
       inject: [MEMBERSHIP_AGG_REPO, APP_UOW],
+    },
+    {
+      provide: RegisterServiceVersionHandler,
+      useFactory: (
+        repo: ServiceDefinitionAggregateRepository,
+        uow: AppUnitOfWork
+      ) => new RegisterServiceVersionHandler(repo as any, uow as any),
+      inject: [SERVICE_DEFINITION_AGG_REPO, APP_UOW],
     },
   ],
 })

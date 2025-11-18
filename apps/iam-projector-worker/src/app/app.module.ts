@@ -8,6 +8,7 @@ import {
   UserProjector,
   RoleProjector,
   MembershipProjector,
+  ServiceDefinitionProjector,
   RabbitMqAdapter,
   CheckpointRepositoryImpl,
   UpcasterRegistryImpl,
@@ -76,6 +77,7 @@ import { AppConfigService } from './app.config-service';
     UserProjector,
     RoleProjector,
     MembershipProjector,
+    ServiceDefinitionProjector,
     EventConsumer,
     // Bootstrapper to start projectors on init
     {
@@ -84,7 +86,8 @@ import { AppConfigService } from './app.config-service';
         tenantProjector: TenantProjector,
         userProjector: UserProjector,
         roleProjector: RoleProjector,
-        membershipProjector: MembershipProjector
+        membershipProjector: MembershipProjector,
+        serviceDefinitionProjector: ServiceDefinitionProjector
       ) => {
         return {
           async onModuleInit() {
@@ -93,6 +96,7 @@ import { AppConfigService } from './app.config-service';
               userProjector.start(),
               roleProjector.start(),
               membershipProjector.start(),
+              serviceDefinitionProjector.start(),
             ]);
           },
         } as OnModuleInit;
@@ -102,6 +106,7 @@ import { AppConfigService } from './app.config-service';
         UserProjector,
         RoleProjector,
         MembershipProjector,
+        ServiceDefinitionProjector,
       ],
     },
   ],

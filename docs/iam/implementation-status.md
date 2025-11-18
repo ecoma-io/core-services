@@ -11,20 +11,20 @@
 
 ### 18/11/2025 - Phiên bản 1.7 (Phase 2.3 Complete - Membership Vertical Slice) 🎉🎉🎉🎉
 
-| Mục                          | Thay đổi                                       | Ghi chú                                                                   |
-| ---------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------- |
-| MembershipProjector          | ✅ **HOÀN THÀNH**                              | 3 handlers: UserAddedToTenant/RoleAssignedToUser/RoleRemovedFromUser      |
-| MembershipsController        | ✅ **HOÀN THÀNH**                              | GET /memberships/:id endpoint + unit tests (3/3 PASS)                     |
-| Membership Vertical Slice E2E| ✅ **PASS 100%**                               | membership-complete-flow.spec.ts - multi-dependency setup (3/3 PASS)      |
-| CreateMembership Command     | ✅ **HOÀN THÀNH**                              | POST /commands/create-membership endpoint + handler + DTO + repo          |
-| Multi-Projector Support      | ✅ **4 Projectors Active**                     | Tenant + User + Role + Membership running in parallel                     |
-| UnitOfWork Pattern Fix       | ✅ **Critical Fix**                            | CreateMembershipHandler now uses UnitOfWork for event publishing          |
-| EventStoreDB Versioning      | ✅ **Fixed**                                   | Correct expectedVersion (-1 for new streams) and 0-based version indexing |
-| JSONB Operations             | ✅ **Advanced SQL**                            | Array manipulation with @>, &#124;&#124;, jsonb_array_elements, jsonb_agg|
-| Multi-Tenancy Foundation     | ✅ **Complete**                                | Users now linked to tenants via memberships with role arrays              |
-| Phase 2.3 Status             | ✅ **100% COMPLETE**                           | CreateMembership → MembershipProjector → GetMembership complete flow      |
-| Next Priority                | **ServiceDefinition Vertical Slice (Phase 2.4)** (P2) | Merge logic for top 3 major versions, permission tree composition |
-| Version                      | Nâng lên 1.7                                   | Phase 2.3 Membership vertical slice hoàn thành sau 6 E2E iterations       |
+| Mục                           | Thay đổi                                              | Ghi chú                                                                   |
+| ----------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| MembershipProjector           | ✅ **HOÀN THÀNH**                                     | 3 handlers: UserAddedToTenant/RoleAssignedToUser/RoleRemovedFromUser      |
+| MembershipsController         | ✅ **HOÀN THÀNH**                                     | GET /memberships/:id endpoint + unit tests (3/3 PASS)                     |
+| Membership Vertical Slice E2E | ✅ **PASS 100%**                                      | membership-complete-flow.spec.ts - multi-dependency setup (3/3 PASS)      |
+| CreateMembership Command      | ✅ **HOÀN THÀNH**                                     | POST /commands/create-membership endpoint + handler + DTO + repo          |
+| Multi-Projector Support       | ✅ **4 Projectors Active**                            | Tenant + User + Role + Membership running in parallel                     |
+| UnitOfWork Pattern Fix        | ✅ **Critical Fix**                                   | CreateMembershipHandler now uses UnitOfWork for event publishing          |
+| EventStoreDB Versioning       | ✅ **Fixed**                                          | Correct expectedVersion (-1 for new streams) and 0-based version indexing |
+| JSONB Operations              | ✅ **Advanced SQL**                                   | Array manipulation with @>, &#124;&#124;, jsonb_array_elements, jsonb_agg |
+| Multi-Tenancy Foundation      | ✅ **Complete**                                       | Users now linked to tenants via memberships with role arrays              |
+| Phase 2.3 Status              | ✅ **100% COMPLETE**                                  | CreateMembership → MembershipProjector → GetMembership complete flow      |
+| Next Priority                 | **ServiceDefinition Vertical Slice (Phase 2.4)** (P2) | Merge logic for top 3 major versions, permission tree composition         |
+| Version                       | Nâng lên 1.7                                          | Phase 2.3 Membership vertical slice hoàn thành sau 6 E2E iterations       |
 
 ### 18/11/2025 - Phiên bản 1.6 (Phase 2.2 Complete - Role Vertical Slice) 🎉🎉🎉
 

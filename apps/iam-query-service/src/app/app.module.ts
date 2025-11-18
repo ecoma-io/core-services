@@ -19,11 +19,13 @@ import {
   GetUserHandler,
   GetRoleHandler,
   GetMembershipHandler,
+  GetServiceDefinitionHandler,
 } from '@ecoma-io/iam-query-interactor';
 import { TenantsController } from './controllers/tenants.controller';
 import { UsersController } from './controllers/users.controller';
 import { RolesController } from './controllers/roles.controller';
 import { MembershipsController } from './controllers/memberships.controller';
+import { ServiceDefinitionsController } from './controllers/service-definitions.controller';
 
 /**
  * IAM Query Service - Read Side (CQRS)
@@ -70,6 +72,7 @@ import { MembershipsController } from './controllers/memberships.controller';
     UsersController,
     RolesController,
     MembershipsController,
+    ServiceDefinitionsController,
   ],
   providers: [
     // Read model repositories
@@ -99,6 +102,12 @@ import { MembershipsController } from './controllers/memberships.controller';
       useFactory: (repo: MembershipReadRepository) =>
         new GetMembershipHandler(repo),
       inject: [MembershipReadRepository],
+    },
+    {
+      provide: GetServiceDefinitionHandler,
+      useFactory: (repo: ServiceDefinitionReadRepository) =>
+        new GetServiceDefinitionHandler(repo),
+      inject: [ServiceDefinitionReadRepository],
     },
   ],
 })
