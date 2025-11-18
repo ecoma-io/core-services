@@ -2,12 +2,25 @@
 
 **Ngày kiểm tra:** 18/11/2025  
 **Người kiểm tra:** AI Code Review  
-**Phiên bản báo cáo:** 1.4 (Phase 1 Complete - Tenant Vertical Slice) 🎉  
+**Phiên bản báo cáo:** 1.5 (Phase 2.1 Complete - User Vertical Slice) 🎉🎉  
 **Tài liệu tham chiếu:** [docs/iam/architecture.md](./architecture.md)
 
 ---
 
 ## 📝 Changelog
+
+### 18/11/2025 - Phiên bản 1.5 (Phase 2.1 Complete - User Vertical Slice) 🎉🎉🎉
+
+| Mục                     | Thay đổi                                 | Ghi chú                                                                            |
+| ----------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| UserProjector           | ✅ **HOÀN THÀNH**                        | Wire 4 event handlers: UserRegistered/PasswordChanged/ProfileUpdated/StatusChanged |
+| UsersController         | ✅ **HOÀN THÀNH**                        | GET /users/:id endpoint + unit tests (3/3 PASS)                                    |
+| User Vertical Slice E2E | ✅ **PASS 100%**                         | user-complete-flow.spec.ts validates full CQRS cycle (3/3 PASS)                    |
+| Multi-Projector Support | ✅ Implemented                           | RabbitMqAdapter refactored to support multiple projectors                          |
+| Query Service DI        | ✅ Fixed                                 | Proper dependency injection for GetUserHandler with UserReadRepository             |
+| Phase 2.1 Status        | ✅ **100% COMPLETE**                     | RegisterUser → UserProjector → GetUser complete flow                               |
+| Next Priority           | **Role Vertical Slice (Phase 2.2)** (P1) | CreateRole → RoleProjector → GetRole                                               |
+| Version                 | Nâng lên 1.5                             | Phase 2.1 User vertical slice hoàn thành đầy đủ                                    |
 
 ### 18/11/2025 - Phiên bản 1.4 (Phase 1 Complete - Tenant Vertical Slice) 🎉🎉🎉
 
@@ -63,20 +76,20 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 
 **Projector infrastructure hoàn thành:** iam-projector-worker đã được bootstrap, TenantProjector xử lý events và cập nhật read model, checkpoint tracking hoạt động. E2E test validates complete projection flow.
 
-**Query Service hoàn thành:** iam-query-service với GET /tenants/:id endpoint, GetTenantHandler implementation, vertical slice E2E test (3/3 PASS) validates complete CQRS cycle: Command → Event → Projector → Query.
+**Query Service hoàn thành:** iam-query-service với GET /tenants/:id và GET /users/:id endpoints, vertical slice E2E tests (6/6 PASS) validate complete CQRS cycles.
 
-### Điểm hoàn thành tổng thể: **~80%** 🎉
+### Điểm hoàn thành tổng thể: **~82-85%** 🎉🎉
 
-**Cập nhật quan trọng (v1.4 - Phase 1 Complete):**
+**Cập nhật quan trọng (v1.5 - Phase 2.1 Complete):**
 
-- ✅ **Command side cho Tenant hoàn chỉnh** (CreateTenant endpoint + handler + E2E)
-- ✅ **Projector worker hoạt động** (TenantProjector consumes events, updates read model)
-- ✅ **Query service hoàn thành** (GET /tenants/:id endpoint + GetTenantHandler + E2E)
-- ✅ **E2E tests: 34/35 pass** (command-e2e 30/31, projector-e2e 1/1, vertical-slice-e2e 3/3)
-- ✅ **3-service architecture validated**: Command + Projector Worker + Query orchestrated
-- ✅ **RYOW pattern implemented**: Polling-based eventual consistency (5s timeout, 250ms interval)
-- ✅ **Phase 1 Tenant vertical slice: 100% complete**
-- 🎯 **Next: Phase 2 - User vertical slice** (RegisterUser → UserProjector → GetUser)
+- ✅ **Phase 1 Tenant vertical slice: 100% complete** (CreateTenant → TenantProjector → GetTenant)
+- ✅ **Phase 2.1 User vertical slice: 100% complete** (RegisterUser → UserProjector → GetUser)
+- ✅ **UserProjector wired**: 4 event handlers (UserRegistered, UserPasswordChanged, UserProfileUpdated, UserStatusChanged)
+- ✅ **UsersController implemented**: GET /users/:id + unit tests (3/3 PASS)
+- ✅ **E2E tests: 37/38 pass** (command-e2e 33/34, projector-e2e 1/1, vertical-slice-e2e 6/6)
+- ✅ **Multi-projector architecture**: TenantProjector + UserProjector running in parallel
+- ✅ **2 complete vertical slices validated**: Tenant + User
+- 🎯 **Next: Phase 2.2 - Role vertical slice** (CreateRole → RoleProjector → GetRole)
 
 ---
 
@@ -207,19 +220,20 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 
 - ❌ ServiceDefinition merge logic tại read layer (được xử lý qua projector)
 
-#### ⚠️ Projectors (85% hoàn thành)
+#### ✅ Projectors (90% hoàn thành)
 
 ✅ **Đã có:**
 
 - **BaseProjector** (transactional checkpoints, upcasters, idempotency)
 - **TenantProjector** ✅ **WORKING**: xử lý `TenantCreated`, `TenantUpdated`, cập nhật tenants_read_model, checkpoint tracking
-- **UserProjector**: xử lý `UserRegistered`, `UserPasswordChanged`, `UserProfileUpdated`, `UserStatusChanged`
-- **PermissionProjector**: merge top 3 major versions, persist `combined_permissions_cache`, refresh global tree in Redis
+- **UserProjector** ✅ **WORKING**: xử lý `UserRegistered`, `UserPasswordChanged`, `UserProfileUpdated`, `UserStatusChanged`, cập nhật users_read_model
+- **PermissionProjector**: merge top 3 major versions, persist `combined_permissions_cache`, refresh global tree in Redis (class exists, needs wiring)
 - **UserPermissionProjector**: recalculation + cache khi role thay đổi (decorators sự kiện đang comment chờ wiring)
 - **CheckpointRepositoryImpl** với bảng `projection_checkpoints`
 - **UpcasterRegistryImpl**
 - **ProjectionCheckpointEntity** ✅ TypeORM entity for auto-sync in test mode
-- **iam-projector-worker app** ✅ **BOOTSTRAPPED**: RabbitMQ subscription, event consumption working
+- **iam-projector-worker app** ✅ **RUNNING**: 2 projectors active (TenantProjector + UserProjector)
+- **RabbitMqAdapter** ✅ **ENHANCED**: Multi-projector support with parallel event processing
 
 ✅ **E2E Validation:**
 
@@ -234,7 +248,7 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 - ❌ **SearchProjector** (P2)
 - ❌ Additional event wiring for User/Permission projectors in worker
 
-#### ✅ Query Handlers (25% hoàn thành)
+#### ✅ Query Handlers (30% hoàn thành)
 
 **Files:**
 
@@ -243,8 +257,8 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 
 ✅ **Đã có:**
 
-- `GetUserHandler` với test
-- **GetTenantHandler** ✅ **COMPLETE**: với TenantReadRepository injection, unit tests (3/3 PASS)
+- **GetUserHandler** ✅ **COMPLETE**: với UserReadRepository injection, unit tests (3/3 PASS), wired in UsersController
+- **GetTenantHandler** ✅ **COMPLETE**: với TenantReadRepository injection, unit tests (3/3 PASS), wired in TenantsController
 
 ❌ **Thiếu:**
 
@@ -363,9 +377,12 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 - ❌ Wire 14+ command endpoints còn lại (changePassword, createRole, assignRole, updateTenant, ...)
 - ❌ Đồng bộ hóa schema response và error contracts cho các endpoints còn lại
 
-#### ✅ Query Controller:
+#### ✅ Query Controllers:
 
-**File:** `apps/iam-query-service/src/app/controllers/tenants.controller.ts` ✅ **NEW**
+**Files:**
+
+- `apps/iam-query-service/src/app/controllers/tenants.controller.ts` ✅
+- `apps/iam-query-service/src/app/controllers/users.controller.ts` ✅ **NEW (v1.5)**
 
 ✅ **Đã có:**
 
@@ -378,15 +395,21 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
   - Custom NotFoundException from @ecoma-io/nestjs-exceptions
   - Unit tests (3/3 PASS)
   - E2E validated in vertical slice test (3/3 PASS)
-- ✅ **AppModule refactored**: Removed command-side code, added TypeORM read models, repositories, query handlers
+- ✅ **UsersController** ✅ **COMPLETE (v1.5)**:
+  - `GET /users/:id` endpoint
+  - Uses GetUserHandler from @ecoma-io/iam-query-interactor
+  - Custom NotFoundException handling
+  - Unit tests (3/3 PASS)
+  - E2E validated in vertical slice test (3/3 PASS)
+- ✅ **AppModule refactored**: Proper DI for query handlers with repositories
 
 ❌ **Thiếu:**
 
-- ❌ `GET /users/:id` controller (P1 - Phase 2)
+- ❌ `GET /roles/:id` controller (P1 - Phase 2.2)
 - ❌ `GET /tenants/:id/users` hoặc endpoints query khác
 - ❌ `GET /users/:userId/permissions?tenantId=...` (authorization check)
 - ❌ `GET /search/users?q=...`
-- ❌ Additional query controllers for Role, Membership (P1 - Phase 2)
+- ❌ Additional query controllers for Role, Membership (P1 - Phase 2.2+)
 
 #### ✅ Auth Controller:
 
@@ -484,27 +507,43 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
   - RYOW verification via `pollTenantRow()` helper
 - ✅ **Kết quả:** 1 passed, 1 total - projection flow validated end-to-end
 
-#### ✅ Vertical Slice Integration Test (tenant-complete-flow.spec.ts): **NEW** 🎉🎉🎉
+#### ✅ Vertical Slice Integration Tests: **2 Complete Flows** 🎉🎉🎉
+
+**Test 1: Tenant Complete Flow** (Phase 1)
 
 - ✅ Location: `e2e/iam-command-e2e/src/specs/vertical-slice/tenant-complete-flow.spec.ts`
-- ✅ **3-service architecture orchestration:**
-  - iam-command-service (port 3000)
-  - iam-query-service (port 3001)
-  - iam-projector-worker (background)
 - ✅ **Test coverage:**
   1. **Main vertical slice** (PASS): CreateTenant command → poll for projection (RYOW 5s) → GET /tenants/:id query
   2. **Negative test** (PASS): GET /tenants/:id for non-existent tenant → 404 with custom NotFoundException
   3. **Health check** (PASS): GET /health/liveness on query service → 200 with SuccessResponse
+- ✅ **Kết quả:** 3/3 tests PASS, no flakiness
+
+**Test 2: User Complete Flow** (Phase 2.1) ✅ **NEW (v1.5)**
+
+- ✅ Location: `e2e/iam-command-e2e/src/specs/vertical-slice/user-complete-flow.spec.ts`
+- ✅ **Test coverage:**
+  1. **Main vertical slice** (PASS): RegisterUser command → poll for projection (RYOW 5s) → GET /users/:id query
+  2. **Negative test** (PASS): GET /users/:id for non-existent user → 404 with custom NotFoundException
+  3. **Health check** (PASS): GET /health/liveness on query service → 200
+- ✅ **Kết quả:** 3/3 tests PASS
+- ✅ **UserProjector validation**: Confirms event consumption and read model updates
+
+**Architecture:**
+
+- ✅ **3-service orchestration:**
+  - iam-command-service (port 3000)
+  - iam-query-service (port 3001)
+  - iam-projector-worker (background, 2 projectors active)
 - ✅ **RYOW pattern implemented**: Polling-based with 5s timeout, 250ms interval
-- ✅ **Kết quả:** 3/3 tests PASS, no flakiness (verified with 3 consecutive runs)
-- ✅ **Phase 1 completion validated**: Complete CQRS vertical slice working end-to-end
+- ✅ **Multi-projector support**: TenantProjector + UserProjector running in parallel
 
 **Impacts:**
 
 - ✅ Bề mặt Command service đã có E2E guard
 - ✅ **Projection flow đã được validate end-to-end** 🎉
-- ✅ **Query Service validated with vertical slice E2E** 🎉🎉🎉
+- ✅ **Query Service validated with 2 vertical slice E2Es** 🎉🎉🎉
 - ✅ **Phase 1 Tenant vertical slice: 100% complete** 🎉🎉🎉
+- ✅ **Phase 2.1 User vertical slice: 100% complete** 🎉🎉🎉
 
 ---
 

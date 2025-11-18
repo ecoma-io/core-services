@@ -19,6 +19,7 @@ import {
   GetUserHandler,
 } from '@ecoma-io/iam-query-interactor';
 import { TenantsController } from './controllers/tenants.controller';
+import { UsersController } from './controllers/users.controller';
 
 /**
  * IAM Query Service - Read Side (CQRS)
@@ -60,7 +61,7 @@ import { TenantsController } from './controllers/tenants.controller';
     ]),
     HealthModule,
   ],
-  controllers: [TenantsController],
+  controllers: [TenantsController, UsersController],
   providers: [
     // Read model repositories
     TenantReadRepository,
@@ -68,9 +69,17 @@ import { TenantsController } from './controllers/tenants.controller';
     RoleReadRepository,
     MembershipReadRepository,
     ServiceDefinitionReadRepository,
-    // Query handlers
-    GetTenantHandler,
-    GetUserHandler,
+    // Query handlers with proper DI
+    {
+      provide: GetTenantHandler,
+      useFactory: (repo: TenantReadRepository) => new GetTenantHandler(repo),
+      inject: [TenantReadRepository],
+    },
+    {
+      provide: GetUserHandler,
+      useFactory: (repo: UserReadRepository) => new GetUserHandler(repo as any),
+      inject: [UserReadRepository],
+    },
   ],
 })
 export class AppModule {}

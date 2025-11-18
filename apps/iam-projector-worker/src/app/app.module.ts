@@ -5,6 +5,7 @@ import { RabbitMQModule as GolevelupRabbitMQModule } from '@golevelup/nestjs-rab
 import { ReadModelModule } from '@ecoma-io/iam-infrastructure';
 import {
   TenantProjector,
+  UserProjector,
   RabbitMqAdapter,
   CheckpointRepositoryImpl,
   UpcasterRegistryImpl,
@@ -70,18 +71,22 @@ import { AppConfigService } from './app.config-service';
     CheckpointRepositoryImpl,
     UpcasterRegistryImpl,
     TenantProjector,
+    UserProjector,
     EventConsumer,
-    // Bootstrapper to start projector on init
+    // Bootstrapper to start projectors on init
     {
       provide: 'APP_BOOTSTRAP',
-      useFactory: (projector: TenantProjector) => {
+      useFactory: (
+        tenantProjector: TenantProjector,
+        userProjector: UserProjector
+      ) => {
         return {
           async onModuleInit() {
-            await projector.start();
+            await Promise.all([tenantProjector.start(), userProjector.start()]);
           },
         } as OnModuleInit;
       },
-      inject: [TenantProjector],
+      inject: [TenantProjector, UserProjector],
     },
   ],
 })

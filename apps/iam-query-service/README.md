@@ -85,9 +85,55 @@ Get tenant by ID.
 
 **Example:**
 
+**Example:**
+
 ```bash
 curl http://localhost:3001/tenants/b17a5f2a-5812-4f98-8142-446cb07bf568
 ```
+
+### Users
+
+#### `GET /users/:id`
+
+Get user by ID.
+
+**Parameters:**
+
+- `id` (path, UUID): User ID
+
+**Response (200 OK):**
+
+```json
+{
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "email": "user@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "createdAt": "2025-11-18T07:08:30.123Z",
+  "updatedAt": "2025-11-18T07:08:30.123Z"
+}
+```
+
+**Note:** Password fields are never exposed in query responses for security.
+
+**Error Responses:**
+
+- `404 Not Found`: User does not exist
+  ```json
+  {
+    "message": "User {id} not found",
+    "details": null,
+    "metadata": null
+  }
+  ```
+
+**Example:**
+
+```bash
+curl http://localhost:3001/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
+
+### Health
 
 ### Health
 
@@ -307,9 +353,13 @@ npx nx e2e iam-command-e2e --testFile=tenant-complete-flow.spec.ts
 
 ## Future Enhancements
 
+**Implemented endpoints:**
+
+- ✅ `GET /tenants/:id` - Tenant queries (Phase 1)
+- ✅ `GET /users/:id` - User queries (Phase 2.1)
+
 **Planned endpoints:**
 
-- `GET /users/:id` - User queries (Phase 2.1)
 - `GET /roles/:id` - Role queries (Phase 2.2)
 - `GET /tenants/:tenantId/users` - List tenant members
 - `GET /users/:userId/permissions?tenantId=...` - Permission lookup
