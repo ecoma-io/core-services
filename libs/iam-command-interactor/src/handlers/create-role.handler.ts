@@ -3,7 +3,7 @@ import {
   IAggregateRepository,
   IUnitOfWork,
 } from '@ecoma-io/interactor';
-import { RoleAggregate, RoleName, PermissionKey } from '@ecoma-io/iam-domain';
+import { RoleAggregate } from '@ecoma-io/iam-domain';
 import { CreateRoleCommand } from '../commands/create-role.command';
 
 export class CreateRoleHandler
@@ -17,24 +17,12 @@ export class CreateRoleHandler
   async handle(command: CreateRoleCommand): Promise<number> {
     const { roleId, tenantId, name, description, permissionKeys } = command;
 
-    // Create value objects
-    const roleNameVO = RoleName.create(name);
-    const permissionKeyVOs = permissionKeys.map((key) =>
-      PermissionKey.create(key)
-    );
-
     // Create new role aggregate
-    const role = new RoleAggregate();
-    role.createRole(
-      roleId,
-      tenantId,
-      roleNameVO,
-      description,
-      permissionKeyVOs
-    );
+    const role = new RoleAggregate(roleId);
+    role.create(roleId, tenantId, name, permissionKeys);
 
     // Get uncommitted events
-    const events = role.getUncommittedEvents();
+    const events = Array.from(role.uncommittedEvents);
 
     // Commit via unit of work
     const streamVersion = await this.unitOfWork.commit(

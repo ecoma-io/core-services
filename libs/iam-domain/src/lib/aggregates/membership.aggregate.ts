@@ -1,4 +1,5 @@
 import { AggregateRoot, DomainEventEnvelope } from '@ecoma-io/domain';
+import { v7 as uuidv7 } from 'uuid';
 
 export interface MembershipState {
   membershipId?: string;
@@ -37,7 +38,7 @@ export class MembershipAggregate extends AggregateRoot<MembershipState> {
 
   addToTenant(membershipId: string, userId: string, tenantId: string) {
     const ev: DomainEventEnvelope = {
-      id: `${Date.now()}-${Math.random()}`,
+      id: uuidv7(),
       type: 'UserAddedToTenant',
       aggregateId: this._id ?? membershipId,
       occurredAt: new Date().toISOString(),
@@ -50,7 +51,7 @@ export class MembershipAggregate extends AggregateRoot<MembershipState> {
 
   assignRole(roleId: string) {
     const ev: DomainEventEnvelope = {
-      id: `${Date.now()}-${Math.random()}`,
+      id: uuidv7(),
       type: 'RoleAssignedToUser',
       aggregateId: this._state.membershipId as string,
       occurredAt: new Date().toISOString(),

@@ -7,9 +7,9 @@ REST API service for querying IAM read models in a CQRS architecture.
 The IAM Query Service is the **read side** of the IAM CQRS system, providing REST endpoints to query denormalized read models that are populated by the projector worker. It handles:
 
 - Tenant queries
-- User queries (planned)
-- Role queries (planned)
-- Membership queries (planned)
+- User queries
+- Role queries
+- Membership queries
 - Permission lookup (planned)
 
 ## Architecture
@@ -131,6 +131,91 @@ Get user by ID.
 
 ```bash
 curl http://localhost:3001/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
+
+### Roles
+
+#### `GET /roles/:id`
+
+Get role by ID.
+
+**Parameters:**
+
+- `id` (path, UUID): Role ID
+
+**Response (200 OK):**
+
+```json
+{
+  "roleId": "3ca83223-7412-4d65-ace7-483514069c07",
+  "tenantId": "b17a5f2a-5812-4f98-8142-446cb07bf568",
+  "name": "Admin",
+  "permissionKeys": ["users:read", "users:write", "tenants:admin"],
+  "description": "Administrator role with full permissions",
+  "createdAt": "2025-11-18T07:51:46.123Z",
+  "updatedAt": "2025-11-18T07:51:46.123Z"
+}
+```
+
+**Note:** Roles are scoped to tenants - each role belongs to exactly one tenant.
+
+**Error Responses:**
+
+- `404 Not Found`: Role does not exist
+  ```json
+  {
+    "message": "Role {id} not found",
+    "details": null,
+    "metadata": null
+  }
+  ```
+
+**Example:**
+
+```bash
+curl http://localhost:3001/roles/3ca83223-7412-4d65-ace7-483514069c07
+```
+
+### Memberships
+
+#### `GET /memberships/:id`
+
+Get membership by ID (user-tenant relationship with roles).
+
+**Parameters:**
+
+- `id` (path, UUID): Membership ID
+
+**Response (200 OK):**
+
+```json
+{
+  "membershipId": "5014604f-37c1-4776-b5c6-8d368b6d730e",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "tenantId": "b17a5f2a-5812-4f98-8142-446cb07bf568",
+  "roleIds": ["3ca83223-7412-4d65-ace7-483514069c07"],
+  "createdAt": "2025-11-18T08:22:36.123Z",
+  "updatedAt": "2025-11-18T08:22:36.123Z"
+}
+```
+
+**Note:** Memberships link users to tenants with assigned role IDs stored as JSONB array. Empty array `[]` indicates user has access to tenant but no roles assigned yet.
+
+**Error Responses:**
+
+- `404 Not Found`: Membership does not exist
+  ```json
+  {
+    "message": "Membership {id} not found",
+    "details": null,
+    "metadata": null
+  }
+  ```
+
+**Example:**
+
+```bash
+curl http://localhost:3001/memberships/5014604f-37c1-4776-b5c6-8d368b6d730e
 ```
 
 ### Health
@@ -357,13 +442,14 @@ npx nx e2e iam-command-e2e --testFile=tenant-complete-flow.spec.ts
 
 - ✅ `GET /tenants/:id` - Tenant queries (Phase 1)
 - ✅ `GET /users/:id` - User queries (Phase 2.1)
+- ✅ `GET /roles/:id` - Role queries (Phase 2.2)
+- ✅ `GET /memberships/:id` - Membership queries (Phase 2.3)
 
 **Planned endpoints:**
 
-- `GET /roles/:id` - Role queries (Phase 2.2)
-- `GET /tenants/:tenantId/users` - List tenant members
+- `GET /tenants/:tenantId/users` - List tenant members (Phase 2.3+)
 - `GET /users/:userId/permissions?tenantId=...` - Permission lookup
-- `GET /search/users?q=...` - Full-text search (Phase 2+)
+- `GET /search/users?q=...` - Full-text search (Phase 3+)
 
 **Performance optimizations:**
 

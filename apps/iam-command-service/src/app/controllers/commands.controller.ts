@@ -19,6 +19,16 @@ import {
   CreateTenantHandler,
   makeCreateTenantCommand,
 } from '@ecoma-io/iam-command-interactor';
+import { CreateRoleDto } from '../dtos/create-role.dto';
+import {
+  CreateRoleHandler,
+  makeCreateRoleCommand,
+} from '@ecoma-io/iam-command-interactor';
+import { CreateMembershipDto } from '../dtos/create-membership.dto';
+import {
+  CreateMembershipHandler,
+  makeCreateMembershipCommand,
+} from '@ecoma-io/iam-command-interactor';
 
 /**
  * Commands Controller - Write Side Endpoints
@@ -30,7 +40,9 @@ import {
 export class CommandsController {
   constructor(
     private readonly registerUserHandler: RegisterUserHandler,
-    private readonly createTenantHandler: CreateTenantHandler
+    private readonly createTenantHandler: CreateTenantHandler,
+    private readonly createRoleHandler: CreateRoleHandler,
+    private readonly createMembershipHandler: CreateMembershipHandler
   ) {}
   /**
    * Example: Register a new user
@@ -76,6 +88,62 @@ export class CommandsController {
       return { tenantId, streamVersion };
     } catch (err) {
       Logger.error(`CreateTenant failed: ${tenantId}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Create a new role
+   * POST /commands/create-role
+   */
+  @Post('create-role')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  async createRole(@Body() body: CreateRoleDto) {
+    const roleId = uuidv4();
+    const command = makeCreateRoleCommand({
+      roleId,
+      tenantId: body.tenantId,
+      name: body.name,
+      permissionKeys: body.permissionKeys,
+      description: body.description,
+    });
+    Logger.debug(`CreateRole start: ${roleId}`);
+    try {
+      const streamVersion = await this.createRoleHandler.handle(command);
+      Logger.debug(`CreateRole done: ${roleId} v${streamVersion}`);
+      return { roleId, streamVersion };
+    } catch (err) {
+      Logger.error(`CreateRole failed: ${roleId}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Create a new membership (link user to tenant)
+   * POST /commands/create-membership
+   */
+  @Post('create-membership')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  async createMembership(@Body() body: CreateMembershipDto) {
+    const command = makeCreateMembershipCommand({
+      membershipId: body.membershipId,
+      userId: body.userId,
+      tenantId: body.tenantId,
+    });
+    Logger.debug(`CreateMembership start: ${body.membershipId}`);
+    try {
+      const result = await this.createMembershipHandler.handle(command);
+      Logger.debug(
+        `CreateMembership done: ${body.membershipId} v${result.streamVersion}`
+      );
+      return {
+        membershipId: body.membershipId,
+        streamVersion: result.streamVersion,
+      };
+    } catch (err) {
+      Logger.error(`CreateMembership failed: ${body.membershipId}`);
       throw err;
     }
   }

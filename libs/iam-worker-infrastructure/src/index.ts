@@ -4,6 +4,9 @@ export * from './lib/base-projector';
 export { CheckpointRepositoryImpl } from './lib/checkpoint.repository';
 export { UpcasterRegistryImpl } from './lib/upcaster.registry';
 export * from './lib/adapters/rabbitmq-adapter';
-export * from './projectors/user.projector';
 export * from './projectors/tenant.projector';
+export * from './projectors/user.projector';
+export * from './projectors/role.projector';
+export * from './projectors/membership.projector';
+// export * from './projectors/permission.projector'; // TODO: Fix to match BaseProjector signature
 export * from './entities';

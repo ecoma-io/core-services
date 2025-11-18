@@ -1,4 +1,5 @@
 import { AggregateRoot, DomainEventEnvelope } from '@ecoma-io/domain';
+import { v7 as uuidv7 } from 'uuid';
 
 export interface RoleState {
   roleId?: string;
@@ -35,7 +36,7 @@ export class RoleAggregate extends AggregateRoot<RoleState> {
     permissionKeys: string[]
   ) {
     const ev: DomainEventEnvelope = {
-      id: `${Date.now()}-${Math.random()}`,
+      id: uuidv7(),
       type: 'RoleCreated',
       aggregateId: this._id ?? roleId,
       occurredAt: new Date().toISOString(),

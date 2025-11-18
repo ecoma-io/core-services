@@ -6,6 +6,8 @@ import { ReadModelModule } from '@ecoma-io/iam-infrastructure';
 import {
   TenantProjector,
   UserProjector,
+  RoleProjector,
+  MembershipProjector,
   RabbitMqAdapter,
   CheckpointRepositoryImpl,
   UpcasterRegistryImpl,
@@ -72,21 +74,35 @@ import { AppConfigService } from './app.config-service';
     UpcasterRegistryImpl,
     TenantProjector,
     UserProjector,
+    RoleProjector,
+    MembershipProjector,
     EventConsumer,
     // Bootstrapper to start projectors on init
     {
       provide: 'APP_BOOTSTRAP',
       useFactory: (
         tenantProjector: TenantProjector,
-        userProjector: UserProjector
+        userProjector: UserProjector,
+        roleProjector: RoleProjector,
+        membershipProjector: MembershipProjector
       ) => {
         return {
           async onModuleInit() {
-            await Promise.all([tenantProjector.start(), userProjector.start()]);
+            await Promise.all([
+              tenantProjector.start(),
+              userProjector.start(),
+              roleProjector.start(),
+              membershipProjector.start(),
+            ]);
           },
         } as OnModuleInit;
       },
-      inject: [TenantProjector, UserProjector],
+      inject: [
+        TenantProjector,
+        UserProjector,
+        RoleProjector,
+        MembershipProjector,
+      ],
     },
   ],
 })
