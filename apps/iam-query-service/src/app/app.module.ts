@@ -1,34 +1,33 @@
 import { Module } from '@nestjs/common';
-import { CommandsController } from './controllers/commands.controller';
 import { HealthModule } from '@ecoma-io/iam-infrastructure';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigService } from './app.config-service';
-import { EventStoreDBClient } from '@eventstore/db-client';
-import { EventStoreDbRepository } from '@ecoma-io/iam-infrastructure';
-import { RabbitMQInfraModule } from '@ecoma-io/iam-infrastructure';
-import { RabbitMQEventPublisher } from '@ecoma-io/iam-infrastructure';
-import { Provider } from '@nestjs/common';
-import { AppUnitOfWork } from './application/unit-of-work';
-import { UserAggregateRepository } from './application/user-aggregate.repository';
-import { TenantAggregateRepository } from './application/tenant-aggregate.repository';
 import {
-  RegisterUserHandler,
-  CreateTenantHandler,
-} from '@ecoma-io/iam-command-interactor';
-
-export const EVENT_STORE_CLIENT = Symbol('EVENT_STORE_CLIENT');
-export const USER_AGG_REPO = Symbol('USER_AGG_REPO');
-export const TENANT_AGG_REPO = Symbol('TENANT_AGG_REPO');
-export const APP_UOW = Symbol('APP_UOW');
+  TenantEntity,
+  UserEntity,
+  RoleEntity,
+  MembershipEntity,
+  ServiceDefinitionEntity,
+  TenantReadRepository,
+  UserReadRepository,
+  RoleReadRepository,
+  MembershipReadRepository,
+  ServiceDefinitionReadRepository,
+} from '@ecoma-io/iam-infrastructure';
+import {
+  GetTenantHandler,
+  GetUserHandler,
+} from '@ecoma-io/iam-query-interactor';
+import { TenantsController } from './controllers/tenants.controller';
 
 /**
- * IAM Command Service - Write Side (CQRS)
+ * IAM Query Service - Read Side (CQRS)
  *
- * Handles commands that mutate state:
- * - Saves events to EventStoreDB
- * - Publishes events to RabbitMQ
+ * Handles queries that read state from read models:
+ * - Reads from PostgreSQL read models
+ * - Exposes REST API for querying
  *
- * @see docs/iam/architecture.md - Section 4.1 Write Side Flow
+ * @see docs/iam/architecture.md - Section 4.2 Read Side Flow
  *
  * Config pattern: Use @ecoma-io/nestjs-config (BaseConfigService)
  * - Create app.config.ts with class extending BaseConfigService<AppEnv>
@@ -41,70 +40,37 @@ export const APP_UOW = Symbol('APP_UOW');
     TypeOrmModule.forRoot({
       type: 'postgres',
       ...new AppConfigService().getDatabaseConfig(),
-      entities: [], // Read models will be added later
-      synchronize: false, // Use migrations for schema management
+      entities: [
+        TenantEntity,
+        UserEntity,
+        RoleEntity,
+        MembershipEntity,
+        ServiceDefinitionEntity,
+      ],
+      // In tests, enable synchronize to create read model tables
+      synchronize: process.env['NODE_ENV'] === 'test',
       logging: process.env['NODE_ENV'] === 'development',
     }),
-    // RabbitMQ infrastructure for event publishing
-    RabbitMQInfraModule.forRootAsync({
-      useFactory: async () => new AppConfigService().getRabbitMQConfig(),
-    }),
+    TypeOrmModule.forFeature([
+      TenantEntity,
+      UserEntity,
+      RoleEntity,
+      MembershipEntity,
+      ServiceDefinitionEntity,
+    ]),
     HealthModule,
   ],
-  controllers: [CommandsController],
+  controllers: [TenantsController],
   providers: [
-    // EventStoreDB Client
-    {
-      provide: EVENT_STORE_CLIENT,
-      useFactory: () => {
-        const es = new AppConfigService().getEventStoreConfig();
-        // Connection string may include tls=false & other params from e2e
-        return EventStoreDBClient.connectionString(es.connectionString);
-      },
-    } as Provider,
-    // EventStore Repository (low-level)
-    {
-      provide: EventStoreDbRepository,
-      useFactory: (client: EventStoreDBClient) =>
-        new EventStoreDbRepository(client),
-      inject: [EVENT_STORE_CLIENT],
-    },
-    // Aggregate Repository for User
-    {
-      provide: USER_AGG_REPO,
-      useFactory: (esRepo: EventStoreDbRepository) =>
-        new UserAggregateRepository(esRepo),
-      inject: [EventStoreDbRepository],
-    },
-    // Aggregate Repository for Tenant
-    {
-      provide: TENANT_AGG_REPO,
-      useFactory: (esRepo: EventStoreDbRepository) =>
-        new TenantAggregateRepository(esRepo),
-      inject: [EventStoreDbRepository],
-    },
-    // Application Unit of Work (persist + publish)
-    {
-      provide: APP_UOW,
-      useFactory: (
-        esRepo: EventStoreDbRepository,
-        publisher: RabbitMQEventPublisher
-      ) => new AppUnitOfWork(esRepo, publisher),
-      inject: [EventStoreDbRepository, RabbitMQEventPublisher],
-    },
-    // Command handler providers (example: RegisterUserHandler)
-    {
-      provide: RegisterUserHandler,
-      useFactory: (repo: UserAggregateRepository, uow: AppUnitOfWork) =>
-        new RegisterUserHandler(repo, uow),
-      inject: [USER_AGG_REPO, APP_UOW],
-    },
-    {
-      provide: CreateTenantHandler,
-      useFactory: (repo: TenantAggregateRepository, uow: AppUnitOfWork) =>
-        new CreateTenantHandler(repo, uow),
-      inject: [TENANT_AGG_REPO, APP_UOW],
-    },
+    // Read model repositories
+    TenantReadRepository,
+    UserReadRepository,
+    RoleReadRepository,
+    MembershipReadRepository,
+    ServiceDefinitionReadRepository,
+    // Query handlers
+    GetTenantHandler,
+    GetUserHandler,
   ],
 })
 export class AppModule {}

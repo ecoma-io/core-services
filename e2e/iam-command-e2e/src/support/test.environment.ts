@@ -19,6 +19,8 @@ export class TestEnvironment extends BaseIntegrationEnvironment {
    * The started resource service container.
    */
   private iamCommandService: StartedTestContainer;
+  private iamQueryService: StartedTestContainer;
+  private iamProjectorWorker: StartedTestContainer;
   public redis: Redis;
 
   /**
@@ -34,6 +36,20 @@ export class TestEnvironment extends BaseIntegrationEnvironment {
    */
   public get resourceServiceContainer(): StartedTestContainer {
     return this.iamCommandService;
+  }
+
+  /**
+   * Gets the command service exposed port.
+   */
+  public get commandServicePort(): number {
+    return this.iamCommandService.getMappedPort(3000);
+  }
+
+  /**
+   * Gets the query service exposed port.
+   */
+  public get queryServicePort(): number {
+    return this.iamQueryService.getMappedPort(3001);
   }
 
   /**
@@ -110,10 +126,40 @@ export class TestEnvironment extends BaseIntegrationEnvironment {
       .withStartupTimeout(180000) // 3 minutes total startup timeout
       .start();
 
-    // ...existing code...
-
     this.iamCommandService = iamCommandService;
 
-    return [iamCommandService];
+    // Start IAM Query Service (read side)
+    const queryServiceEnv = {
+      ...serviceEnv,
+      PORT: '3001', // Different port for query service
+    };
+
+    const iamQueryService = await new GenericContainer('iam-query-service')
+      .withEnvironment(queryServiceEnv)
+      .withExposedPorts(3001)
+      .withLogConsumer(this.createLogConsumer('iam-query-service'))
+      .withWaitStrategy(Wait.forListeningPorts().withStartupTimeout(60000))
+      .withStartupTimeout(180000)
+      .start();
+
+    this.iamQueryService = iamQueryService;
+
+    // Start IAM Projector Worker (event consumer)
+    const iamProjectorWorker = await new GenericContainer(
+      'iam-projector-worker'
+    )
+      .withEnvironment(serviceEnv) // Uses same env as command service
+      .withLogConsumer(this.createLogConsumer('iam-projector-worker'))
+      .withWaitStrategy(
+        Wait.forLogMessage(
+          /IAM Projector Worker initialized/i
+        ).withStartupTimeout(60000)
+      )
+      .withStartupTimeout(180000)
+      .start();
+
+    this.iamProjectorWorker = iamProjectorWorker;
+
+    return [iamCommandService, iamQueryService, iamProjectorWorker];
   }
 }
