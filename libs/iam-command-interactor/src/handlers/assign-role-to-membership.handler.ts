@@ -3,7 +3,8 @@ import {
   IAggregateRepository,
   IUnitOfWork,
 } from '@ecoma-io/interactor';
-import { MembershipAggregate, DomainException } from '@ecoma-io/iam-domain';
+import { MembershipAggregate } from '@ecoma-io/iam-domain';
+import { DomainException } from '@ecoma-io/domain';
 import { AssignRoleToMembershipCommand } from '../commands/assign-role-to-membership.command';
 
 export class AssignRoleToMembershipHandler
@@ -18,7 +19,7 @@ export class AssignRoleToMembershipHandler
     const { membershipId, roleId } = command;
 
     // Load membership aggregate
-    const membership = await this.membershipRepository.findById(membershipId);
+    const membership = await this.membershipRepository.load(membershipId);
     if (!membership) {
       throw new DomainException(`Membership with id ${membershipId} not found`);
     }
@@ -27,7 +28,7 @@ export class AssignRoleToMembershipHandler
     membership.assignRole(roleId);
 
     // Get uncommitted events and current version
-    const events = membership.getUncommittedEvents();
+    const events = Array.from(membership.uncommittedEvents);
     const currentVersion = membership.version;
 
     // Commit via unit of work

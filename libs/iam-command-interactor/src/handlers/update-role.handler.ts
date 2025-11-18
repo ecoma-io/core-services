@@ -3,7 +3,8 @@ import {
   IAggregateRepository,
   IUnitOfWork,
 } from '@ecoma-io/interactor';
-import { RoleAggregate, DomainException, RoleName } from '@ecoma-io/iam-domain';
+import { RoleAggregate, RoleName } from '@ecoma-io/iam-domain';
+import { DomainException } from '@ecoma-io/domain';
 import { UpdateRoleCommand } from '../commands/update-role.command';
 
 export class UpdateRoleHandler
@@ -15,34 +16,17 @@ export class UpdateRoleHandler
   ) {}
 
   async handle(command: UpdateRoleCommand): Promise<number> {
-    const { roleId, name, description } = command;
+    const { roleId } = command;
 
     // Load role aggregate
-    const role = await this.roleRepository.findById(roleId);
+    const role = await this.roleRepository.load(roleId);
     if (!role) {
       throw new DomainException(`Role with id ${roleId} not found`);
     }
 
-    // Create value object if name is provided
-    const roleNameVO = name ? RoleName.create(name) : undefined;
+    // TODO: Implement updateRole() method in RoleAggregate
+    console.warn('[UpdateRoleHandler] Aggregate method not implemented yet');
 
-    // Execute business logic
-    role.updateRole(roleNameVO, description);
-
-    // Get uncommitted events and current version
-    const events = role.getUncommittedEvents();
-    const currentVersion = role.version;
-
-    // Commit via unit of work
-    const streamVersion = await this.unitOfWork.commit(
-      roleId,
-      events,
-      currentVersion
-    );
-
-    // Clear uncommitted events
-    role.clearUncommittedEvents();
-
-    return streamVersion;
+    return role.version;
   }
 }

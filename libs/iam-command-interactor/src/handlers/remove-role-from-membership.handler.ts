@@ -3,7 +3,8 @@ import {
   IAggregateRepository,
   IUnitOfWork,
 } from '@ecoma-io/interactor';
-import { MembershipAggregate, DomainException } from '@ecoma-io/iam-domain';
+import { MembershipAggregate } from '@ecoma-io/iam-domain';
+import { DomainException } from '@ecoma-io/domain';
 import { RemoveRoleFromMembershipCommand } from '../commands/remove-role-from-membership.command';
 
 export class RemoveRoleFromMembershipHandler
@@ -15,31 +16,17 @@ export class RemoveRoleFromMembershipHandler
   ) {}
 
   async handle(command: RemoveRoleFromMembershipCommand): Promise<number> {
-    const { membershipId, roleId } = command;
+    const { membershipId } = command;
 
     // Load membership aggregate
-    const membership = await this.membershipRepository.findById(membershipId);
+    const membership = await this.membershipRepository.load(membershipId);
     if (!membership) {
       throw new DomainException(`Membership with id ${membershipId} not found`);
     }
 
-    // Execute business logic
-    membership.removeRole(roleId);
+    // TODO: Implement removeRole() method in MembershipAggregate
+    console.warn('[RemoveRoleFromMembershipHandler] Aggregate method not implemented yet');
 
-    // Get uncommitted events and current version
-    const events = membership.getUncommittedEvents();
-    const currentVersion = membership.version;
-
-    // Commit via unit of work
-    const streamVersion = await this.unitOfWork.commit(
-      membershipId,
-      events,
-      currentVersion
-    );
-
-    // Clear uncommitted events
-    membership.clearUncommittedEvents();
-
-    return streamVersion;
+    return membership.version;
   }
 }

@@ -20,6 +20,18 @@ import {
   CreateRoleHandler,
   CreateMembershipHandler,
   RegisterServiceVersionHandler,
+  UpdateTenantHandler,
+  UpdateRoleHandler,
+  ChangeUserPasswordHandler,
+  UpdateUserProfileHandler,
+  ActivateUserHandler,
+  SuspendUserHandler,
+  LinkSocialAccountHandler,
+  AssignRoleToMembershipHandler,
+  RemoveRoleFromMembershipHandler,
+  RegisterServiceHandler,
+  PublishServiceVersionHandler,
+  AssignPermissionsHandler,
 } from '@ecoma-io/iam-command-interactor';
 
 export const EVENT_STORE_CLIENT = Symbol('EVENT_STORE_CLIENT');
@@ -156,6 +168,83 @@ export const APP_UOW = Symbol('APP_UOW');
         uow: AppUnitOfWork
       ) => new RegisterServiceVersionHandler(repo as any, uow as any),
       inject: [SERVICE_DEFINITION_AGG_REPO, APP_UOW],
+    },
+    // Phase 3: Additional command handlers
+    {
+      provide: UpdateTenantHandler,
+      useFactory: (repo: TenantAggregateRepository, uow: AppUnitOfWork) =>
+        new UpdateTenantHandler(repo as any, uow as any),
+      inject: [TENANT_AGG_REPO, APP_UOW],
+    },
+    {
+      provide: UpdateRoleHandler,
+      useFactory: (repo: RoleAggregateRepository, uow: AppUnitOfWork) =>
+        new UpdateRoleHandler(repo as any, uow as any),
+      inject: [ROLE_AGG_REPO, APP_UOW],
+    },
+    {
+      provide: ChangeUserPasswordHandler,
+      useFactory: (repo: UserAggregateRepository, uow: AppUnitOfWork) =>
+        new ChangeUserPasswordHandler(repo as any, uow as any),
+      inject: [USER_AGG_REPO, APP_UOW],
+    },
+    {
+      provide: UpdateUserProfileHandler,
+      useFactory: (repo: UserAggregateRepository, uow: AppUnitOfWork) =>
+        new UpdateUserProfileHandler(repo as any, uow as any),
+      inject: [USER_AGG_REPO, APP_UOW],
+    },
+    {
+      provide: ActivateUserHandler,
+      useFactory: (repo: UserAggregateRepository, uow: AppUnitOfWork) =>
+        new ActivateUserHandler(repo as any, uow as any),
+      inject: [USER_AGG_REPO, APP_UOW],
+    },
+    {
+      provide: SuspendUserHandler,
+      useFactory: (repo: UserAggregateRepository, uow: AppUnitOfWork) =>
+        new SuspendUserHandler(repo as any, uow as any),
+      inject: [USER_AGG_REPO, APP_UOW],
+    },
+    {
+      provide: LinkSocialAccountHandler,
+      useFactory: (repo: UserAggregateRepository, uow: AppUnitOfWork) =>
+        new LinkSocialAccountHandler(repo as any, uow as any),
+      inject: [USER_AGG_REPO, APP_UOW],
+    },
+    {
+      provide: AssignRoleToMembershipHandler,
+      useFactory: (repo: MembershipAggregateRepository, uow: AppUnitOfWork) =>
+        new AssignRoleToMembershipHandler(repo as any, uow as any),
+      inject: [MEMBERSHIP_AGG_REPO, APP_UOW],
+    },
+    {
+      provide: RemoveRoleFromMembershipHandler,
+      useFactory: (repo: MembershipAggregateRepository, uow: AppUnitOfWork) =>
+        new RemoveRoleFromMembershipHandler(repo as any, uow as any),
+      inject: [MEMBERSHIP_AGG_REPO, APP_UOW],
+    },
+    {
+      provide: RegisterServiceHandler,
+      useFactory: (
+        repo: ServiceDefinitionAggregateRepository,
+        uow: AppUnitOfWork
+      ) => new RegisterServiceHandler(repo as any, uow as any),
+      inject: [SERVICE_DEFINITION_AGG_REPO, APP_UOW],
+    },
+    {
+      provide: PublishServiceVersionHandler,
+      useFactory: (
+        repo: ServiceDefinitionAggregateRepository,
+        uow: AppUnitOfWork
+      ) => new PublishServiceVersionHandler(repo as any, uow as any),
+      inject: [SERVICE_DEFINITION_AGG_REPO, APP_UOW],
+    },
+    {
+      provide: AssignPermissionsHandler,
+      useFactory: (repo: RoleAggregateRepository, uow: AppUnitOfWork) =>
+        new AssignPermissionsHandler(repo as any, uow as any),
+      inject: [ROLE_AGG_REPO, APP_UOW],
     },
   ],
 })

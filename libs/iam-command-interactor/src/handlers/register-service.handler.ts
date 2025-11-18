@@ -15,23 +15,20 @@ export class RegisterServiceHandler
   ) {}
 
   async handle(command: RegisterServiceCommand): Promise<number> {
-    const { serviceId, name, permissionsTree, version } = command;
-
-    // Create value object
-    const serviceNameVO = ServiceName.create(name);
+    const { serviceId, version, permissionsTree, name } = command;
 
     // Create new service aggregate
     const service = new ServiceDefinitionAggregate();
-    service.registerService(serviceId, serviceNameVO, permissionsTree, version);
+    service.registerVersion(serviceId, version, permissionsTree, name);
 
     // Get uncommitted events
-    const events = service.getUncommittedEvents();
+    const events = Array.from(service.uncommittedEvents);
 
-    // Commit via unit of work
+    // Commit via unit of work (new stream, expectedVersion = -1)
     const streamVersion = await this.unitOfWork.commit(
       serviceId,
       events,
-      -1 // Expected version -1 means stream should not exist
+      -1
     );
 
     // Clear uncommitted events
