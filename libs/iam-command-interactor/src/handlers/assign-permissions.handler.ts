@@ -25,7 +25,9 @@ export class AssignPermissionsHandler
     }
 
     // TODO: Implement assignPermissions() method in RoleAggregate
-    console.warn('[AssignPermissionsHandler] Aggregate method not implemented yet');
+    console.warn(
+      '[AssignPermissionsHandler] Aggregate method not implemented yet'
+    );
 
     return role.version;
   }

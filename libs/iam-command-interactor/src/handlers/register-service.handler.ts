@@ -25,11 +25,7 @@ export class RegisterServiceHandler
     const events = Array.from(service.uncommittedEvents);
 
     // Commit via unit of work (new stream, expectedVersion = -1)
-    const streamVersion = await this.unitOfWork.commit(
-      serviceId,
-      events,
-      -1
-    );
+    const streamVersion = await this.unitOfWork.commit(serviceId, events, -1);
 
     // Clear uncommitted events
     service.clearUncommittedEvents();

@@ -25,7 +25,9 @@ export class RemoveRoleFromMembershipHandler
     }
 
     // TODO: Implement removeRole() method in MembershipAggregate
-    console.warn('[RemoveRoleFromMembershipHandler] Aggregate method not implemented yet');
+    console.warn(
+      '[RemoveRoleFromMembershipHandler] Aggregate method not implemented yet'
+    );
 
     return membership.version;
   }
