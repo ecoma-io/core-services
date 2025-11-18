@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { TestEnvironment } from '../../support/test.environment';
-import { v4 as uuidv4 } from 'uuid';
+import { v7 as uuidv7 } from 'uuid';
 
 interface Context {
   commandUrl: string;
@@ -34,7 +34,7 @@ describe('Vertical Slice - ServiceDefinition Complete Flow', () => {
    * 5. Verify top 3 major versions kept (latest of each: v3.0.0, v2.1.0, v1.1.0)
    */
   it('should register service versions via command and read them back via query with pruning', async () => {
-    const serviceId = uuidv4();
+    const serviceId = uuidv7();
     const serviceName = 'test-service';
 
     // 1. Register first version (v1.0.0)

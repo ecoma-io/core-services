@@ -15,7 +15,7 @@ export class CreateRoleHandler
   ) {}
 
   async handle(command: CreateRoleCommand): Promise<number> {
-    const { roleId, tenantId, name, description, permissionKeys } = command;
+    const { roleId, tenantId, name, permissionKeys } = command;
 
     // Create new role aggregate
     const role = new RoleAggregate(roleId);

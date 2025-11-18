@@ -1,6 +1,5 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-// Removed RabbitMQInfraModule in favor of direct Golevelup module import for AmqpConnection visibility
 import { RabbitMQModule as GolevelupRabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { ReadModelModule } from '@ecoma-io/iam-infrastructure';
 import {

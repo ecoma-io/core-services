@@ -16,7 +16,7 @@ export class RemoveRoleFromMembershipHandler
   ) {}
 
   async handle(command: RemoveRoleFromMembershipCommand): Promise<number> {
-    const { membershipId } = command;
+    const { membershipId, roleId } = command;
 
     // Load membership aggregate
     const membership = await this.membershipRepository.load(membershipId);
@@ -24,11 +24,23 @@ export class RemoveRoleFromMembershipHandler
       throw new DomainException(`Membership with id ${membershipId} not found`);
     }
 
-    // TODO: Implement removeRole() method in MembershipAggregate
-    console.warn(
-      '[RemoveRoleFromMembershipHandler] Aggregate method not implemented yet'
+    // Execute business logic
+    membership.removeRole(roleId);
+
+    // Get uncommitted events and current version
+    const events = Array.from(membership.uncommittedEvents);
+    const currentVersion = membership.version;
+
+    // Commit via unit of work
+    const streamVersion = await this.unitOfWork.commit(
+      membershipId,
+      events,
+      currentVersion + 1 // UnitOfWork subtracts 1
     );
 
-    return membership.version;
+    // Clear uncommitted events
+    membership.clearUncommittedEvents();
+
+    return streamVersion;
   }
 }

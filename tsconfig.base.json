@@ -25,13 +25,10 @@
       "@ecoma-io/nestjs-exceptions": [
         "packages/nestjs-exceptions/src/index.ts"
       ],
-      "@ecoma-io/nestjs-typeorm": ["packages/nestjs-typeorm/src/index.ts"],
       "@ecoma-io/nestjs-config": ["packages/nestjs-config/src/index.ts"],
-      "@ecoma-io/nestjs-health": ["packages/nestjs-health/src/index.ts"],
       "@ecoma-io/nestjs-filters": ["packages/nestjs-filters/src/index.ts"],
       "@ecoma-io/nestjs-pipes": ["packages/nestjs-pipes/src/index.ts"],
       "@ecoma-io/common": ["packages/common/src/index.ts"],
-      "@ecoma-io/nestjs-s3": ["packages/nestjs-s3/src/index.ts"],
       "@ecoma-io/nx-docker": ["packages/nx-docker/src/index.ts"],
       "@ecoma-io/nx-typeorm": ["packages/nx-typeorm/src/index.ts"],
       "@ecoma-io/expand-env": ["packages/expand-env/src/index.ts"],
@@ -52,7 +49,10 @@
       "@ecoma-io/iam-command-interactor": [
         "libs/iam-command-interactor/src/index.ts"
       ],
-      "@ecoma-io/iam-infrastructure": ["libs/iam-infrastructure/src/index.ts"]
+      "@ecoma-io/iam-infrastructure": ["libs/iam-infrastructure/src/index.ts"],
+      "@ecoma-io/nestjs-observability": [
+        "packages/nestjs-observability/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

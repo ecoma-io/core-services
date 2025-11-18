@@ -3,6 +3,8 @@ import { AuthController } from './auth.controller';
 import { TokenService } from './token.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { ExecutionContext } from '@nestjs/common';
+import { TOTPService } from './totp.service';
+import { SocialLoginService } from './social-login.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -11,7 +13,30 @@ describe('AuthController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [TokenService, JwtAuthGuard],
+      providers: [
+        TokenService,
+        {
+          provide: TOTPService,
+          useValue: {
+            generateSecret: (email: string) => ({
+              ascii: 'ascii',
+              base32: 'base32',
+              otpauth_url: `otpauth://totp/${email}`,
+            }),
+            getQRCodeUrl: (base32: string) => `qrcode://${base32}`,
+            verify: () => true,
+          },
+        },
+        {
+          provide: SocialLoginService,
+          useValue: {
+            handleGithubLogin: async (user: any) => ({
+              userId: user?.id ?? 'u1',
+              email: user?.email ?? 'admin@ecoma.io',
+            }),
+          },
+        },
+      ],
     }).compile();
     controller = module.get<AuthController>(AuthController);
     tokenService = module.get<TokenService>(TokenService);

@@ -3,7 +3,7 @@ import {
   IAggregateRepository,
   IUnitOfWork,
 } from '@ecoma-io/interactor';
-import { ServiceDefinitionAggregate, ServiceName } from '@ecoma-io/iam-domain';
+import { ServiceDefinitionAggregate } from '@ecoma-io/iam-domain';
 import { RegisterServiceCommand } from '../commands/register-service.command';
 
 export class RegisterServiceHandler

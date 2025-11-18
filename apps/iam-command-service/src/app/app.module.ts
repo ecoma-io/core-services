@@ -1,6 +1,11 @@
 import { Module } from '@nestjs/common';
 import { CommandsController } from './controllers/commands.controller';
-import { HealthModule } from '@ecoma-io/iam-infrastructure';
+import {
+  OutboxModule,
+  OutboxRepository,
+  SnapshotModule,
+  SnapshotRepository,
+} from '@ecoma-io/iam-infrastructure';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigService } from './app.config-service';
 import { EventStoreDBClient } from '@eventstore/db-client';
@@ -67,12 +72,14 @@ export const APP_UOW = Symbol('APP_UOW');
       entities: [], // Read models will be added later
       synchronize: false, // Use migrations for schema management
       logging: process.env['NODE_ENV'] === 'development',
+      autoLoadEntities: true, // Auto-load entities from OutboxModule
     }),
     // RabbitMQ infrastructure for event publishing
     RabbitMQInfraModule.forRootAsync({
       useFactory: async () => new AppConfigService().getRabbitMQConfig(),
     }),
-    HealthModule,
+    OutboxModule,
+    SnapshotModule,
   ],
   controllers: [CommandsController],
   providers: [
@@ -85,12 +92,20 @@ export const APP_UOW = Symbol('APP_UOW');
         return EventStoreDBClient.connectionString(es.connectionString);
       },
     } as Provider,
-    // EventStore Repository (low-level)
+    // EventStore Repository (low-level) with Outbox + Snapshot integration
     {
       provide: EventStoreDbRepository,
-      useFactory: (client: EventStoreDBClient) =>
-        new EventStoreDbRepository(client),
-      inject: [EVENT_STORE_CLIENT],
+      useFactory: (
+        client: EventStoreDBClient,
+        outboxRepository: OutboxRepository,
+        snapshotRepository: SnapshotRepository
+      ) =>
+        new EventStoreDbRepository(
+          client,
+          outboxRepository,
+          snapshotRepository
+        ),
+      inject: [EVENT_STORE_CLIENT, OutboxRepository, SnapshotRepository],
     },
     // Aggregate Repository for User
     {

@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { HealthModule } from '@ecoma-io/iam-infrastructure';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigService } from './app.config-service';
 import {
@@ -65,7 +64,6 @@ import { ServiceDefinitionsController } from './controllers/service-definitions.
       MembershipEntity,
       ServiceDefinitionEntity,
     ]),
-    HealthModule,
   ],
   controllers: [
     TenantsController,

@@ -6,20 +6,42 @@ import {
   ResolvedEvent,
   WrongExpectedVersionError,
 } from '@eventstore/db-client';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { IEventStoreRepository } from '@ecoma-io/iam-command-interactor';
 import { DomainEventEnvelope, DomainException } from '@ecoma-io/domain';
+import type { OutboxRepository } from '../outbox/outbox.repository';
+import type { SnapshotRepository } from '../snapshot/snapshot.repository';
 
 /**
  * EventStoreDB implementation for the Event Store repository.
  * Handles storing and retrieving domain events with optimistic concurrency control.
  *
+ * Outbox Integration (Phase 4.1):
+ * - If OutboxRepository is provided, events are also saved to the outbox table
+ * - Transactional consistency: Both EventStoreDB append and outbox save must succeed
+ * - Outbox publisher will poll and publish events to RabbitMQ
+ *
+ * Snapshot Integration (Phase 4.2):
+ * - If SnapshotRepository is provided, load() checks for snapshots before replaying events
+ * - Reduces event replay overhead for large aggregates
+ *
  * @see ADR-2: Technology Stack - EventStoreDB for Event Sourcing
  */
+@Injectable()
 export class EventStoreDbRepository implements IEventStoreRepository {
-  constructor(private readonly client: EventStoreDBClient) {}
+  private readonly logger = new Logger(EventStoreDbRepository.name);
+
+  constructor(
+    private readonly client: EventStoreDBClient,
+    @Optional() private readonly outboxRepository?: OutboxRepository,
+    @Optional() private readonly snapshotRepository?: SnapshotRepository
+  ) {}
 
   /**
    * Save events to the event store with optimistic locking.
+   *
+   * Phase 4.1 Enhancement: Also saves events to outbox table for guaranteed delivery.
+   * Both operations must succeed for transactional consistency.
    *
    * @param aggregateId - The aggregate identifier (stream name)
    * @param events - Domain events to append
@@ -53,9 +75,29 @@ export class EventStoreDbRepository implements IEventStoreRepository {
           ? 'no_stream'
           : BigInt(expectedVersion);
 
+      // Step 1: Append to EventStoreDB
       await this.client.appendToStream(streamName, eventStoreEvents, {
         expectedRevision: appendExpectation,
       });
+
+      // Step 2: Save to outbox table (if configured)
+      if (this.outboxRepository) {
+        const domainEvents = events.map((ev) => ({
+          id: ev.id,
+          type: ev.type,
+          aggregateId: ev.aggregateId,
+          eventVersion: ev.eventVersion,
+          payload: ev.payload,
+          metadata: ev.metadata,
+          occurredAt: ev.occurredAt,
+        }));
+
+        const aggregateType = this.extractAggregateType(streamName);
+        await this.outboxRepository.saveEvents(domainEvents, aggregateType);
+        this.logger.log(
+          `Saved ${events.length} events to outbox for ${streamName}`
+        );
+      }
     } catch (error) {
       if (error instanceof WrongExpectedVersionError) {
         throw new DomainException(
@@ -69,6 +111,8 @@ export class EventStoreDbRepository implements IEventStoreRepository {
   /**
    * Load events from the event store for an aggregate.
    *
+   * Phase 4.2 Enhancement: Checks for snapshots and only loads events after snapshot version.
+   *
    * @param aggregateId - The aggregate identifier
    * @param fromPosition - Optional starting position (inclusive)
    * @returns Array of domain events
@@ -78,12 +122,26 @@ export class EventStoreDbRepository implements IEventStoreRepository {
     fromPosition?: number
   ): Promise<DomainEventEnvelope[]> {
     const streamName = this.getStreamName(aggregateId);
+
+    // Check for snapshot if repository is available
+    let startPosition = fromPosition;
+    if (this.snapshotRepository && fromPosition === undefined) {
+      const snapshot = await this.snapshotRepository.loadSnapshot(aggregateId);
+      if (snapshot) {
+        startPosition = snapshot.lastEventPosition + 1; // Load events after snapshot
+        this.logger.log(
+          `Loaded snapshot for ${streamName} at position ${snapshot.lastEventPosition}, replaying from ${startPosition}`
+        );
+      }
+    }
+
     const events: DomainEventEnvelope[] = [];
 
     try {
       const readStream = this.client.readStream(streamName, {
         direction: FORWARDS,
-        fromRevision: fromPosition !== undefined ? BigInt(fromPosition) : START,
+        fromRevision:
+          startPosition !== undefined ? BigInt(startPosition) : START,
       });
 
       for await (const resolvedEvent of readStream) {
@@ -178,5 +236,14 @@ export class EventStoreDbRepository implements IEventStoreRepository {
     // If aggregateId already contains hyphen, use as-is
     // Otherwise, prefix with generic "Aggregate"
     return aggregateId.includes('-') ? aggregateId : `Aggregate-${aggregateId}`;
+  }
+
+  /**
+   * Extract aggregate type from stream name
+   * Example: "Tenant-123" => "Tenant"
+   */
+  private extractAggregateType(streamName: string): string {
+    const parts = streamName.split('-');
+    return parts[0] || 'Aggregate';
   }
 }

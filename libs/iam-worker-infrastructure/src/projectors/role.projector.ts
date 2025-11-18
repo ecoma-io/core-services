@@ -73,6 +73,27 @@ export class RoleProjector extends BaseProjector {
         }
         break;
       }
+      case 'PermissionsAssigned': {
+        const payload = envelope.payload as {
+          permissionKeys: string[];
+        };
+        // Merge new permissions with existing ones (use jsonb to ensure uniqueness)
+        await manager.query(
+          `UPDATE roles_read_model
+           SET permission_keys = (
+             SELECT jsonb_agg(DISTINCT elem)
+             FROM (
+               SELECT elem FROM jsonb_array_elements(permission_keys)
+               UNION
+               SELECT elem FROM jsonb_array_elements($2::jsonb)
+             ) AS combined(elem)
+           ),
+           updated_at = now()
+           WHERE role_id = $1`,
+          [envelope.aggregateId, JSON.stringify(payload.permissionKeys)]
+        );
+        break;
+      }
       case 'RoleDeleted': {
         await manager.query(`DELETE FROM roles_read_model WHERE role_id = $1`, [
           envelope.aggregateId,

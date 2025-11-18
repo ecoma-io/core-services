@@ -43,6 +43,12 @@ export type RabbitMQConfig = {
   exchange: string;
   /** Exchange type */
   exchangeType: 'topic' | 'direct' | 'fanout';
+  /** DLX configuration (Phase 4.4) */
+  dlx?: {
+    maxRetries?: number;
+    retryDelay?: number;
+    useExponentialBackoff?: boolean;
+  };
 };
 
 /**
@@ -133,6 +139,19 @@ class ProcessEnvironmentValidator {
   @IsString()
   @IsOptional()
   MQ_URI!: string; // fallback for e2e
+
+  // DLX Configuration (Phase 4.4)
+  @IsString()
+  @IsOptional()
+  DLX_MAX_RETRIES!: string;
+
+  @IsString()
+  @IsOptional()
+  DLX_RETRY_DELAY!: string;
+
+  @IsString()
+  @IsOptional()
+  DLX_USE_EXPONENTIAL_BACKOFF!: string;
 
   // PostgreSQL
   @IsString()
@@ -237,6 +256,12 @@ export class AppConfigService extends BaseConfigService<ProcessEnvironmentValida
         uri: this.environments.MQ_URI,
         exchange: this.environments.MQ_EXCHANGE || 'iam.events',
         exchangeType: this.environments.MQ_EXCHANGE_TYPE || 'topic',
+        dlx: {
+          maxRetries: parseInt(this.environments.DLX_MAX_RETRIES || '5', 10),
+          retryDelay: parseInt(this.environments.DLX_RETRY_DELAY || '5000', 10),
+          useExponentialBackoff:
+            this.environments.DLX_USE_EXPONENTIAL_BACKOFF !== 'false',
+        },
       };
     }
     const host = this.environments.MQ_HOST || 'localhost';
@@ -248,6 +273,12 @@ export class AppConfigService extends BaseConfigService<ProcessEnvironmentValida
       uri: `amqp://${user}:${pass}@${host}:${port}`,
       exchange: this.environments.MQ_EXCHANGE || 'iam.events',
       exchangeType: this.environments.MQ_EXCHANGE_TYPE || 'topic',
+      dlx: {
+        maxRetries: parseInt(this.environments.DLX_MAX_RETRIES || '5', 10),
+        retryDelay: parseInt(this.environments.DLX_RETRY_DELAY || '5000', 10),
+        useExponentialBackoff:
+          this.environments.DLX_USE_EXPONENTIAL_BACKOFF !== 'false',
+      },
     };
   }
 

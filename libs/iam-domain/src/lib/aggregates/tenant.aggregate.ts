@@ -21,6 +21,14 @@ export class TenantAggregate extends AggregateRoot<TenantState> {
         this._state.name = (event.payload as any).name;
         this._state.namespace = (event.payload as any).namespace;
         break;
+      case 'TenantUpdated':
+        if ((event.payload as any).name !== undefined) {
+          this._state.name = (event.payload as any).name;
+        }
+        if ((event.payload as any).metadata !== undefined) {
+          this._state.metadata = (event.payload as any).metadata;
+        }
+        break;
       default:
         break;
     }
@@ -34,6 +42,23 @@ export class TenantAggregate extends AggregateRoot<TenantState> {
       occurredAt: new Date().toISOString(),
       eventVersion: '1.0.0',
       payload: { name, namespace, metadata },
+      metadata: {},
+    };
+    this.recordEvent(ev);
+  }
+
+  updateTenant(name?: string, metadata?: Record<string, unknown>) {
+    const payload: any = {};
+    if (name !== undefined) payload.name = name;
+    if (metadata !== undefined) payload.metadata = metadata;
+
+    const ev: DomainEventEnvelope = {
+      id: uuidv7(),
+      type: 'TenantUpdated',
+      aggregateId: this._state.tenantId as string,
+      occurredAt: new Date().toISOString(),
+      eventVersion: '1.0.0',
+      payload,
       metadata: {},
     };
     this.recordEvent(ev);

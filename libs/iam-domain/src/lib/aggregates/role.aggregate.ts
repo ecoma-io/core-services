@@ -24,6 +24,22 @@ export class RoleAggregate extends AggregateRoot<RoleState> {
         this._state.permissionKeys =
           (event.payload as any).permissionKeys || [];
         break;
+      case 'RoleUpdated':
+        if ((event.payload as any).name !== undefined) {
+          this._state.name = (event.payload as any).name;
+        }
+        if ((event.payload as any).description !== undefined) {
+          this._state.description = (event.payload as any).description;
+        }
+        break;
+      case 'PermissionsAssigned':
+        this._state.permissionKeys = Array.from(
+          new Set([
+            ...(this._state.permissionKeys || []),
+            ...((event.payload as any).permissionKeys || []),
+          ])
+        );
+        break;
       default:
         break;
     }
@@ -42,6 +58,36 @@ export class RoleAggregate extends AggregateRoot<RoleState> {
       occurredAt: new Date().toISOString(),
       eventVersion: '1.0.0',
       payload: { roleId, tenantId, name, permissionKeys },
+      metadata: {},
+    };
+    this.recordEvent(ev);
+  }
+
+  updateRole(name?: string, description?: string) {
+    const payload: any = {};
+    if (name !== undefined) payload.name = name;
+    if (description !== undefined) payload.description = description;
+
+    const ev: DomainEventEnvelope = {
+      id: uuidv7(),
+      type: 'RoleUpdated',
+      aggregateId: this._state.roleId as string,
+      occurredAt: new Date().toISOString(),
+      eventVersion: '1.0.0',
+      payload,
+      metadata: {},
+    };
+    this.recordEvent(ev);
+  }
+
+  assignPermissions(permissionKeys: string[]) {
+    const ev: DomainEventEnvelope = {
+      id: uuidv7(),
+      type: 'PermissionsAssigned',
+      aggregateId: this._state.roleId as string,
+      occurredAt: new Date().toISOString(),
+      eventVersion: '1.0.0',
+      payload: { permissionKeys },
       metadata: {},
     };
     this.recordEvent(ev);

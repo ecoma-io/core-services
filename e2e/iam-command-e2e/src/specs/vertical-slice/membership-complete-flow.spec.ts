@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid';
+import { v7 as uuidv7 } from 'uuid';
 import { TestEnvironment } from '../../support/test.environment';
 
 interface Context {
@@ -98,7 +98,7 @@ describe('Vertical Slice - Membership Complete Flow', () => {
    */
   it('should create membership via command and read it back via query', async () => {
     // Step 1: Send CreateMembership command
-    const membershipId = uuidv4();
+    const membershipId = uuidv7();
     const createPayload = {
       membershipId: membershipId,
       userId: userId,

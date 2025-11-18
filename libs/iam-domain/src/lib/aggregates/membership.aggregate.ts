@@ -31,6 +31,11 @@ export class MembershipAggregate extends AggregateRoot<MembershipState> {
           ])
         );
         break;
+      case 'RoleRemovedFromUser':
+        this._state.roleIds = (this._state.roleIds || []).filter(
+          (id) => id !== (event.payload as any).roleId
+        );
+        break;
       default:
         break;
     }
@@ -53,6 +58,19 @@ export class MembershipAggregate extends AggregateRoot<MembershipState> {
     const ev: DomainEventEnvelope = {
       id: uuidv7(),
       type: 'RoleAssignedToUser',
+      aggregateId: this._state.membershipId as string,
+      occurredAt: new Date().toISOString(),
+      eventVersion: '1.0.0',
+      payload: { roleId },
+      metadata: {},
+    };
+    this.recordEvent(ev);
+  }
+
+  removeRole(roleId: string) {
+    const ev: DomainEventEnvelope = {
+      id: uuidv7(),
+      type: 'RoleRemovedFromUser',
       aggregateId: this._state.membershipId as string,
       occurredAt: new Date().toISOString(),
       eventVersion: '1.0.0',

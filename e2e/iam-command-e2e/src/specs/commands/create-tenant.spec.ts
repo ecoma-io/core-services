@@ -38,7 +38,7 @@ describe('Commands - Create Tenant', () => {
       expect(typeof res.data.streamVersion).toBe('number');
     } catch (err: any) {
       // Debug output to help diagnose failures in CI
-      // eslint-disable-next-line no-console
+       
       console.error(
         'CreateTenant error:',
         err?.response?.status,

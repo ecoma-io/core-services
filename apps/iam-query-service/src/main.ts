@@ -1,17 +1,13 @@
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
-import { Logger } from '@nestjs/common';
 import { AppModule } from './app/app.module';
 import { GlobalExceptionsFilter } from '@ecoma-io/nestjs-filters';
 import { GlobalValidationPipe } from '@ecoma-io/nestjs-pipes';
 import { AppConfigService } from './app/app.config-service';
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
   const configService = new AppConfigService();
   const appConfig = configService.getAppConfig();
-
-  Logger.log(
-    'Starting IAM Query Service with environment: ' + appConfig.nodeEnv
-  );
 
   const app = await NestFactory.create(AppModule);
 
@@ -21,9 +17,20 @@ async function bootstrap() {
 
   await app.listen(appConfig.port, appConfig.host, () => {
     Logger.log(
-      `IAM Query Service is running on: ${appConfig.host}:${appConfig.port}/`
+      `IAM Query Service (${appConfig.nodeEnv}) running on: ${appConfig.host}:${appConfig.port}/`,
+      'Bootstrap'
     );
   });
+
+  // Graceful shutdown
+  const shutdown = async (signal: string) => {
+    Logger.log(`Received ${signal}, shutting down gracefully...`, 'Bootstrap');
+    await app.close();
+    process.exit(0);
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
 bootstrap();

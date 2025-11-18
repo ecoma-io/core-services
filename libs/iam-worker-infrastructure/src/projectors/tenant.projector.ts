@@ -37,15 +37,27 @@ export class TenantProjector extends BaseProjector {
         break;
       }
       case 'TenantUpdated': {
-        const { namespace, metadata } = envelope.payload as any;
-        await manager.query(
-          `UPDATE tenants_read_model SET namespace = $2, metadata = $3 WHERE tenant_id = $1`,
-          [
-            envelope.aggregateId,
-            namespace,
-            metadata ? JSON.stringify(metadata) : null,
-          ]
-        );
+        const { name, metadata } = envelope.payload as any;
+        const updates: string[] = [];
+        const values: any[] = [];
+        let paramIndex = 2;
+
+        if (name !== undefined) {
+          updates.push(`name = $${paramIndex++}`);
+          values.push(name);
+        }
+        if (metadata !== undefined) {
+          updates.push(`metadata = $${paramIndex++}`);
+          values.push(JSON.stringify(metadata));
+        }
+
+        if (updates.length > 0) {
+          updates.push(`updated_at = now()`);
+          await manager.query(
+            `UPDATE tenants_read_model SET ${updates.join(', ')} WHERE tenant_id = $1`,
+            [envelope.aggregateId, ...values]
+          );
+        }
         break;
       }
       default:

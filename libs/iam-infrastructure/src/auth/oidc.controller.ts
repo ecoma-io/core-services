@@ -1,4 +1,4 @@
-import { Controller, Get, Req, Res, All } from '@nestjs/common';
+import { Controller, Req, Res, All } from '@nestjs/common';
 import { OidcProviderService } from './oidc-provider.service';
 
 @Controller()

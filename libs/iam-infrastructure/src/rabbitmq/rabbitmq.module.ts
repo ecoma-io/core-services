@@ -2,6 +2,8 @@ import { Module, DynamicModule } from '@nestjs/common';
 import { RabbitMQModule as GolevelupRabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { RabbitMQEventPublisher } from '../event-publisher/rabbitmq-event.publisher';
+import { DLXSetupService } from './dlx-setup.service';
+import { DLXConfig } from './dlx.config';
 
 export interface RabbitMQModuleOptions {
   uri: string;
@@ -9,6 +11,7 @@ export interface RabbitMQModuleOptions {
   exchangeType?: 'topic' | 'direct' | 'fanout' | 'headers';
   prefetchCount?: number;
   enableControllerDiscovery?: boolean;
+  dlx?: Partial<DLXConfig>; // DLX configuration (Phase 4.4)
 }
 
 type InjectionToken =
@@ -34,8 +37,40 @@ type Type<T = unknown> = new (...args: unknown[]) => T;
 @Module({})
 export class RabbitMQInfraModule {
   static forRoot(options: RabbitMQModuleOptions): DynamicModule {
+    const providers = [
+      {
+        provide: RabbitMQEventPublisher,
+        useFactory: (amqpConnection: AmqpConnection) => {
+          return new RabbitMQEventPublisher(amqpConnection, {
+            exchange: options.exchange,
+            exchangeType: options.exchangeType,
+          });
+        },
+        inject: [AmqpConnection],
+      },
+    ];
+
+    // Add DLX setup if configured
+    if (options.dlx) {
+      providers.push({
+        provide: DLXSetupService,
+        useFactory: (amqpConnection: AmqpConnection) => {
+          return new DLXSetupService(amqpConnection, {
+            mainExchange: options.exchange,
+            dlxExchange: options.dlx?.dlxExchange || `${options.exchange}.dlx`,
+            mainQueue: options.dlx?.mainQueue || `${options.exchange}.queue`,
+            retryQueue: options.dlx?.retryQueue || `${options.exchange}.retry`,
+            dlq: options.dlx?.dlq || `${options.exchange}.dlq`,
+            ...options.dlx,
+          });
+        },
+        inject: [AmqpConnection],
+      } as never);
+    }
+
     return {
       module: RabbitMQInfraModule,
+      global: true,
       imports: [
         GolevelupRabbitMQModule.forRoot({
           uri: options.uri,
@@ -57,19 +92,11 @@ export class RabbitMQInfraModule {
           },
         }),
       ],
-      providers: [
-        {
-          provide: RabbitMQEventPublisher,
-          useFactory: (amqpConnection: AmqpConnection) => {
-            return new RabbitMQEventPublisher(amqpConnection, {
-              exchange: options.exchange,
-              exchangeType: options.exchangeType,
-            });
-          },
-          inject: [AmqpConnection],
-        },
+      providers,
+      exports: [
+        RabbitMQEventPublisher,
+        ...(options.dlx ? [DLXSetupService] : []),
       ],
-      exports: [RabbitMQEventPublisher],
     };
   }
 
@@ -79,8 +106,47 @@ export class RabbitMQInfraModule {
     ) => Promise<RabbitMQModuleOptions> | RabbitMQModuleOptions;
     inject?: InjectionToken[];
   }): DynamicModule {
+    const providers = [
+      {
+        provide: RabbitMQEventPublisher,
+        useFactory: async (
+          amqpConnection: AmqpConnection,
+          ...args: unknown[]
+        ) => {
+          const config = await options.useFactory(...args);
+          return new RabbitMQEventPublisher(amqpConnection, {
+            exchange: config.exchange,
+            exchangeType: config.exchangeType,
+          });
+        },
+        inject: [AmqpConnection, ...(options.inject || [])],
+      },
+      {
+        provide: DLXSetupService,
+        useFactory: async (
+          amqpConnection: AmqpConnection,
+          ...args: unknown[]
+        ) => {
+          const config = await options.useFactory(...args);
+          if (!config.dlx) {
+            return null; // No DLX configured
+          }
+          return new DLXSetupService(amqpConnection, {
+            mainExchange: config.exchange,
+            dlxExchange: config.dlx?.dlxExchange || `${config.exchange}.dlx`,
+            mainQueue: config.dlx?.mainQueue || `${config.exchange}.queue`,
+            retryQueue: config.dlx?.retryQueue || `${config.exchange}.retry`,
+            dlq: config.dlx?.dlq || `${config.exchange}.dlq`,
+            ...config.dlx,
+          });
+        },
+        inject: [AmqpConnection, ...(options.inject || [])],
+      },
+    ];
+
     return {
       module: RabbitMQInfraModule,
+      global: true,
       imports: [
         GolevelupRabbitMQModule.forRootAsync({
           useFactory: async (...args: unknown[]) => {
@@ -109,23 +175,8 @@ export class RabbitMQInfraModule {
           inject: options.inject || [],
         }),
       ],
-      providers: [
-        {
-          provide: RabbitMQEventPublisher,
-          useFactory: async (
-            amqpConnection: AmqpConnection,
-            ...args: unknown[]
-          ) => {
-            const config = await options.useFactory(...args);
-            return new RabbitMQEventPublisher(amqpConnection, {
-              exchange: config.exchange,
-              exchangeType: config.exchangeType,
-            });
-          },
-          inject: [AmqpConnection, ...(options.inject || [])],
-        },
-      ],
-      exports: [RabbitMQEventPublisher],
+      providers,
+      exports: [RabbitMQEventPublisher, DLXSetupService],
     };
   }
 }

@@ -1,4 +1,4 @@
-import { IsString, IsArray } from 'class-validator';
+import { IsString } from 'class-validator';
 
 /**
  * AssignRoleToMembershipDto - DTO for assigning role to membership

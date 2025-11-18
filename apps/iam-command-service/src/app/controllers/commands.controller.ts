@@ -8,7 +8,7 @@ import {
   ValidationPipe,
   Logger,
 } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { v7 as uuidv7 } from 'uuid';
 import {
   RegisterUserDto,
   CreateTenantDto,
@@ -102,7 +102,7 @@ export class CommandsController {
   @HttpCode(HttpStatus.ACCEPTED)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   async registerUser(@Body() body: RegisterUserDto) {
-    const userId = uuidv4();
+    const userId = uuidv7();
     const command = makeRegisterUserCommand({
       userId,
       email: body.email,
@@ -122,7 +122,7 @@ export class CommandsController {
   @HttpCode(HttpStatus.ACCEPTED)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   async createTenant(@Body() body: CreateTenantDto) {
-    const tenantId = uuidv4();
+    const tenantId = uuidv7();
     const command = makeCreateTenantCommand({
       tenantId,
       name: body.name,
@@ -148,7 +148,7 @@ export class CommandsController {
   @HttpCode(HttpStatus.ACCEPTED)
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   async createRole(@Body() body: CreateRoleDto) {
-    const roleId = uuidv4();
+    const roleId = uuidv7();
     const command = makeCreateRoleCommand({
       roleId,
       tenantId: body.tenantId,

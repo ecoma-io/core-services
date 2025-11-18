@@ -5,7 +5,7 @@ describe('TOTPService', () => {
     service = new TOTPService();
   });
   it('should generate and verify TOTP', () => {
-    const { base32, ascii } = service.generateSecret('test@ecoma.io');
+    const { ascii } = service.generateSecret('test@ecoma.io');
     const token = require('speakeasy').totp({
       secret: ascii,
       encoding: 'ascii',

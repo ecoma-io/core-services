@@ -326,11 +326,7 @@ export class PermissionMergeService implements IPermissionMergeService {
   /**
    * Find a node by key in the tree (supports nested paths like 'admin:user')
    */
-  private findNode(
-    key: string,
-    tree: PermissionNode[],
-    parentPath = ''
-  ): PermissionNode | null {
+  private findNode(key: string, tree: PermissionNode[]): PermissionNode | null {
     const parts = key.split(':');
 
     // Navigate down the tree following the path

@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Logger } from '@nestjs/common';
 import { UserPermissionService } from './user-permission.service';
 import { PermissionMergeService } from './permission-merge.service';
 import { PermissionCacheRepository } from '../cache/permission-cache.repository';
