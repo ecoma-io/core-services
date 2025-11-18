@@ -21,4 +21,6 @@
  * //   // ...
  * // };
  */
-global.console = require('console');
+if (process.env['JEST_SILENT'] !== 'test') {
+  global.console = require('console');
+}

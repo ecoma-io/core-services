@@ -1,9 +1,21 @@
 import { BaseProjector } from '../lib/base-projector';
 import { DomainEventEnvelope } from '@ecoma-io/domain';
 import { EntityManager } from 'typeorm';
-
+import { DataSource } from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { RabbitMqAdapter } from '../lib/adapters/rabbitmq-adapter';
+import { CheckpointRepositoryImpl } from '../lib/checkpoint.repository';
+import { UpcasterRegistryImpl } from '../lib/upcaster.registry';
+@Injectable()
 export class TenantProjector extends BaseProjector {
-  protected projectorName = 'TenantProjector';
+  constructor(
+    broker: RabbitMqAdapter,
+    ds: DataSource,
+    checkpoint: CheckpointRepositoryImpl,
+    upcasters: UpcasterRegistryImpl
+  ) {
+    super(broker, ds, checkpoint, upcasters, 'TenantProjector');
+  }
 
   protected async apply(
     envelope: DomainEventEnvelope,
@@ -11,12 +23,13 @@ export class TenantProjector extends BaseProjector {
   ): Promise<void> {
     switch (envelope.type) {
       case 'TenantCreated': {
-        const { namespace, metadata } = envelope.payload as any;
+        const { name, namespace, metadata } = envelope.payload as any;
         await manager.query(
-          `INSERT INTO tenants_read_model (tenant_id, namespace, metadata, created_at)
-           VALUES ($1, $2, $3, now()) ON CONFLICT (tenant_id) DO NOTHING`,
+          `INSERT INTO tenants_read_model (tenant_id, name, namespace, metadata, created_at)
+           VALUES ($1, $2, $3, $4, now()) ON CONFLICT (tenant_id) DO NOTHING`,
           [
             envelope.aggregateId,
+            name,
             namespace,
             metadata ? JSON.stringify(metadata) : null,
           ]

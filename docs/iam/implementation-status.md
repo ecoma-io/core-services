@@ -2,12 +2,25 @@
 
 **Ngày kiểm tra:** 18/11/2025  
 **Người kiểm tra:** AI Code Review  
-**Phiên bản báo cáo:** 1.2 (cập nhật sau kiểm tra thực tế)  
+**Phiên bản báo cáo:** 1.3 (cập nhật sau hoàn thành Phase 1 Projector)  
 **Tài liệu tham chiếu:** [docs/iam/architecture.md](./architecture.md)
 
 ---
 
 ## 📝 Changelog
+
+### 18/11/2025 - Phiên bản 1.3 (Phase 1 Projector Complete) 🎉
+
+| Mục                    | Thay đổi                              | Ghi chú                                                        |
+| ---------------------- | ------------------------------------- | -------------------------------------------------------------- |
+| Projector Worker App   | ✅ **HOÀN THÀNH**                     | iam-projector-worker bootstrap, RabbitMQ subscription working  |
+| TenantProjector        | ✅ **HOÀN THÀNH**                     | Handles TenantCreated/Updated, checkpoint tracking             |
+| Projector E2E Tests    | ✅ **PASS 100%**                      | tenant-projection.spec.ts validates end-to-end projection      |
+| Command E2E Tests      | ✅ 30/31 tests pass                   | All critical flows validated                                   |
+| Projection Checkpoints | ✅ Working                            | ProjectionCheckpointEntity with TypeORM auto-sync in test mode |
+| Phase 1 Status         | ⚠️ 70% complete                       | Command ✅ + Projector ✅, Query Service pending ❌            |
+| Next Priority          | **Query Service Implementation** (P0) | GET /tenants/:id endpoint to complete vertical slice           |
+| Version                | Nâng lên 1.3                          | Phản ánh completion of projector infrastructure                |
 
 ### 18/11/2025 - Phiên bản 1.2 (Cập nhật sau kiểm tra thực tế)
 
@@ -32,16 +45,20 @@
 
 ## 📊 Tổng quan
 
-Dự án IAM Service đã triển khai phần cốt lõi của **Permission Resolution System (ADR-5)** cho Foundation Phase: merge tree, expand user permissions, cache, và AuthorizationService đều đã có với unit tests chính. E2E cho command service (health, routing, resilience) pass ổn định; endpoint `POST /commands/register-user` hiện đã được wire với handler thật, lưu event vào EventStoreDB và publish qua RabbitMQ. Đã fix mapping optimistic concurrency (expected revision) và token DI của RabbitMQ publisher.
+Dự án IAM Service đã triển khai phần cốt lõi của **Permission Resolution System (ADR-5)** cho Foundation Phase: merge tree, expand user permissions, cache, và AuthorizationService đều đã có với unit tests chính. E2E cho command service (health, routing, resilience) pass ổn định; endpoint `POST /commands/register-user` và `POST /commands/create-tenant` hiện đã được wire với handler thật, lưu event vào EventStoreDB và publish qua RabbitMQ.
 
-### Điểm hoàn thành tổng thể: **~65-70%**
+**Projector infrastructure hoàn thành:** iam-projector-worker đã được bootstrap, TenantProjector xử lý events và cập nhật read model, checkpoint tracking hoạt động. E2E test validates complete projection flow.
 
-**Cập nhật quan trọng:**
+### Điểm hoàn thành tổng thể: **~72-75%**
+
+**Cập nhật quan trọng (v1.3):**
 
 - ✅ Command side cho Tenant đã hoàn chỉnh (CreateTenant endpoint + handler + E2E)
-- ✅ E2E tests: 30/31 pass, create-tenant đã được kiểm chứng
-- ❌ Query side và Projector worker chưa có code (apps rỗng)
-- ❌ TenantProjector chưa được triển khai
+- ✅ E2E tests: 30/31 pass (command-e2e), 1/1 pass (projector-e2e)
+- ✅ **Projector worker đã hoạt động**: TenantProjector consumes events, updates read model
+- ✅ **Projection checkpoints tracking**: ProjectionCheckpointEntity working
+- ⚠️ Query service có bootstrap code nhưng **chưa có query endpoints** (P0 - Critical)
+- ❌ Query API chưa được triển khai (thiếu controllers cho read side)
 
 ---
 
@@ -172,28 +189,34 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 
 - ❌ ServiceDefinition merge logic tại read layer (được xử lý qua projector)
 
-#### ⚠️ Projectors (40% hoàn thành)
+#### ⚠️ Projectors (85% hoàn thành)
 
 ✅ **Đã có:**
 
 - **BaseProjector** (transactional checkpoints, upcasters, idempotency)
+- **TenantProjector** ✅ **WORKING**: xử lý `TenantCreated`, `TenantUpdated`, cập nhật tenants_read_model, checkpoint tracking
 - **UserProjector**: xử lý `UserRegistered`, `UserPasswordChanged`, `UserProfileUpdated`, `UserStatusChanged`
 - **PermissionProjector**: merge top 3 major versions, persist `combined_permissions_cache`, refresh global tree in Redis
 - **UserPermissionProjector**: recalculation + cache khi role thay đổi (decorators sự kiện đang comment chờ wiring)
 - **CheckpointRepositoryImpl** với bảng `projection_checkpoints`
 - **UpcasterRegistryImpl**
+- **ProjectionCheckpointEntity** ✅ TypeORM entity for auto-sync in test mode
+- **iam-projector-worker app** ✅ **BOOTSTRAPPED**: RabbitMQ subscription, event consumption working
+
+✅ **E2E Validation:**
+
+- ✅ `e2e/iam-projector-e2e/src/specs/tenant-projection.spec.ts` **PASS**
+- ✅ Validates: CreateTenant command → TenantCreated event → projection → RYOW query
+- ✅ Checkpoint tracking verified
 
 ❌ **Còn thiếu:**
 
-- ❌ **TenantProjector** (P0 - Critical cho Phase 1)
-- ❌ **RoleProjector** (P1)
-- ❌ **MembershipProjector** (P1)
+- ❌ **RoleProjector** (P1 - next vertical slice)
+- ❌ **MembershipProjector** (P1 - next vertical slice)
 - ❌ **SearchProjector** (P2)
-- ❌ **iam-projector-worker app chưa có code** - app hiện tại rỗng
-- ❌ DLQ handling/throttling rõ ràng
-- ❌ RabbitMQ event wiring hoàn chỉnh cho tất cả projector
+- ❌ Additional event wiring for User/Permission projectors in worker
 
-#### ✅ Query Handlers (10% hoàn thành)
+#### ✅ Query Handlers (15% hoàn thành)
 
 **File:** `libs/iam-query-interactor/src/handlers/get-user.handler.ts`
 
@@ -203,7 +226,10 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 
 ❌ **Thiếu:**
 
-- ❌ GetTenant, GetRole, GetMembership, SearchUsers, SearchTenants, CheckPermission queries
+- ❌ **GetTenantHandler** (P0 - Critical cho Phase 1)
+- ❌ GetRole, GetMembership handlers
+- ❌ SearchUsers, SearchTenants, CheckPermission queries
+- ❌ Query interfaces/DTOs cho các handlers còn lại
 
 ---
 
@@ -318,17 +344,25 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 
 #### ❌ Query Controller:
 
-**File:** Chưa tồn tại - `apps/iam-query-service/src/` hiện đang **rỗng**
+**File:** `apps/iam-query-service/src/app/` - có bootstrap code nhưng **chưa có query controllers**
+
+✅ **Đã có:**
+
+- ✅ **App bootstrap** (`main.ts`, `app.module.ts`, `app.config-service.ts`)
+- ✅ TypeORM connection setup
+- ✅ Health module integration
+- ⚠️ Module hiện đang import CommandsController (sai - cần thay bằng query controllers)
 
 ❌ **Thiếu hoàn toàn:**
 
-- ❌ **App bootstrap code** cho iam-query-service
-- ❌ `GET /users/:id`
+- ❌ **Query controllers package** - không có controllers/ directory
 - ❌ `GET /tenants/:id` (P0 - Critical cho Phase 1)
+- ❌ `GET /users/:id`
 - ❌ `GET /tenants/:id/users` hoặc endpoints query khác
 - ❌ `GET /users/:userId/permissions?tenantId=...` (authorization check)
 - ❌ `GET /search/users?q=...`
 - ❌ Wire QueryBus từ `@ecoma-io/iam-query-interactor`
+- ❌ DTO response classes cho query results
 
 #### ✅ Auth Controller:
 
@@ -412,14 +446,28 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 - ✅ Ghi ESDB thành công với optimistic concurrency
 - ⚠️ Cảnh báo Jest về worker forced-exit - có thể còn timer handle chưa cleanup
 
+#### ✅ E2E Tests (iam-projector-e2e): **NEW** 🎉
+
+- ✅ Project: `e2e/iam-projector-e2e`
+- ✅ Suite: `tenant-projection.spec.ts` ✅ **PASS**
+- ✅ **Validates complete vertical slice:**
+  - CreateTenant command execution
+  - TenantCreated event publication
+  - Projector consumption and read model update
+  - Checkpoint tracking
+  - RYOW verification via `pollTenantRow()` helper
+- ✅ **Kết quả:** 1 passed, 1 total - projection flow validated end-to-end
+
 #### ❌ E2E Tests (iam-query-e2e):
 
 - ❌ Chưa có project cho Query service
+- ❌ Cần tạo để test vertical slice: Command → Projector → **Query API**
 
 **Impacts:**
 
 - ✅ Bề mặt Command service đã có E2E guard
-- ⚠️ Chưa có E2E cho flow đầy đủ Command → Event → Projector → Query
+- ✅ **Projection flow đã được validate end-to-end** 🎉
+- ❌ Chưa có E2E cho Query API read operations
 
 ---
 
@@ -449,15 +497,15 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 
 ## 📋 Bảng Tổng hợp Theo ADR
 
-| ADR       | Mô tả                   | % Hoàn thành | Trạng thái      | Ghi chú                                               |
-| --------- | ----------------------- | ------------ | --------------- | ----------------------------------------------------- |
-| **ADR-1** | CQRS/ES Architecture    | ✅ 100%      | Hoàn thành      | Cấu trúc đúng, separation rõ ràng                     |
-| **ADR-2** | Technology Stack        | ⚠️ 85%       | Gần hoàn thành  | Thiếu modules integration, OIDC library               |
-| **ADR-3** | Read Your Own Writes    | ✅ 95%       | Hoàn thành      | Checkpoint polling có; E2E health/resilience đã cover |
-| **ADR-4** | Event Handling & Replay | ⚠️ 60%       | Chưa hoàn thiện | Có upcaster, thiếu DLX config, outbox pattern         |
-| **ADR-5** | Permission Merge Rules  | ✅ **100%**  | **Hoàn thành**  | Merge, expand, cache, check, unit tests đủ            |
-| **ADR-6** | Snapshot Policy         | ⚠️ 70%       | Chưa hoàn thiện | Service có, chưa integrate vào repository             |
-| **ADR-7** | Projection Checkpoints  | ✅ 95%       | Hoàn thành      | Transactional checkpoints đúng                        |
+| ADR       | Mô tả                   | % Hoàn thành | Trạng thái      | Ghi chú                                                  |
+| --------- | ----------------------- | ------------ | --------------- | -------------------------------------------------------- |
+| **ADR-1** | CQRS/ES Architecture    | ✅ 100%      | Hoàn thành      | Cấu trúc đúng, separation rõ ràng                        |
+| **ADR-2** | Technology Stack        | ⚠️ 90%       | Gần hoàn thành  | Thiếu Query API controllers, OIDC production-ready       |
+| **ADR-3** | Read Your Own Writes    | ✅ 95%       | Hoàn thành      | Checkpoint polling có; E2E validates projection RYOW     |
+| **ADR-4** | Event Handling & Replay | ⚠️ 75%       | Đang triển khai | Projector working, thiếu DLX config, outbox pattern      |
+| **ADR-5** | Permission Merge Rules  | ✅ **100%**  | **Hoàn thành**  | Merge, expand, cache, check, unit tests đủ               |
+| **ADR-6** | Snapshot Policy         | ⚠️ 70%       | Chưa hoàn thiện | Service có, chưa integrate vào repository                |
+| **ADR-7** | Projection Checkpoints  | ✅ **100%**  | **Hoàn thành**  | Transactional checkpoints, E2E validated, auto-sync test |
 
 ---
 
@@ -467,25 +515,27 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 
 **Mục tiêu:** Hoàn thiện một luồng end-to-end duy nhất cho Tenant để xác thực đầy đủ kiến trúc CQRS/ES + RYOW + Projection trước khi mở rộng sang các vertical khác.
 
-**Trạng thái hiện tại:** ⚠️ **~40% hoàn thành**
+**Trạng thái hiện tại:** ⚠️ **~70% hoàn thành** - Chỉ thiếu Query API!
 
 - ✅ Command side: hoàn chỉnh (controller, handler, E2E)
-- ❌ Projector: chưa có TenantProjector
-- ❌ Query side: chưa có code
+- ✅ **Projector: HOÀN THÀNH** 🎉 (TenantProjector working, E2E validated)
+- ❌ Query side: có bootstrap nhưng **thiếu query controllers**
 
 #### Scope Phase 1
 
-| Thành phần                         | Trạng thái    | Ghi chú                                      |
-| ---------------------------------- | ------------- | -------------------------------------------- |
-| Command: `CreateTenant`            | ✅ Hoàn thành | Controller, handler, DTO, E2E test pass      |
-| Event: `TenantCreated`             | ✅ Publishing | Đã thấy publish vào RabbitMQ thành công      |
-| Projector: `TenantProjector`       | ❌ Chưa có    | **Bước tiếp theo #1**                        |
-| Read Model: `TenantEntity`         | ✅ Sẵn sàng   | Entity + repository đã có                    |
-| Worker App: `iam-projector-worker` | ❌ Rỗng       | Cần bootstrap app + wire projectors          |
-| Query: `GetTenantQuery` + Handler  | ⚠️ Partial    | Handler chưa có, query interface chưa define |
-| Query Controller                   | ❌ Chưa có    | **Bước tiếp theo #2**                        |
-| Query Service App                  | ❌ Rỗng       | Cần bootstrap app hoàn toàn                  |
-| E2E: Command → Projector → Query   | ❌ Chưa có    | Cần sau khi có query endpoint                |
+| Thành phần                         | Trạng thái     | Ghi chú                                                    |
+| ---------------------------------- | -------------- | ---------------------------------------------------------- |
+| Command: `CreateTenant`            | ✅ Hoàn thành  | Controller, handler, DTO, E2E test pass                    |
+| Event: `TenantCreated`             | ✅ Publishing  | Đã thấy publish vào RabbitMQ thành công                    |
+| Projector: `TenantProjector`       | ✅ **WORKING** | **Handles events, updates read model, checkpoint tracked** |
+| Read Model: `TenantEntity`         | ✅ Sẵn sàng    | Entity + repository đã có                                  |
+| Worker App: `iam-projector-worker` | ✅ **RUNNING** | **Bootstrapped, RabbitMQ subscription active**             |
+| Projector E2E                      | ✅ **PASS**    | **tenant-projection.spec.ts validates full flow**          |
+| Query: `GetTenantQuery` + Handler  | ⚠️ Partial     | Query interface + DTO cần define                           |
+| Query Handler Implementation       | ❌ Chưa có     | **Bước tiếp theo #1 - P0 Critical**                        |
+| Query Controller                   | ❌ Chưa có     | **Bước tiếp theo #2 - P0 Critical**                        |
+| Query Service App                  | ⚠️ Bootstrap   | Có main.ts + module, thiếu controllers                     |
+| E2E: Command → Projector → Query   | ⚠️ Partial     | Command+Projector ✅, Query ❌                             |
 
 #### Acceptance Criteria
 
@@ -497,27 +547,28 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 6. E2E test: Gửi command → Poll/wait RYOW → Gọi query → Khẳng định dữ liệu; test idempotency projector (replay double deliver không nhân bản row).
 7. Logging (tạm thời): sử dụng Nest `Logger` để log event xử lý của `TenantProjector`.
 
-#### Task Breakdown - CẬP NHẬT THEO THỰC TẾ
+#### Task Breakdown - CẬP NHẬT THEO THỰC TẾ v1.3
 
-**Phase 1 đã hoàn thành (~40%):**
+**Phase 1 đã hoàn thành (~70%):**
 
 - ✅ Ngày 1: DTO + controller method `createTenant` + wire handler → **HOÀN THÀNH**
 - ✅ E2E test command: `create-tenant.spec.ts` → **HOÀN THÀNH & PASS**
+- ✅ **Bootstrap iam-projector-worker** → **HOÀN THÀNH** 🎉
+- ✅ **TenantProjector implementation** → **HOÀN THÀNH** 🎉
+- ✅ **Wire TenantProjector vào worker** → **HOÀN THÀNH** 🎉
+- ✅ **E2E projector test** → **HOÀN THÀNH & PASS** 🎉
 
-**Phase 1 còn lại (~60% - Ước tính 2-3 ngày):**
+**Phase 1 còn lại (~30% - Ước tính 1.5-2 ngày):**
 
-| Task                                   | Ưu tiên | Ước tính | Chi tiết                                        |
-| -------------------------------------- | ------- | -------- | ----------------------------------------------- |
-| **1. Bootstrap iam-projector-worker**  | P0      | 4h       | App module, config, RabbitMQ connection, health |
-| **2. TenantProjector implementation**  | P0      | 4h       | Handle TenantCreated/Updated, checkpoint, tests |
-| **3. Wire TenantProjector vào worker** | P0      | 2h       | RabbitMQ subscription, queue setup              |
-| **4. Bootstrap iam-query-service**     | P0      | 4h       | App module, config, TypeORM connection, health  |
-| **5. GetTenant query + handler**       | P0      | 2h       | Query interface, handler implementation         |
-| **6. Query controller endpoint**       | P0      | 2h       | `GET /tenants/:id`, DTO, wire handler           |
-| **7. E2E vertical slice test**         | P0      | 4h       | Command → wait → Query, RYOW verification       |
-| **8. Documentation update**            | P1      | 1h       | Update this doc, README                         |
+| Task                               | Ưu tiên | Ước tính | Chi tiết                                             |
+| ---------------------------------- | ------- | -------- | ---------------------------------------------------- |
+| **1. GetTenant query + handler**   | P0      | 2h       | Query interface, handler implementation, unit test   |
+| **2. Fix Query Service AppModule** | P0      | 1h       | Remove CommandsController, setup proper dependencies |
+| **3. Tenants query controller**    | P0      | 2h       | `GET /tenants/:id`, DTO, wire handler                |
+| **4. E2E vertical slice test**     | P0      | 3h       | Command → wait → Query, RYOW verification            |
+| **5. Documentation update**        | P1      | 1h       | Update this doc, README                              |
 
-**Total remaining:** ~23 giờ (~3 ngày làm việc)
+**Total remaining:** ~9 giờ (~1.5 ngày làm việc)
 
 #### Chi Tiết Công Việc
 
@@ -554,277 +605,68 @@ Dự án IAM Service đã triển khai phần cốt lõi của **Permission Reso
 
 ---
 
-## 🎯 2 BƯỚC TIẾP THEO - KẾ HOẠCH HÀNH ĐỘNG
+## 🎯 BƯỚC TIẾP THEO - KẾ HOẠCH HÀNH ĐỘNG (v1.3 Updated)
 
-Dựa trên phân tích thực tế, đây là 2 bước quan trọng nhất cần thực hiện ngay:
+Dựa trên trạng thái hiện tại sau khi hoàn thành Projector infrastructure, chỉ còn **1 bước quan trọng** để hoàn thiện Phase 1:
 
 ---
 
-### BƯỚC 1: Triển khai TenantProjector + Worker App (P0 - Critical) 🔥
+### ✅ BƯỚC 1 HOÀN THÀNH: TenantProjector + Worker App 🎉
 
-**Mục tiêu:** Đưa iam-projector-worker vào hoạt động để tiêu thụ events và cập nhật read model
+**Trạng thái:** ✅ **HOÀN THÀNH 100%**
+
+**Đã triển khai:**
+
+- ✅ iam-projector-worker app bootstrapped (main.ts, AppModule, config)
+- ✅ TenantProjector implementation (handles TenantCreated/TenantUpdated)
+- ✅ RabbitMQ subscription via EventConsumer + RabbitMqAdapter
+- ✅ ProjectionCheckpointEntity for auto-sync in test mode
+- ✅ E2E test validates full projection flow
+- ✅ Manual + automated verification successful
+
+**Kết quả:**
+
+- Command publishes events → Projector consumes → Read model updated → Checkpoint tracked
+- E2E test: `iam-projector-e2e/src/specs/tenant-projection.spec.ts` ✅ **PASS**
+- Logs confirm: event consumption, projection execution, no errors
+
+---
+
+### BƯỚC 2 (FINAL): Query Service Implementation (P0 - Critical) 🔥
+
+**Mục tiêu:** Hoàn thiện vertical slice bằng cách expose read model qua REST API
 
 **Tại sao ưu tiên?**
 
-- Command đã publish events nhưng không ai xử lý → data không vào read model
-- Cần xác minh event flow hoàn chỉnh: EventStoreDB → RabbitMQ → Projector → PostgreSQL
-- Là yêu cầu bắt buộc để query có dữ liệu
+- Là bước cuối cùng để hoàn thành Phase 1 Tenant vertical slice
+- Cho phép client đọc data sau khi write (complete CQRS flow)
+- Xác minh RYOW pattern end-to-end
+- Tạo template cho các query endpoints tiếp theo
+
+**Trạng thái hiện tại:**
+
+- ⚠️ Query service có bootstrap code nhưng module đang import **CommandsController** (sai)
+- ❌ Chưa có query controllers
+- ❌ Chưa có GetTenant query/handler implementation
 
 **Chi tiết công việc:**
 
-#### 1.1. Bootstrap iam-projector-worker (4 giờ)
+---
+
+#### 2.1. Create GetTenant Query + Handler (2 giờ)
 
 **Files cần tạo:**
 
 ```
-apps/iam-projector-worker/src/
-├── main.ts                      # Bootstrap app
-├── app/
-│   ├── app.module.ts           # Root module
-│   └── app.config.ts           # Config schema + validation
-└── health/
-      └── health.service.ts       # Health check implementation
+libs/iam-query-interactor/src/
+├── queries/
+│   ├── get-tenant.query.ts       # NEW
+│   └── index.ts                  # Update exports
+├── handlers/
+│   ├── get-tenant.handler.ts     # NEW
+│   └── get-tenant.handler.test.ts # NEW
+└── index.ts                       # Update exports
 ```
-
-**Checklist:**
-
-- [ ] Tạo `main.ts`: NestFactory.createMicroservice với RabbitMQ transport
-- [ ] `AppModule`: import RabbitMQInfraModule, ReadModelModule, CheckpointModule
-- [ ] `app.config.ts`: validate env vars (DATABASE_URL, RABBITMQ_URL, REDIS_URL)
-- [ ] Health endpoints: `/health/liveness`, `/health/readiness`
-- [ ] Dockerfile sẵn có → chỉ cần verify build command
-- [ ] Update `project.json`: targets cho serve, build, docker:build
-
-**Acceptance:**
-
-- App khởi động thành công, connect được RabbitMQ/PostgreSQL/Redis
-- Health endpoints trả về 200 OK
-- Log hiển thị "Application is running"
-
----
-
-#### 1.2. Implement TenantProjector (4 giờ)
-
-**File:** `libs/iam-worker-infrastructure/src/projectors/tenant.projector.ts`
-
-**Spec:**
-
-```typescript
-export class TenantProjector extends BaseProjector {
-  protected projectorName = 'TenantProjector';
-
-  protected async apply(envelope: DomainEventEnvelope, manager: EntityManager): Promise<void> {
-    switch (envelope.type) {
-      case 'TenantCreated':
-        await this.handleTenantCreated(envelope, manager);
-        break;
-      case 'TenantUpdated':
-        await this.handleTenantUpdated(envelope, manager);
-        break;
-    }
-  }
-
-  private async handleTenantCreated(envelope, manager) {
-    const { name, namespace, metadata } = envelope.payload;
-    await manager.query(
-      `INSERT INTO tenants_read_model (tenant_id, name, namespace, metadata, created_at)
-          VALUES ($1, $2, $3, $4, now()) 
-          ON CONFLICT (tenant_id) DO NOTHING`,
-      [envelope.aggregateId, name, namespace, JSON.stringify(metadata || {})]
-    );
-  }
-
-  private async handleTenantUpdated(envelope, manager) {
-    const { name, metadata } = envelope.payload;
-    await manager.query(
-      `UPDATE tenants_read_model 
-          SET name = $2, metadata = $3, updated_at = now()
-          WHERE tenant_id = $1`,
-      [envelope.aggregateId, name, JSON.stringify(metadata)]
-    );
-  }
-}
-```
-
-**Checklist:**
-
-- [ ] Extend BaseProjector (kế thừa checkpoint, idempotency)
-- [ ] Handle `TenantCreated`: INSERT với ON CONFLICT DO NOTHING
-- [ ] Handle `TenantUpdated`: UPDATE name, metadata
-- [ ] Export từ `libs/iam-worker-infrastructure/src/index.ts`
-- [ ] Unit test: mock manager.query, verify SQL + params
-- [ ] Test idempotency: replay cùng event 2 lần không lỗi
-
-**Acceptance:**
-
-- Unit tests pass
-- Projector class exported và import được
-
----
-
-#### 1.3. Wire TenantProjector vào Worker (2 giờ)
-
-**File:** `apps/iam-projector-worker/src/app/projectors.module.ts`
-
-**Spec:**
-
-```typescript
-@Module({
-   imports: [
-      RabbitMQModule.forRoot({...}),
-      TypeOrmModule.forRoot({...}),
-   ],
-   providers: [
-      TenantProjector,
-      CheckpointRepository,
-      UpcasterRegistry,
-   ],
-})
-export class ProjectorsModule implements OnModuleInit {
-   constructor(
-      private readonly tenantProjector: TenantProjector,
-      private readonly amqpConnection: AmqpConnection
-   ) {}
-
-   async onModuleInit() {
-      await this.amqpConnection.createSubscriber(
-         async (msg, rawMsg, headers) => {
-            const envelope: DomainEventEnvelope = {
-               type: headers['x-event-type'],
-               aggregateId: headers['x-aggregate-id'],
-               version: headers['x-event-version'],
-               payload: msg,
-               metadata: headers,
-            };
-            await this.tenantProjector.project(envelope);
-         },
-         {
-            exchange: 'iam.events',
-            routingKey: 'iam.events.TenantCreated',
-            queue: 'iam.projector.tenant',
-            queueOptions: { durable: true },
-         }
-      );
-
-      // Subscribe to TenantUpdated
-      await this.amqpConnection.createSubscriber(...);
-   }
-}
-```
-
-**Checklist:**
-
-- [ ] Tạo ProjectorsModule
-- [ ] Inject TenantProjector + AmqpConnection
-- [ ] OnModuleInit: createSubscriber cho TenantCreated, TenantUpdated
-- [ ] Queue name: `iam.projector.tenant`
-- [ ] Routing keys: `iam.events.TenantCreated`, `iam.events.TenantUpdated`
-- [ ] Manual ACK sau khi project() thành công
-- [ ] Add basic error handling: log error + NACK để retry
-
-**Acceptance:**
-
-- Worker nhận được event từ RabbitMQ
-- TenantProjector.project() được gọi
-- Checkpoint tăng sau mỗi event
-- Data xuất hiện trong `tenants_read_model`
-
----
-
-#### 1.4. Test Integration (2 giờ)
-
-**Manual test:**
-
-```bash
-# Terminal 1: Start worker
-npx nx serve iam-projector-worker
-
-# Terminal 2: Gửi CreateTenant command
-curl -X POST http://localhost:3000/commands/create-tenant \
-   -H "Content-Type: application/json" \
-   -d '{"name":"Test Corp","namespace":"test","metadata":{"tier":"free"}}'
-
-# Terminal 3: Check database
-psql $DATABASE_URL -c "SELECT * FROM tenants_read_model WHERE namespace='test';"
-
-# Expected: 1 row với name="Test Corp"
-```
-
-**Automated E2E (optional, có thể để sau):**
-
-- Tạo `e2e/iam-projector-e2e` nếu cần
-- Hoặc mở rộng `iam-command-e2e` để verify projection
-
-**Acceptance:**
-
-- Manual test pass: data vào DB sau ~1-2s
-- Checkpoint table có record cho TenantProjector
-- Log không có error
-
----
-
-**Estimated Time:** 12 giờ (~1.5 ngày)
-
-**Output:**
-
-- ✅ iam-projector-worker app hoạt động
-- ✅ TenantProjector tiêu thụ events và cập nhật read model
-- ✅ Checkpoint tracking hoạt động
-- ✅ Manual verification thành công
-
----
-
-### BƯỚC 2: Triển khai Query Service + GET /tenants/:id (P0 - Critical) 🔥
-
-**Mục tiêu:** Đưa iam-query-service vào hoạt động để expose read model qua REST API
-
-**Tại sao ưu tiên?**
-
-- Hoàn thiện vertical slice: có thể đọc data sau khi write
-- Xác minh RYOW: client có thể poll/wait cho projection
-- Demo end-to-end value sớm
-
-**Chi tiết công việc:**
-
-#### 2.1. Bootstrap iam-query-service (4 giờ)
-
-**Files cần tạo:**
-
-```
-apps/iam-query-service/src/
-├── main.ts                      # Bootstrap NestJS app
-├── app/
-│   ├── app.module.ts           # Root module
-│   ├── app.config.ts           # Config schema
-│   └── controllers/
-│       └── tenants.controller.ts
-└── health/
-      └── health.service.ts
-```
-
-**Checklist:**
-
-- [ ] `main.ts`: NestFactory.create(AppModule), listen port 3001
-- [ ] `AppModule`: import ReadModelModule (TypeORM), QueryInteractorModule
-- [ ] Config: DATABASE_URL, REDIS_URL (cho RYOW checkpoint polling)
-- [ ] GlobalExceptionsFilter
-- [ ] Health endpoints
-- [ ] Swagger/OpenAPI setup (optional, nice-to-have)
-
-**Acceptance:**
-
-- App khởi động thành công
-- `/health/liveness` → 200 OK
-- TypeORM connection pool hoạt động
-
----
-
-#### 2.2. GetTenant Query + Handler (2 giờ)
-
-**Files:**
-
-- `libs/iam-query-interactor/src/queries/get-tenant.query.ts`
-- `libs/iam-query-interactor/src/handlers/get-tenant.handler.ts`
 
 **Spec:**
 
@@ -837,9 +679,11 @@ export class GetTenantQuery {
 // get-tenant.handler.ts
 @Injectable()
 export class GetTenantHandler {
-  constructor(private readonly tenantRepo: TenantReadRepository) {}
+  constructor(
+    private readonly tenantRepo: TenantReadRepository
+  ) {}
 
-  async handle(query: GetTenantQuery): Promise<TenantEntity | null> {
+  async execute(query: GetTenantQuery): Promise<TenantEntity | null> {
     return this.tenantRepo.findById(query.tenantId);
   }
 }
@@ -847,113 +691,397 @@ export class GetTenantHandler {
 
 **Checklist:**
 
-- [ ] Tạo query class
-- [ ] Implement handler với dependency injection
-- [ ] Unit test: mock repository, verify findById called
+- [ ] Tạo GetTenantQuery class
+- [ ] Implement GetTenantHandler với dependency injection
+- [ ] Unit test: mock repository, verify findById called với correct ID
 - [ ] Export từ `@ecoma-io/iam-query-interactor`
+
+**Acceptance:**
+
+- Unit tests pass
+- Handler exported và import được từ package
 
 ---
 
-#### 2.3. Tenants Controller (2 giờ)
+#### 2.2. Fix Query Service AppModule (1 giờ)
+
+**File:** `apps/iam-query-service/src/app/app.module.ts`
+
+**Vấn đề hiện tại:**
+
+- Module đang import CommandsController (copy/paste từ command service)
+- Thiếu ReadModelModule imports
+- Thiếu query handler providers
+
+**Spec:**
+
+```typescript
+@Module({
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      ...new AppConfigService().getDatabaseConfig(),
+      entities: [
+        TenantEntity,
+        UserEntity,
+        RoleEntity,
+        MembershipEntity,
+        ServiceDefinitionEntity,
+        CombinedPermissionCacheEntity,
+      ],
+      synchronize: false,
+      logging: process.env['NODE_ENV'] === 'development',
+    }),
+    TypeOrmModule.forFeature([
+      TenantEntity,
+      UserEntity,
+      RoleEntity,
+      MembershipEntity,
+    ]),
+    HealthModule,
+  ],
+  controllers: [
+    TenantsController, // NEW - will create in next step
+    UsersController, // Future
+  ],
+  providers: [
+    // Repository providers
+    TenantReadRepository,
+    UserReadRepository,
+    // Query handler providers
+    GetTenantHandler,
+    GetUserHandler,
+  ],
+})
+export class AppModule {}
+```
+
+**Checklist:**
+
+- [ ] Remove CommandsController import
+- [ ] Add TypeOrmModule.forFeature with read model entities
+- [ ] Add repository providers
+- [ ] Add query handler providers
+- [ ] Update imports to use ReadModel entities from `@ecoma-io/iam-infrastructure`
+
+**Acceptance:**
+
+- App starts without errors
+- TypeORM entities loaded
+- Repositories injectable
+
+---
+
+#### 2.3. Create Tenants Query Controller (2 giờ)
 
 **File:** `apps/iam-query-service/src/app/controllers/tenants.controller.ts`
 
 **Spec:**
 
 ```typescript
+import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
+import { GetTenantHandler } from '@ecoma-io/iam-query-interactor';
+import { GetTenantQuery } from '@ecoma-io/iam-query-interactor';
+import { createSuccessResponse } from '@ecoma-io/common';
+
 @Controller('tenants')
 export class TenantsController {
-  constructor(private readonly getTenantHandler: GetTenantHandler) {}
+  constructor(
+    private readonly getTenantHandler: GetTenantHandler
+  ) {}
 
   @Get(':id')
   async getTenant(@Param('id') id: string) {
-    const tenant = await this.getTenantHandler.handle(new GetTenantQuery(id));
+    const tenant = await this.getTenantHandler.execute(
+      new GetTenantQuery(id)
+    );
 
     if (!tenant) {
       throw new NotFoundException(`Tenant ${id} not found`);
     }
 
-    return createSuccessResponse(tenant);
+    return createSuccessResponse({
+      id: tenant.tenantId,
+      name: tenant.name,
+      namespace: tenant.namespace,
+      metadata: tenant.metadata,
+      createdAt: tenant.createdAt,
+      updatedAt: tenant.updatedAt,
+    });
   }
 }
 ```
 
 **Checklist:**
 
+- [ ] Create controllers/ directory
+- [ ] Implement TenantsController
 - [ ] `GET /tenants/:id` endpoint
-- [ ] UUID validation cho param
+- [ ] UUID validation cho param (use ValidationPipe)
 - [ ] 404 nếu không tìm thấy
-- [ ] Return SuccessResponse wrapper
-- [ ] Unit test controller
+- [ ] Return SuccessResponse wrapper theo convention
+- [ ] Unit test controller (mock handler)
+
+**Acceptance:**
+
+- Controller compiles
+- Unit test pass
+- Can be imported in AppModule
 
 ---
 
-#### 2.4. E2E Vertical Slice Test (4 giờ)
+#### 2.4. E2E Vertical Slice Test (3 giờ)
 
-**File:** `e2e/iam-command-e2e/src/specs/vertical-slice/tenant-flow.spec.ts`
+**Options:**
+
+**Option A:** Extend existing `iam-command-e2e` (recommended - faster)
+
+**File:** `e2e/iam-command-e2e/src/specs/vertical-slice/tenant-complete-flow.spec.ts`
+
+**Option B:** Create new `iam-query-e2e` project (cleaner separation)
+
+**Recommended: Option A** - reuse existing infrastructure
 
 **Spec:**
 
 ```typescript
-describe('Tenant Vertical Slice - Command to Query', () => {
-  it('should create tenant and read it back', async () => {
+describe('Tenant Vertical Slice - Complete CQRS Flow', () => {
+  let env: IntegrationEnvironment;
+  let commandUrl: string;
+  let queryUrl: string; // NEW - need to start query service in env
+
+  beforeAll(async () => {
+    env = await IntegrationEnvironment.create();
+    commandUrl = `http://localhost:${env.commandServicePort}`;
+    queryUrl = `http://localhost:${env.queryServicePort}`; // NEW
+  }, 60000);
+
+  afterAll(async () => {
+    await env.destroy();
+  });
+
+  it('should create tenant via command and read it back via query', async () => {
     // 1. Send command
     const cmdRes = await axios.post(`${commandUrl}/commands/create-tenant`, {
-      name: 'Vertical Corp',
-      namespace: 'vertical',
-      metadata: { tier: 'premium' },
+      name: 'E2E Complete Corp',
+      namespace: 'e2e-complete',
+      metadata: { tier: 'enterprise', region: 'us-east' },
     });
+
+    expect(cmdRes.status).toBe(202);
     const { tenantId, streamVersion } = cmdRes.data;
+    expect(tenantId).toBeDefined();
+    expect(streamVersion).toBe(0);
 
     // 2. Wait for projection (RYOW)
-    await waitForProjection('TenantProjector', streamVersion, 5000);
+    // Poll checkpoint or use helper
+    await env.waitForProjection('TenantProjector', streamVersion, 5000);
 
-    // 3. Query tenant
+    // 3. Query tenant via Query Service
     const queryRes = await axios.get(`${queryUrl}/tenants/${tenantId}`);
 
     // 4. Assertions
     expect(queryRes.status).toBe(200);
-    expect(queryRes.data.data.name).toBe('Vertical Corp');
-    expect(queryRes.data.data.namespace).toBe('vertical');
-    expect(queryRes.data.data.metadata.tier).toBe('premium');
+    expect(queryRes.data.success).toBe(true);
+    expect(queryRes.data.data).toMatchObject({
+      id: tenantId,
+      name: 'E2E Complete Corp',
+      namespace: 'e2e-complete',
+      metadata: {
+        tier: 'enterprise',
+        region: 'us-east',
+      },
+    });
+    expect(queryRes.data.data.createdAt).toBeDefined();
+  });
+
+  it('should return 404 for non-existent tenant', async () => {
+    const fakeId = '00000000-0000-0000-0000-000000000000';
+    await expect(
+      axios.get(`${queryUrl}/tenants/${fakeId}`)
+    ).rejects.toThrow(/404/);
   });
 });
 ```
 
 **Checklist:**
 
-- [ ] Test environment start cả command + query + worker
-- [ ] Helper `waitForProjection()`: poll checkpoint từ Redis
+- [ ] Update IntegrationEnvironment to start query service container
+- [ ] Add query service port configuration
+- [ ] Implement waitForProjection helper (poll checkpoint from Redis/DB)
+- [ ] Create test spec
 - [ ] Verify data consistency
 - [ ] Test pass ổn định 3 lần liên tiếp
+- [ ] Add negative test case (404)
+
+**Acceptance:**
+
+- E2E test pass
+- Validates complete CQRS flow
+- RYOW mechanism verified
+- No flakiness
 
 ---
 
-**Estimated Time:** 12 giờ (~1.5 ngày)
+#### 2.5. Documentation Update (1 giờ)
+
+**Files to update:**
+
+- `docs/iam/implementation-status.md` - Mark Phase 1 complete
+- `apps/iam-query-service/README.md` - Add endpoints documentation
+- `docs/iam/architecture.md` - Update with actual implementation notes
+
+**Checklist:**
+
+- [ ] Update implementation-status.md percentages
+- [ ] Mark Phase 1 as ✅ Complete
+- [ ] Document API endpoints (GET /tenants/:id)
+- [ ] Add usage examples
+- [ ] Update roadmap to Phase 2
+
+---
+
+**Estimated Time:** ~9 giờ (~1.5 ngày làm việc)
 
 **Output:**
 
-- ✅ iam-query-service app hoạt động
+- ✅ Query Service hoạt động với REST API
 - ✅ `GET /tenants/:id` endpoint functional
-- ✅ E2E vertical slice test pass
-- ✅ RYOW mechanism verified
+- ✅ E2E vertical slice test pass (Command → Projector → Query)
+- ✅ **Phase 1 Tenant Vertical Slice HOÀN THÀNH 100%** 🎉
+- ✅ Template rõ ràng cho các vertical slice tiếp theo
 
 ---
 
-## 📅 Timeline Tổng Hợp
+## 📅 Timeline Tổng Hợp (Updated)
 
-| Bước      | Công việc                | Thời gian  | Dependencies           |
-| --------- | ------------------------ | ---------- | ---------------------- |
-| **1**     | TenantProjector + Worker | 1.5 ngày   | Command đã sẵn sàng ✅ |
-| **2**     | Query Service + Endpoint | 1.5 ngày   | Bước 1 hoàn thành      |
-| **Total** | **Hoàn thiện Phase 1**   | **3 ngày** | -                      |
+| Bước       | Công việc                          | Thời gian    | Dependencies                 |
+| ---------- | ---------------------------------- | ------------ | ---------------------------- |
+| **1**      | TenantProjector + Worker           | ✅ Hoàn thành | Command đã sẵn sàng ✅       |
+| **2**      | Query Service + Endpoint + E2E     | 1.5 ngày     | Bước 1 hoàn thành ✅         |
+| **Total**  | **Hoàn thiện Phase 1**             | **~1.5 ngày**| -                            |
 
-**Sau khi hoàn thành 2 bước:**
+**Sau khi hoàn thành:**
 
 - ✅ Tenant vertical slice hoàn chỉnh 100%
-- ✅ Kiến trúc CQRS/ES đã được validate end-to-end
-- ✅ Template/pattern rõ ràng cho các vertical slice tiếp theo (Role, Membership, User)
-- ✅ Có thể demo luồng hoàn chỉnh cho stakeholders
+- ✅ Kiến trúc CQRS/ES đã được validate end-to-end với 3 services (Command, Projector, Query)
+- ✅ Template/pattern rõ ràng cho các vertical slice tiếp theo
+- ✅ Có thể demo luồng hoàn chỉnh: Write → Event → Projection → Read
+- 🚀 **Ready to proceed to Phase 2: Additional vertical slices (User, Role, Membership)**
+
+---
+
+## 🚀 PHASE 2: Mở Rộng Vertical Slices (After Phase 1 Complete)
+
+Sau khi hoàn thành Phase 1 Tenant vertical slice, tiếp tục theo pattern tương tự cho các domain entities còn lại.
+
+### Chiến lược triển khai
+
+**Approach:** Vertical slice từng entity một, theo thứ tự ưu tiên business value
+
+**Template pattern đã validate:**
+
+1. ✅ Command handler + DTO + Controller endpoint
+2. ✅ Event publication to RabbitMQ
+3. ✅ Projector implementation + wire vào worker
+4. ✅ Query handler + Controller endpoint
+5. ✅ E2E test validates complete flow
+6. ✅ Update documentation
+
+### Phase 2.1: User Vertical Slice (P1 - High Priority)
+
+**Scope:**
+
+- Commands: `RegisterUser`, `UpdateUserProfile`, `ChangePassword`, `ActivateUser`, `SuspendUser`
+- Events: `UserRegistered`, `UserProfileUpdated`, `UserPasswordChanged`, `UserStatusChanged`
+- Projector: `UserProjector` (đã có base implementation, cần wire)
+- Queries: `GetUser`, `SearchUsers`
+- Endpoints: `GET /users/:id`, `GET /search/users?q=...`
+
+**Estimate:** 2-3 ngày (có sẵn nhiều infrastructure)
+
+**Business value:**
+
+- User management là core của IAM
+- Cần cho authentication flows
+- Foundation cho permissions/roles assignment
+
+### Phase 2.2: Role Vertical Slice (P1 - High Priority)
+
+**Scope:**
+
+- Commands: `CreateRole`, `UpdateRole`, `DeleteRole`
+- Events: `RoleCreated`, `RoleUpdated`, `RoleDeleted`
+- Projector: `RoleProjector` (NEW - cần implement)
+- Queries: `GetRole`, `GetRolesByTenant`
+- Endpoints: `GET /roles/:id`, `GET /tenants/:tenantId/roles`
+- **Special:** Trigger UserPermissionProjector khi role changes
+
+**Estimate:** 2-3 ngày
+
+**Business value:**
+
+- RBAC foundation
+- Permission management
+- Multi-tenant role scoping
+
+### Phase 2.3: Membership Vertical Slice (P1 - High Priority)
+
+**Scope:**
+
+- Commands: `CreateMembership`, `AssignRoleToMembership`, `RemoveRoleFromMembership`
+- Events: `UserAddedToTenant`, `RoleAssignedToUser`, `RoleRemovedFromUser`
+- Projector: `MembershipProjector` (NEW - cần implement)
+- Queries: `GetUserMemberships`, `GetTenantMembers`
+- Endpoints: `GET /users/:userId/memberships`, `GET /tenants/:tenantId/members`
+- **Special:** Trigger UserPermissionProjector cho recalculation
+
+**Estimate:** 2-3 ngày
+
+**Business value:**
+
+- Multi-tenancy support
+- User-tenant-role relationships
+- Permission inheritance validation
+
+### Phase 2.4: Service Definition Vertical Slice (P2 - Medium Priority)
+
+**Scope:**
+
+- Commands: `RegisterService`, `PublishServiceVersion`
+- Events: `ServiceRegistered`, `ServiceVersionRegistered`
+- Projector: `ServiceDefinitionProjector` (NEW)
+- Queries: `GetService`, `GetServiceVersions`
+- Endpoints: `GET /services/:serviceId`, `GET /services/:serviceId/versions`
+- **Special:** Trigger PermissionProjector để merge permission trees
+
+**Estimate:** 3-4 ngày (complex merge logic)
+
+**Business value:**
+
+- Dynamic permission registry
+- Multi-service permission federation
+- Version management cho backward compatibility
+
+---
+
+### Phase 2 Timeline
+
+| Vertical Slice  | Priority | Estimate | Dependencies        |
+| --------------- | -------- | -------- | ------------------- |
+| User            | P1       | 2-3 ngày | Phase 1 complete    |
+| Role            | P1       | 2-3 ngày | User complete       |
+| Membership      | P1       | 2-3 ngày | User + Role         |
+| ServiceDef      | P2       | 3-4 ngày | Permission infra ✅ |
+| **Total Phase** | -        | **~12 ngày** | -               |
+
+**Deliverable sau Phase 2:**
+
+- ✅ Complete CQRS/ES implementation cho tất cả core entities
+- ✅ Full CRUD operations qua Command + Query APIs
+- ✅ Permission calculation + caching hoạt động end-to-end
+- ✅ Multi-tenancy support validated
+- ✅ Ready for authentication integration testing
 
 ---
 

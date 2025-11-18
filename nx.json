@@ -31,6 +31,10 @@
       "cache": false,
       "dependsOn": ["build"],
       "inputs": ["production", "^production"]
+    },
+    "e2e": {
+      "cache": false,
+      "dependsOn": ["^up", "^docker:build"]
     }
   },
   "tui": {
