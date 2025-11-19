@@ -45,6 +45,8 @@ export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 export type ReadonlyFields<T, K extends keyof T> = Omit<T, K> &
   Readonly<Pick<T, K>>;
 
+export type ReadonlyArrray<T> = readonly T[];
+
 // Extract types
 export type ExtractArrayType<T> = T extends (infer U)[] ? U : never;
 export type ExtractPromiseType<T> = T extends Promise<infer U> ? U : never;

@@ -5,8 +5,8 @@
   "projectType": "application",
   "tags": ["type:e2e"],
   "implicitDependencies": [
-    "iam-command-service",
-    "iam-projector-worker",
+    "iam-command",
+    "iam-projector",
     "infras-postgres",
     "infras-rabbitmq",
     "infras-redis",

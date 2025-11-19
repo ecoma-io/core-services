@@ -14,23 +14,21 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css"
     />
-    <style>
-      .app-name-link > img {
-        height: 1.25rem;
-        margin-left: 15px;
-      }
-    </style>
   </head>
   <body>
     <div id="app"></div>
     <script>
       // Docsify configuration
       window.$docsify = {
+        name: 'Ecoma Core',
         basePath: '/docs',
         themeColor: '#42b883',
         loadNavbar: false,
-        loadSidebar: 'index.md',
-        homepage: 'overview.md',
+        loadSidebar: './index.md',
+        alias: {
+          '/.*/index.md': '/index.md',
+        },
+        homepage: 'getting-started.md',
         autoHeader: true,
         auto2top: true,
         pagination: {
@@ -113,6 +111,7 @@
     <script src="https://unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/docsify-prism@latest/dist/docsify-prism.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-typescript.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>

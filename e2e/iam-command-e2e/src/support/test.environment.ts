@@ -118,10 +118,10 @@ export class TestEnvironment extends BaseIntegrationEnvironment {
 
     // ...existing code...
 
-    const iamCommandService = await new GenericContainer('iam-command-service')
+    const iamCommandService = await new GenericContainer('iam-command')
       .withEnvironment(serviceEnv)
       .withExposedPorts(3000)
-      .withLogConsumer(this.createLogConsumer('iam-command-service'))
+      .withLogConsumer(this.createLogConsumer('iam-command'))
       .withWaitStrategy(Wait.forListeningPorts().withStartupTimeout(60000)) // 60 seconds for port listening
       .withStartupTimeout(180000) // 3 minutes total startup timeout
       .start();
@@ -134,10 +134,10 @@ export class TestEnvironment extends BaseIntegrationEnvironment {
       PORT: '3001', // Different port for query service
     };
 
-    const iamQueryService = await new GenericContainer('iam-query-service')
+    const iamQueryService = await new GenericContainer('iam-query')
       .withEnvironment(queryServiceEnv)
       .withExposedPorts(3001)
-      .withLogConsumer(this.createLogConsumer('iam-query-service'))
+      .withLogConsumer(this.createLogConsumer('iam-query'))
       .withWaitStrategy(Wait.forListeningPorts().withStartupTimeout(60000))
       .withStartupTimeout(180000)
       .start();

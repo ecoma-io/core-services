@@ -19,19 +19,14 @@
       "@ecoma-io/interactor": ["packages/interactor/src/index.ts"],
       "@ecoma-io/nx-typescript": ["packages/nx-typescript/src/index.ts"],
       "@ecoma-io/jest-helpers": ["packages/jest-helpers/src/index.ts"],
+      "@ecoma-io/common": ["packages/common/src/index.ts"],
+      "@ecoma-io/expand-env": ["packages/expand-env/src/index.ts"],
       "@ecoma-io/eslint-plugin-monorepo": [
         "packages/eslint-plugin-monorepo/src/index.ts"
       ],
-      "@ecoma-io/nestjs-exceptions": [
-        "packages/nestjs-exceptions/src/index.ts"
-      ],
-      "@ecoma-io/nestjs-config": ["packages/nestjs-config/src/index.ts"],
-      "@ecoma-io/nestjs-filters": ["packages/nestjs-filters/src/index.ts"],
-      "@ecoma-io/nestjs-pipes": ["packages/nestjs-pipes/src/index.ts"],
-      "@ecoma-io/common": ["packages/common/src/index.ts"],
       "@ecoma-io/nx-docker": ["packages/nx-docker/src/index.ts"],
       "@ecoma-io/nx-typeorm": ["packages/nx-typeorm/src/index.ts"],
-      "@ecoma-io/expand-env": ["packages/expand-env/src/index.ts"],
+      "@ecoma-io/nestjs-helpers": ["packages/nestjs-helpers/src/index.ts"],
       "@ecoma-io/integration-hybridize": [
         "packages/integration-hybridize/src/index.ts"
       ],
@@ -40,19 +35,7 @@
       ],
       "@ecoma-io/parse-env-file": ["packages/parse-env-file/src/index.ts"],
       "@ecoma-io/iam-domain": ["libs/iam-domain/src/index.ts"],
-      "@ecoma-io/iam-worker-infrastructure": [
-        "libs/iam-worker-infrastructure/src/index.ts"
-      ],
-      "@ecoma-io/iam-query-interactor": [
-        "libs/iam-query-interactor/src/index.ts"
-      ],
-      "@ecoma-io/iam-command-interactor": [
-        "libs/iam-command-interactor/src/index.ts"
-      ],
-      "@ecoma-io/iam-infrastructure": ["libs/iam-infrastructure/src/index.ts"],
-      "@ecoma-io/nestjs-observability": [
-        "packages/nestjs-observability/src/index.ts"
-      ]
+      "@ecoma-io/adapter": ["packages/adapter/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

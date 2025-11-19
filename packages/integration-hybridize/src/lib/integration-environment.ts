@@ -4,7 +4,7 @@ import {
 } from '@testcontainers/toxiproxy';
 import { StartedTestContainer } from 'testcontainers';
 import { Readable } from 'stream';
-import { v7 as uuidv7 } from 'uuid';
+import { uuidv7 } from 'uuidv7';
 import { ProxiedService, Service } from './proxied-service.integration';
 
 /**

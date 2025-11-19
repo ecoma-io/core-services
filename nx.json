@@ -35,6 +35,10 @@
     "e2e": {
       "cache": false,
       "dependsOn": ["^up", "^docker:build"]
+    },
+    "serve": {
+      "cache": false,
+      "dependsOn": ["build", "^up"]
     }
   },
   "tui": {

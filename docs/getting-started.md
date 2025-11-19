@@ -1,35 +1,80 @@
-## Prerequisite
+## Yêu cầu bắt buộc
 
-## Open project in devcontainer
+Trước khi bắt đầu, bạn nên có:
 
-1. Install the [Dev Containers](vscode:extension/ms-vscode-remote.remote-containers) extension in VS Code.
-2. [Click here](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/ecoma-io/core-services) to check out the project with a devcontainer. Or open VS Code and, from the Command Palette, choose: `Dev Containers: Clone Repository in Container Volume...`.
-3. Choose git branch
+- VS Code với extension Dev Containers (khuyến nghị)
+- Docker đang chạy trên máy (hoặc quyền truy cập Docker daemon từ devcontainer)
+- Node.js & pnpm (nếu không dùng devcontainer)
 
-**Notes**: `Clone Repository in Container Volume` is best to ensure performance. [See more](https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_use-clone-repository-in-container-volume)
+## Mở dự án trong DevContainer
 
-After the container is created, the project's dependencies will be installed and the development infrastructure services (MinIO, Postgres, Maildev, Redis, etc.) will be running.
+1. Cài extension [Dev Containers](vscode:extension/ms-vscode-remote.remote-containers) trong VS Code.
+2. Bấm vào [liên kết này để clone và mở repo trong DevContainer](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/ecoma-io/core-services).
 
-Visit http://dev.fbi.com to view project documentation and other tools:
+   hoặc trong VS Code chọn `Dev Containers: Clone Repository in Container Volume...`
 
-## Monorepo structure & Nx usage
+3. Chọn branch git (thường là `dev`).
 
-This repository is organized as an Nx monorepo. Adding a short guide here helps new contributors understand the layout and how to run common Nx targets.
+> _Ghi chú_: `Clone Repository in Container Volume` giúp tối ưu hiệu năng làm việc trong container. ([Xem thêm](https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_use-clone-repository-in-container-volume))
 
-Repository layout (high level):
+Sau khi container được tạo, dependencies của dự án sẽ được cài đặt và các dịch vụ hạ tầng phát triển (MinIO, Postgres, MailDev, Redis, ...) thường sẽ được khởi động.
 
-- `apps/` — application projects (e.g. `resource-service`, `resource-migration`, `resource-e2e`).
-- `infras/` — developer infra helpers (docker compose, infra orchestration).
-- `libs/` — internal shareable libraries (domain logic, utilities, types).
-- `packages/` — publishable packages (DTOs, shared packages for other repos).
-- `tools/` — custom scripts, generators, and executors.
-- `docs/` — documentation and decision records.
+Truy cập `http://dev.fbi.com`để xem tài liệu dự án và công cụ hỗ trợ.
 
-Project declaration
+## Cấu trúc Monorepo & Sử dụng Nx
 
-Each project is declared in a `project.json` (or in the workspace config). A project entry contains `root`, `sourceRoot`, `projectType` (`application` or `library`) and a `targets` map. Targets are tasks such as `build`, `serve`, `test`, `lint`, `e2e`, `migrate:*`,`docker:build`,`publish`,`up`,`restart`,`reset` etc.
+Repo được tổ chức theo mô hình Nx monorepo. Dưới đây là hướng dẫn ngắn giúp contributors mới nắm nhanh cấu trúc và cách chạy các target Nx phổ biến.
 
-Example `project.json` snippet (illustrative):
+Cấu trúc cao cấp:
+
+- `apps/`: **Application Bootstrap (Entry Points)**.
+- `domains`: **Tầng Domain (Core - Trái tim hệ thống)**.
+- `interactors`: **Tầng Application (Use Cases)**.
+- `adapters`: **Tầng Infrastructure (Implementation)**.
+- `e2e/`: Các dự án kiểm thử end-to-end (E2E Tests) cho các ứng dụng trong `apps/`.
+- `libs/`: Các các thư viện nội bộ (nội bộ trong monorepo này):
+- `packages/`: Thư viện chia sẻ (Shared Libraries) độc lập, có thể publish npm.
+- `tools/` & `infras/`: Công cụ DevOps và môi trường Local.
+- `docs/`: Tài liệu dự án (ADR, hướng dẫn, kiến trúc, v.v.).
+
+## Shared Packages (Publishable libraries)
+
+This repository contains several shared, publishable packages under `packages/`.
+They are intended to be stable, well-reviewed contracts and helpers consumed by
+services, frontends, and other TypeScript applications across the organization.
+
+- **`@ecoma-io/common`**: Shared TypeScript types, response shapes and small
+  runtime utilities. This package defines REST API contracts (success/error
+  response shapes), common exceptions, and small helpers used by services and
+  clients (including web/mobile/desktop apps). Treat its exports as public API
+  — changes require coordination and version bumps.
+
+- **`@ecoma-io/domain`**: Domain primitives and base classes (Entities, Value
+  Objects, Aggregates, Domain Events). Use this package when implementing or
+  sharing domain model building blocks across bounded contexts and microservices
+  that follow DDD patterns.
+
+- **`@ecoma-io/interactor`**: Application-layer interfaces and ports (Commands,
+  Queries, Event/Command handlers, Unit-of-Work, Repository ports). Services and
+  adapters should depend on these interfaces to implement use-cases and to keep
+  application logic decoupled from infrastructure.
+
+- **`@ecoma-io/nestjs-helpers`**: NestJS bootstrap and presenter helpers —
+  configuration validation, global exception filters, validation pipes, and
+  health-check utilities. Import this package into `apps/*` `main.ts` and
+  shared modules to standardize startup behavior across NestJS services.
+
+Guidance for contributors:
+
+- Prefer additive changes to these packages; avoid breaking changes when
+  possible. When a breaking change is necessary, update README, chagnes notes,
+  and communicate to downstream teams.
+- Use the path alias imports (`@ecoma-io/*`) when consuming these packages from
+  other workspace projects.
+
+Mỗi project được khai báo trong `project.json` (hoặc trong workspace config). `targets` chứa các task như `build`, `serve`, `test`, `lint`, `e2e`, `migrate:*`, `docker:build`, `publish`, `up`, `restart`, `reset`, v.v.
+
+Ví dụ `project.json` (minh họa):
 
 ```json
 {
@@ -49,85 +94,76 @@ Example `project.json` snippet (illustrative):
 }
 ```
 
-Running targets
+Chạy các target thường dùng
 
 ```bash
-# Run a single target
-npx nx run resource-service:build # or npx nx build resource-service
-npx nx run resource-service:serve # or npx nx serve resource-service
-npx nx run resource-service:test # or npx nx test resource-service
-npx nx run resource-service:lint # or npx nx lint resource-service
+# Chạy một target
+npx nx run resource-service:build # hoặc npx nx build resource-service
+npx nx run resource-service:serve # hoặc npx nx serve resource-service
+npx nx run resource-service:test # hoặc npx nx test resource-service
+npx nx run resource-service:lint # hoặc npx nx lint resource-service
 
-# With configuration
+# Với cấu hình
 npx nx run resource-service:build:production
 ```
 
-Multi-project commands
+Lệnh cho nhiều project
 
 ```bash
-# Run a target across multiple projects
+# Chạy target cho nhiều project
 npx nx run-many --target=test --projects=resource-service,other-service
-# Run a target for all projects
+# Build tất cả project
 npx nx run-many --target=build --all
 
-# Run only affected projects (between branches or commits)
+# Chỉ chạy project bị ảnh hưởng
 npx nx affected:test --base=origin/main --head=HEAD
 npx nx affected:build --base=origin/main --head=HEAD
 
-# Visualize dependency graph
+# Hiển thị dependency graph
 npx nx dep-graph
 ```
 
 Best practices
 
-- Standardize common targets: `build`, `serve`/`start`, `test`, `lint`, `e2e`, `seed`, `docker:build`,`publish`
-- Use `nx run-commands` for simple shell scripts (seed/migrate) and keep tasks idempotent so caching works well.
-- Pin Nx in `devDependencies` to ensure consistent behavior across machines and CI.
-- Use `nx affected` and `nx run-many` in CI to limit work to changed projects and speed up pipelines.
+- Chuẩn hóa các target: `build`, `serve`/`start`, `test`, `lint`, `e2e`, `seed`, `docker:build`, `publish`.
+- Dùng `nx run-commands` cho script đơn giản và giữ tính idempotent để cache hoạt động tốt.
+- Pin Nx trong `devDependencies` để nhất quán giữa dev và CI.
+- Dùng `nx affected` và `nx run-many` trong CI để tối ưu thời gian.
 
-## Optional: Install a self-signed SSL certificate
+## Tùy chọn: Cài certificate tự ký
 
-This prevents browser warnings for the \*.fbi.com domain used by the development infrastructure so the local environment behaves more like production.
+Để tránh cảnh báo TLS cho domain `*.fbi.com`, bạn có thể cài certificate tự ký lên hệ thống.
 
-### Step 1: Obtain the certificate
+### Bước 1: Lấy certificate
 
-Copy the certificate file from the repository:
+```text
 infras/infras-core/cert.crt
+```
 
-### Step 2: Install the certificate
+### Bước 2: Cài certificate
 
-#### On Windows
+#### Trên Windows
 
-1. Double-click cert.crt
-2. Click "Install Certificate"
-3. Choose "Local Machine" and click "Next"
-4. Select "Place all certificates in the following store" then click "Browse"
-5. Choose "Trusted Root Certification Authorities" and click "OK"
-6. Click "Next" then "Finish"
-7. Restart your browser
+1. Double-click `cert.crt` → Install Certificate
+2. Chọn "Local Machine" → Next
+3. Chọn "Place all certificates in the following store" → Browse
+4. Chọn "Trusted Root Certification Authorities" → OK → Next → Finish
+5. Khởi động lại trình duyệt
 
-#### On macOS
+#### Trên macOS
 
-1. Open Keychain Access
-2. Drag and drop cert.crt into the "System" keychain
-3. Double-click the certificate, expand "Trust", and set "When using this certificate" to "Always Trust"
-4. Close the window and authenticate if prompted
-5. Restart your browser
+1. Mở Keychain Access
+2. Kéo `cert.crt` vào keychain `System`
+3. Double-click certificate → Trust → chọn "Always Trust"
+4. Xác thực nếu được yêu cầu và khởi động lại trình duyệt
 
-#### On Linux (Ubuntu/Debian)
-
-1. Copy the certificate to the system store:
+#### Trên Linux (Ubuntu/Debian)
 
 ```sh
 sudo cp cert.crt /usr/local/share/ca-certificates/ecoma-fbi-com.crt
-```
-
-2. Update CA certificates:
-
-```sh
 sudo update-ca-certificates
 ```
 
-3. Restart your browser
+Nếu trình duyệt dùng store riêng (ví dụ Firefox), import certificate trong trình quản lý của trình duyệt.
 
-If you use a browser that maintains its own certificate store (e.g., some Firefox setups), import the certificate into that browser's certificate manager as well.
+---

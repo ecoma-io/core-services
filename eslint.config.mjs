@@ -59,35 +59,105 @@ export default [
         },
       ],
 
-      // Enforce Nx module boundaries and dependency constraints
-      // This prevents circular dependencies and ensures proper layering
+      '@typescript-eslint/naming-convention': [
+        'error',
+        // Enforce interfaces to start with 'I'
+        {
+          selector: 'interface',
+          format: ['PascalCase'],
+          prefix: ['I'],
+          leadingUnderscore: 'forbid',
+          trailingUnderscore: 'forbid',
+        },
+        // Optional: add other naming conventions for classes, variables, etc.
+        {
+          selector: 'variableLike',
+          format: ['camelCase', 'UPPER_CASE'],
+        },
+      ],
+
+      // Enforce Nx module boundaries and dependency constraints.
+      // Strict left-to-right layering model (no capability scoping for now):
+      // type:e2e -> type:apps -> type:infras -> type:adapters -> type:interactors -> type:domains -> type:libs -> type:packages
       '@nx/enforce-module-boundaries': [
         'error',
         {
-          // Ensure buildable libraries only depend on other buildable libraries
           enforceBuildableLibDependency: true,
           depConstraints: [
-            // E2E tests can depend on any project type
+            // E2E tests may depend on anything to their right (apps, infras, adapters, interactors, domains, libs, packages)
             {
               sourceTag: 'type:e2e',
+
               onlyDependOnLibsWithTags: [
                 'type:apps',
+                'type:infras',
+                'type:adapters',
+                'type:interactors',
+                'type:domains',
                 'type:libs',
                 'type:packages',
-                'type:infras',
               ],
             },
-            // Apps can only depend on libraries and packages
+
+            // Apps may only depend on infras and anything to the right
             {
               sourceTag: 'type:apps',
-              onlyDependOnLibsWithTags: ['type:packages', 'type:libs'],
+              onlyDependOnLibsWithTags: [
+                'type:infras',
+                'type:adapters',
+                'type:interactors',
+                'type:domains',
+                'type:libs',
+                'type:packages',
+              ],
             },
-            // Libraries can depend on other libraries and packages
+
+            // Infras (infrastructure projects) may only depend on adapters and anything to the right
+            {
+              sourceTag: 'type:infras',
+              onlyDependOnLibsWithTags: [
+                'type:adapters',
+                'type:interactors',
+                'type:domains',
+                'type:libs',
+                'type:packages',
+              ],
+            },
+
+            // Adapters -> interactors, domains, libs, packages
+            {
+              sourceTag: 'type:adapters',
+              onlyDependOnLibsWithTags: [
+                'type:interactors',
+                'type:domains',
+                'type:libs',
+                'type:packages',
+              ],
+            },
+
+            // Interactors -> domains, libs, packages
+            {
+              sourceTag: 'type:interactors',
+              onlyDependOnLibsWithTags: [
+                'type:domains',
+                'type:libs',
+                'type:packages',
+              ],
+            },
+
+            // Domains -> libs, packages
+            {
+              sourceTag: 'type:domains',
+              onlyDependOnLibsWithTags: ['type:libs', 'type:packages'],
+            },
+
+            // Shared libs -> other libs and packages (allow intra-lib deps)
             {
               sourceTag: 'type:libs',
-              onlyDependOnLibsWithTags: ['type:packages', 'type:libs'],
+              onlyDependOnLibsWithTags: ['type:libs', 'type:packages'],
             },
-            // Packages can only depend on other packages (no circular deps)
+
+            // Packages -> only other packages
             {
               sourceTag: 'type:packages',
               onlyDependOnLibsWithTags: ['type:packages'],

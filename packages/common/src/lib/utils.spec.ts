@@ -4,6 +4,7 @@ import {
   Nullable,
   Optional,
   DeepPartial,
+  deepEqual,
   ExtractArrayType,
   isPrimitiveValue,
   isObjectValue,
@@ -175,5 +176,113 @@ describe('utils type smoke tests (compile-time + runtime)', () => {
     } finally {
       spy.mockRestore();
     }
+  });
+});
+describe('deepEqual runtime behaviour', () => {
+  test('primitive comparisons', () => {
+    // Arrange
+    const a = 42;
+    const b = 42;
+    const c = '42';
+    const n1 = null;
+    const n2 = null;
+    const u = undefined;
+
+    // Act / Assert
+    expect(deepEqual(a, b)).toBe(true);
+    expect(deepEqual(a, c)).toBe(false);
+    expect(deepEqual(n1, n2)).toBe(true);
+    expect(deepEqual(n1, u)).toBe(false);
+    expect(deepEqual(true, false)).toBe(false);
+  });
+
+  test('date comparisons', () => {
+    // Arrange
+    const d1 = new Date('2020-01-01T00:00:00.000Z');
+    const d2 = new Date('2020-01-01T00:00:00.000Z');
+    const d3 = new Date('2021-01-01T00:00:00.000Z');
+
+    // Act / Assert
+    expect(deepEqual(d1, d2)).toBe(true);
+    expect(deepEqual(d1, d3)).toBe(false);
+  });
+
+  describe('array and object branches (shim ValueObject.deepEqual)', () => {
+    const originalValueObject = (global as any).ValueObject;
+
+    beforeEach(() => {
+      // Provide a self-contained deep equality implementation for test-time
+      const eq = function eq(x: unknown, y: unknown): boolean {
+        if (x === y) return true;
+
+        if (x instanceof Date && y instanceof Date) {
+          return x.getTime() === y.getTime();
+        }
+
+        if (typeof x !== typeof y) return false;
+
+        if (x && y && typeof x === 'object' && typeof y === 'object') {
+          // Arrays
+          if (Array.isArray(x) && Array.isArray(y)) {
+            const xa = x as unknown[];
+            const ya = y as unknown[];
+            if (xa.length !== ya.length) return false;
+            for (let i = 0; i < xa.length; i++) {
+              if (!eq(xa[i], ya[i])) return false;
+            }
+            return true;
+          }
+
+          if (Array.isArray(x) !== Array.isArray(y)) return false;
+
+          const xo = x as Record<string, unknown>;
+          const yo = y as Record<string, unknown>;
+          const xKeys = Object.keys(xo);
+          const yKeys = Object.keys(yo);
+          if (xKeys.length !== yKeys.length) return false;
+          for (const k of xKeys) {
+            if (!Object.prototype.hasOwnProperty.call(yo, k)) return false;
+            if (!eq(xo[k], yo[k])) return false;
+          }
+          return true;
+        }
+
+        return false;
+      };
+
+      (global as any).ValueObject = { deepEqual: eq };
+    });
+
+    afterEach(() => {
+      if (originalValueObject === undefined) {
+        delete (global as any).ValueObject;
+      } else {
+        (global as any).ValueObject = originalValueObject;
+      }
+    });
+
+    test('arrays compared via shim are deeply equal or not', () => {
+      // Arrange
+      const arrA = [1, { a: 2 }, [3, 4]];
+      const arrB = [1, { a: 2 }, [3, 4]];
+      const arrC = [1, { a: 3 }, [3, 4]];
+
+      // Act / Assert
+      expect(deepEqual(arrA, arrB)).toBe(true);
+      expect(deepEqual(arrA, arrC)).toBe(false);
+    });
+
+    test('plain objects compared via shim are deeply equal or not', () => {
+      // Arrange
+      const objA = { x: 1, y: { z: 'a' } };
+      const objB = { x: 1, y: { z: 'a' } };
+      const objC = { x: 1, y: { z: 'b' } };
+      const objD = { x: 1, y: { z: 'a' }, extra: 5 };
+
+      // Act / Assert
+      expect(deepEqual(objA, objB)).toBe(true);
+      expect(deepEqual(objA, objC)).toBe(false);
+      expect(deepEqual(objA, objD)).toBe(false);
+    });
   });
 });

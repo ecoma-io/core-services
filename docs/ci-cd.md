@@ -1,227 +1,143 @@
-````markdown
-# CI / CD — Continuous Integration and Delivery
+# CI / CD — Tích hợp và Phát hành Liên tục
 
-This document describes the CI/CD strategy used by the `core-services` repository, how the GitHub Actions workflows operate, what secrets/tokens are required, and recommended local debugging steps. It is written to help contributors understand and troubleshoot the automated pipelines.
+Tài liệu này mô tả chiến lược CI/CD mà repo `core-services` đang sử dụng, cách các workflow GitHub Actions hoạt động, các bí mật/credential cần thiết và các bước gợi ý để gỡ lỗi cục bộ. Mục tiêu là giúp đóng góp viên hiểu và xử lý sự cố trong pipeline tự động.
 
-**Contents**
+## Tổng quan
 
-- Overview
-- Workflows (Integration, Delivery, Analysis)
-- Key secrets and environment variables
-- How the release / publish flow works
-- Running parts of the pipeline locally
-- Debugging tips and common failures
-- Recommendations and best practices
+Repository sử dụng GitHub Actions để chạy CI trên các push và pull request, và để publish package và Docker image khi có release. CI được tối ưu hóa bằng Nx để tính toán các project bị ảnh hưởng (affected projects) nên các tác vụ (lint, test, build, e2e) chỉ chạy cho những project thay đổi.
 
----
+Mục tiêu cao cấp của CI/CD trong repo này:
 
-## Overview
+- **Đảm bảo chất lượng code:** lint và unit test cho các project thay đổi
+- **Chạy integration/E2E khi cần:** dùng Testcontainers cho môi trường kiểm thử
+- **Xây dựng artifacts và Docker images có thể tái tạo**
+- **Publish artifacts khi có release:** npm packages và Docker images
+- **Chạy phân tích bảo mật (CodeQL)** trên nhánh `main`
 
-This repository uses GitHub Actions to run CI on pushes and pull requests, and to publish packages and Docker images on releases. The CI is optimized using Nx to compute affected projects so tasks (lint, test, build, e2e) run only for projects that changed.
+## Các workflow
 
-High-level goals of CI/CD in this repo:
+Có ba workflow chính được tham chiếu trong tài liệu và repository:
 
-- Ensure code quality: linting and unit tests for changed projects
-- Run integration and E2E tests where applicable (Testcontainers)
-- Build artifacts and Docker images reproducibly
-- Publish release artifacts (npm packages, Docker images) from tagged releases
-- Run security analysis (CodeQL) on `main`
+- `integration.yaml` — chạy trên push và PR tới `main` và `dev`. Thực hiện lint, test, build và e2e cho các project bị ảnh hưởng và có thể chuẩn bị artifacts cho release trên `main`.
+- `delivery.yaml` — kích hoạt khi có tag semver (ví dụ `v1.2.3`) và publish packages/images lên registry (GHCR, npm). Xác thực bằng `GITHUB_TOKEN` và `NPM_TOKEN`.
+- `analysis.yaml` — chạy CodeQL trên `main` (push, PR, scheduled).
 
-## Workflows
+File workflow nằm trong `.github/workflows/`. Khi chỉnh sửa CI, mở các file đó để xem chi tiết job, matrix và cấu hình cache.
 
-There are three main GitHub workflows referenced in the docs and repository:
+### `integration.yaml` (trách nhiệm chính)
 
-- `integration.yaml` — runs on pushes and PRs to `main` and `dev`. Executes lint, tests, build, and e2e for affected projects and may also prepare release artifacts for `main`.
-- `delivery.yaml` — triggers on semver tags (for example `v1.2.3`) and publishes packages/images to registries (GHCR and npm). It authenticates using `GITHUB_TOKEN` and `NPM_TOKEN`.
-- `analysis.yaml` — runs CodeQL security analysis on `main` (pushes, PRs, and scheduled).
-
-Note: exact workflow filenames and implementation live under `.github/workflows/`. When reviewing or editing CI, open those files to see precise job steps, matrix definitions, and caching configuration.
-
-### `integration.yaml` (typical responsibilities)
-
-- Trigger: pushes and pull requests to `dev` and `main` (and PR branches depending on repo config).
-- Steps:
+- Trigger: pushes và pull request tới `dev` và `main` (hoặc theo cấu hình repo).
+- Các bước chính:
   - Checkout repository
-  - Install Node.js and `pnpm` (the workflows often pin Node and pnpm versions)
-  - Install dependencies (`pnpm install` or equivalent)
-  - Compute affected projects using `npx nx print-affected` or `nx affected` (compares against `origin/main` or configured base)
-  - Run tasks in parallel (lint, unit tests, build, e2e) across affected projects using a matrix strategy
-  - Optionally upload artifacts, test reports, and cache dependency layers
+  - Cài Node.js và `pnpm` (thường pin phiên bản)
+  - Cài phụ thuộc (`pnpm install`)
+  - Tính các project bị ảnh hưởng bằng `npx nx print-affected` hoặc `nx affected`
+  - Chạy song song các tác vụ (lint, unit test, build, e2e) cho các project bị ảnh hưởng
+  - Tùy chọn: upload artifacts, test reports, cache
 
-Important notes:
+Lưu ý quan trọng:
 
-- Nx affected detection: CI relies on accurate git references. Ensure the workflow checks out enough history (use `actions/checkout` with `fetch-depth: 0` when needed).
-- Caching: workflows typically cache `~/.pnpm-store`, `node_modules/.cache`, and Nx computation caches. When modifying deps or Node versions, invalidate caches appropriately.
+- Nx affected cần git history chính xác — đảm bảo workflow checkout đủ lịch sử (dùng `actions/checkout` với `fetch-depth: 0`).
+- Cache: workflow thường cache `~/.pnpm-store`, `node_modules/.cache`, và Nx computation cache. Khi thay đổi dependency hoặc Node version, hãy invalidate cache phù hợp.
 
-### `delivery.yaml` (publishing)
+### `delivery.yaml` (phát hành)
 
-- Trigger: semver Git tag pushes (for example, `v1.2.3`).
-- Authentication:
-  - `GITHUB_TOKEN` — used to authenticate with GitHub Container Registry (GHCR) to push Docker images.
-  - `NPM_TOKEN` — required to publish npm packages to the configured npm registry (often the npmjs.org account or an internal registry).
-- Typical steps:
-  - Checkout repository and verify tag
-  - Authenticate to GHCR (using `GITHUB_TOKEN`) and to npm (using `NPM_TOKEN`)
-  - Build packages (e.g., `npx nx run-many -t build --all` or `npx nx run-many -t publish`)
-  - Publish packages to npm and push Docker images to GHCR
-  - Create GitHub release and update changelog (some repos use `release-please` or similar tooling)
+- Trigger: push tag semver (ví dụ `v1.2.3`).
+- Xác thực:
+  - `GITHUB_TOKEN` — dùng để authenticate với GHCR để push image.
+  - `NPM_TOKEN` — để publish npm packages.
+- Các bước điển hình:
+  - Checkout và verify tag
+  - Authenticate với GHCR (bằng `GITHUB_TOKEN`) và npm (bằng `NPM_TOKEN`)
+  - Build packages (vd: `npx nx run-many --target=build --all`)
+  - Publish packages lên npm và push Docker image lên GHCR
+  - Tạo GitHub Release và cập nhật changelog (có thể dùng `release-please` hoặc `conventional-changelog`)
 
-Security considerations:
+Bảo mật:
 
-- Protect `NPM_TOKEN` and limit its scope: create a token with minimal publish privileges, rotate tokens regularly, and store them in repository or organization secrets.
-- Use `GITHUB_TOKEN` for GHCR GitHub Actions permissions rather than permanent tokens where possible.
+- Bảo vệ `NPM_TOKEN` và giới hạn scope: tạo token có quyền tối thiểu, xoay token định kỳ và lưu trong GitHub Secrets.
+- Ưu tiên dùng `GITHUB_TOKEN` cho GHCR thay vì token cố định.
 
 ### `analysis.yaml` (CodeQL)
 
-- Runs CodeQL analysis on `main` branch and PRs targeting `main`.
-- Ensures security scans run regularly and are reflected in PR checks.
+- Chạy CodeQL analysis trên nhánh `main` và PR targeting `main`.
+- Đảm bảo quét bảo mật được thực hiện định kỳ và hiện trong checks của PR.
 
-## Key secrets and environment variables
+## Các secrets và biến môi trường chính
 
-These secrets are required by CI/CD workflows. They should be configured as GitHub repository or organization secrets.
+Các secrets sau cần cấu hình trong GitHub repository/org secrets:
 
-- `NPM_TOKEN`: token to publish packages to npm (or the configured npm registry).
-- `GITHUB_TOKEN`: automatically provided by GitHub in Actions — used to authenticate to GHCR and the GitHub REST API.
-- Docker-related credentials (if pushing to external registries): `DOCKER_USERNAME`, `DOCKER_PASSWORD` (only if not using GHCR with `GITHUB_TOKEN`).
-- Optional: registry-specific tokens (AWS ECR, Docker Hub) if the project publishes there.
+- `NPM_TOKEN`: token để publish package lên npm (hoặc registry cấu hình)
+- `GITHUB_TOKEN`: do GitHub cung cấp trong Actions — dùng để authenticate với GHCR và GitHub API
+- Nếu push tới registry khác: `DOCKER_USERNAME`, `DOCKER_PASSWORD`
+- Tùy chọn: token cho registry cụ thể (AWS ECR, Docker Hub) nếu cần
 
-Note: keep secrets scoped and minimal. Prefer organization-level secrets when multiple repositories share publishing credentials.
+Luôn giữ secrets ở phạm vi nhỏ nhất và ưu tiên secrets ở cấp tổ chức khi nhiều repo dùng chung.
 
-## How the release / publish flow works
+## Quy trình phát hành / publish
 
-1. Prepare a release commit on `main` following Conventional Commits (commit messages with types such as `fix:`, `feat:`, `chore:`, etc.).
-2. Tag the commit with a semver tag (for example `git tag v1.2.3 && git push origin v1.2.3`).
-3. `delivery.yaml` triggers on the tag push and performs the publishing steps:
-   - Builds packages and images
-   - Authenticates using secrets
-   - Publishes npm packages
-   - Pushes Docker images to GHCR or configured registry
-   - Creates a GitHub Release (optionally using changelog generated by `release-please` or `conventional-changelog`)
+1. Chuẩn bị commit release trên `main` theo Conventional Commits (`fix:`, `feat:`, `chore:`, ...).
+2. Tag commit bằng semver: `git tag v1.2.3 && git push origin v1.2.3`.
+3. `delivery.yaml` sẽ chạy trên tag push và thực hiện:
 
-To do a dry-run or debug locally, see the next section.
+- Build artifacts
+- Xác thực bằng secrets
+- Publish npm packages
+- Push Docker images lên registry
+- Tạo GitHub Release và cập nhật changelog
 
-## Running/Debugging CI steps locally
+## Chạy/gỡ lỗi CI trên máy local
 
-You can replicate many CI steps locally to debug failures before pushing commits.
+Các bước để tái tạo một số bước CI trên local:
 
-1. Install dependencies locally (use same Node version as CI):
+1. Cài dependencies (dùng cùng phiên bản Node như CI):
 
 ```bash
 pnpm install
 ```
 
-2. Compute affected projects (example):
+2. Tính các project bị ảnh hưởng (ví dụ):
 
 ```bash
 npx nx print-affected --base=origin/main --target=build --select=projects
 ```
 
-3. Run the same commands that the workflow runs for a single project:
+3. Chạy lệnh tương tự workflow cho một project:
 
 ```bash
-npx nx build <project>
-npx nx test <project>
-npx nx e2e <project>-e2e
+npx nx run-many -t lint test build e2e <project>
 ```
 
-4. Simulate publish steps (dry-run):
+4. Mô phỏng publish (dry-run):
 
 ```bash
-# Build packages
-npx nx run-many --target=build --all
-
-# For npm publish dry-run
-cd dist/packages/<package-name>
-npm publish --dry-run
+npx nx run-many -t publish --dryRun
 ```
 
-5. Use Act (optional) to run GitHub Actions locally: https://github.com/nektos/act — helpful for reproducing workflow-level issues but does not perfectly match GitHub-hosted runners (differences in images, services, and permissions).
+## Cập nhật dependency (Renovate)
 
-## Debugging tips and common failures
+Repo sử dụng Renovate để tự động cập nhật dependency. Tóm tắt cách tác động tới CI/CD:
 
-- Node / pnpm version mismatch: Ensure your local Node/pnpm versions match the versions pinned in the workflow.
-- Cache corruption or stale lockfile: Clear pnpm store/cache and re-install: `pnpm store prune && pnpm install --frozen-lockfile`.
-- Nx affected mis-detection: Ensure workflows check out enough git history (`fetch-depth: 0`) so `nx` can compare branches.
-- E2E failures due to Testcontainers: Ensure Docker daemon is available, Docker has sufficient resources, and the workflows start required infra services.
-- Publishing failures:
-  - `npm ERR! 403` — `NPM_TOKEN` may lack permission or be invalid.
-  - Docker push denied — check registry credentials and that the `GITHUB_TOKEN` has `packages:write` permission if pushing to GHCR.
+- Renovate target nhánh `dev` (theo config) và tạo PR theo lịch (ví dụ: hàng tuần).
+- Renovate có thể automerge một số cập nhật (patch/pin) theo `packageRules`.
+- Lockfile maintenance được bật để giữ lockfile luôn mới.
 
-Collect logs and artifacts:
+Recomendation: bảo vệ nhánh `dev` bằng required checks để automerged PR vẫn phải qua CI.
 
-- Make sure CI uploads test reports, logs, and built artifacts. Download artifacts from the GitHub Actions run for post-mortem analysis.
-
-## Recommendations & best practices
-
-- Use `actions/checkout@v4` with `fetch-depth: 0` for accurate Nx affected detection.
-- Pin Node and pnpm versions in workflows, and keep them synchronized with `engines` in `package.json` if present.
-- Add `pnpm` and Nx caching keys that include Node version and `pnpm-lock.yaml` checksum to avoid stale caches.
-- Add a short `CONTRIBUTING.md` and `RELEASE.md` that document the tagging and release flow for maintainers.
-- Add a small CI troubleshooting guide and list of artifacts to collect on failures.
-
-## Dependency updates (Renovate)
-
-This repository uses Renovate (see `.github/renovate.json`) to automate dependency updates. Below is a summary of what Renovate will do with the current configuration and how it interacts with the CI/CD workflows.
-
-- Target branches and scheduling:
-  - `baseBranchPatterns: ["dev"]` — Renovate will target branches that match `dev` by default, creating update branches/PRs against `dev`.
-  - `schedule: ["after 1am on Monday"]` — most grouped updates are scheduled weekly (Monday). Lockfile maintenance runs on a different schedule: `after 1pm on Tuesday`.
-
-- Branch naming and metadata:
-  - `branchPrefix: "update-deps/"` — Renovate creates branches such as `update-deps/your-package-1.x`.
-  - PRs are labeled with `labels: ["dependencies"]` and the repo has `dependencyDashboard: true`, so Renovate will also create/maintain a dependency dashboard issue for maintainers.
-
-- Automerge rules and review behavior:
-  - `automerge: true` at top-level and packageRules means Renovate will automatically merge certain updates (patch, pin, digest) and some minor updates according to `packageRules`.
-  - `major.automerge: false` — major version bumps are never automerged and will require manual review.
-  - Specific `packageRules` group important packages (nestjs, types, tooling, nx) and control schedules and automerge behavior per-group.
-
-- Lockfile maintenance:
-  - `lockFileMaintenance.enabled: true` — Renovate will create PRs to keep lockfiles up-to-date on the configured schedule. This reduces churn when multiple updates affect the lockfile.
-
-- Grouping rules:
-  - Renovate groups updates by package type (e.g., `nestjs-packages`, `types-packages`, `tooling-packages`, `nx-packages`) and applies the schedules and automerge preferences defined in `packageRules`.
-
-How this interacts with CI/CD
-
-- Renovate PRs trigger your normal CI (`integration.yaml`) against the `dev` branch or the created PR branch. This means every Renovate PR will run lint/tests/build/e2e for affected projects and surface failures in CI checks.
-- Because Renovate can automerge some updates, you should ensure that the automerged PRs are safe to merge without human review (patches/pins/digests). For anything beyond that (minor/major depending on your config), a manual review is required.
-- Since Renovate targets `dev` (per `baseBranchPatterns`), dependency updates flow into the `dev` integration pipeline first; releases and `delivery.yaml` remain gated by tagged releases on `main`.
-
-Recommended actions for maintainers
-
-- Review Renovate PRs in the dependency dashboard and subscribe to notifications for the `dependencies` label.
-- Protect `dev` branch with required status checks so automerged changes still pass CI before being merged.
-- For grouped PRs that touch many packages, consider splitting or deferring large upgrades to a controlled window.
-- Rotate and secure any registry credentials Renovate uses (if Renovate is configured to update Docker/registry credentials or lockfiles that rely on private registries).
-
-Debugging Renovate failures
-
-- Check the Renovate PR body and logs — Renovate gives detailed diagnostics for why an update was created or why merge failed.
-- Use the Renovate dependency dashboard (enabled) to see outstanding PRs and groupings.
-- If Renovate created a branch but CI failed, re-run CI on the PR after fixing any issues, or adjust the package rule to avoid automerge for that package group.
-
-## Suggested local maintenance commands
+## Lệnh bảo trì local gợi ý
 
 ```bash
-# Clean and reinstall dependencies
+# Dọn và cài lại dependencies
 pnpm store prune
 pnpm install --frozen-lockfile
 
-# Run lint/tests for affected projects against main
+# Chạy lint/tests cho các project bị ảnh hưởng
 npx nx affected --base=origin/main --target=test
 
-# Build all packages (used by delivery pipeline)
+# Build tất cả packages (dùng khi publish)
 npx nx run-many --target=build --all
 ```
 
----
+## Đọc thêm
 
-If you want, I can:
-
-- Create this file in the repo (I just added it).
-- Open a follow-up PR that also adds `docs/RELEASE.md` and a `CONTRIBUTING.md` with publish/tagging steps.
-- Add a small `docs/CI-TROUBLESHOOTING.md` with step-by-step reproduction commands for common failures.
-
-Please tell me which follow-up you'd like me to implement.
-````
+- [ADR-G1 — Monorepo với Nx và DevContainers](adr/ADR-G1.md)

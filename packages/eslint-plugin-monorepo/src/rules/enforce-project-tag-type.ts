@@ -1,7 +1,7 @@
 import { ESLintUtils, TSESTree } from '@typescript-eslint/utils';
 import type { AST } from 'jsonc-eslint-parser';
-import { normalizePath } from '@nx/devkit';
-
+import { normalizePath, workspaceRoot } from '@nx/devkit';
+import * as path from 'path';
 export const RULE_NAME = 'enforce-project-tag-type' as const;
 
 /** No shared schema variable; inline schema below to preserve literal types. */
@@ -102,13 +102,30 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)<
     // Derive required tag from top-level directory under repo root.
     // Expect path like: /repoRoot/apps/my-app/project.json -> take segment after root: apps
     const normalized = fileName.replace(/\\/g, '/');
-    // Split and find marker segments
-    const parts = normalized.split('/').filter(Boolean);
-    // Heuristic: find index of 'apps' | 'libs' | 'packages' | 'infras' | 'tools' | 'e2e'
-    const topIndex = parts.findIndex((p) =>
-      ['apps', 'libs', 'packages', 'infras', 'tools', 'e2e'].includes(p)
+
+    // Prefer using a path relative to the workspace root (when available).
+    // Fall back to `process.cwd()` so RuleTester / unit tests (which often
+    // provide relative filenames) behave consistently.
+    const baseRoot =
+      typeof workspaceRoot === 'string' && workspaceRoot
+        ? normalizePath(workspaceRoot)
+        : normalizePath(process.cwd());
+
+    // Use POSIX-style relative path computation for consistency in tests.
+    const relativePath = path.posix.relative(
+      baseRoot.replace(/\\/g, '/'),
+      normalized.replace(/\\/g, '/')
     );
-    const topFolder = topIndex >= 0 ? parts[topIndex] : 'unknown';
+
+    // If path.relative returns an empty string or starts with '..' (file is
+    // outside root), fall back to the original normalized path.
+    const effective =
+      !relativePath || relativePath.startsWith('..')
+        ? normalized
+        : relativePath;
+
+    const parts = effective.replace(/^\/+/, '').split('/').filter(Boolean);
+    const topFolder = parts.length > 0 ? parts[0] : 'unknown';
     const tagPrefix = options?.tagPrefix ?? 'type:';
     const requiredTag = `${tagPrefix}${topFolder}`;
 
