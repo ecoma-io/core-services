@@ -25,6 +25,8 @@ import { UsersController } from './controllers/users.controller';
 import { RolesController } from './controllers/roles.controller';
 import { MembershipsController } from './controllers/memberships.controller';
 import { ServiceDefinitionsController } from './controllers/service-definitions.controller';
+import { HealthCheckModule } from '@ecoma-io/nestjs-observability';
+import { HealthService } from './health/health.service';
 
 /**
  * IAM Query Service - Read Side (CQRS)
@@ -64,6 +66,8 @@ import { ServiceDefinitionsController } from './controllers/service-definitions.
       MembershipEntity,
       ServiceDefinitionEntity,
     ]),
+    // Health checks: register concrete implementation for this app
+    HealthCheckModule.register(HealthService),
   ],
   controllers: [
     TenantsController,
@@ -73,6 +77,8 @@ import { ServiceDefinitionsController } from './controllers/service-definitions.
     ServiceDefinitionsController,
   ],
   providers: [
+    // App-specific health implementation
+    HealthService,
     // Read model repositories
     TenantReadRepository,
     UserReadRepository,

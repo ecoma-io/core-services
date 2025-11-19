@@ -38,6 +38,8 @@ import {
   PublishServiceVersionHandler,
   AssignPermissionsHandler,
 } from '@ecoma-io/iam-command-interactor';
+import { HealthCheckModule } from '@ecoma-io/nestjs-observability';
+import { HealthService } from './health/health.service';
 
 export const EVENT_STORE_CLIENT = Symbol('EVENT_STORE_CLIENT');
 export const USER_AGG_REPO = Symbol('USER_AGG_REPO');
@@ -80,9 +82,13 @@ export const APP_UOW = Symbol('APP_UOW');
     }),
     OutboxModule,
     SnapshotModule,
+    // Health checks: register concrete implementation for this app
+    HealthCheckModule.register(HealthService),
   ],
   controllers: [CommandsController],
   providers: [
+    // health provider
+    HealthService,
     // EventStoreDB Client
     {
       provide: EVENT_STORE_CLIENT,

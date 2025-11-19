@@ -16,6 +16,8 @@ import {
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { EventConsumer } from './event.consumer';
 import { AppConfigService } from './app.config-service';
+import { HealthCheckModule } from '@ecoma-io/nestjs-observability';
+import { HealthService } from './health/health.service';
 
 @Module({
   imports: [
@@ -55,9 +57,13 @@ import { AppConfigService } from './app.config-service';
       });
     })(),
     ReadModelModule.forRoot(),
+    // Health checks: register concrete implementation for this worker
+    HealthCheckModule.register(HealthService),
   ],
   controllers: [],
   providers: [
+    // health provider
+    HealthService,
     // Adapter + utilities for BaseProjector
     AppConfigService,
     {
