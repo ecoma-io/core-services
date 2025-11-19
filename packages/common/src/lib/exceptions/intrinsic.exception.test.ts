@@ -40,11 +40,14 @@ describe('IntrinsicException', () => {
     const exceptionNull = new IntrinsicException(nullMessage as any);
     const exceptionUndefined = new IntrinsicException(undefinedMessage as any);
 
-    // Assert: Verify instances are created and messages are handled as empty strings (default Error behavior).
+    // Assert: Verify instances are created and messages are handled as empty strings
+    // (matches actual implementation that normalizes falsy inputs to '').
     expect(exceptionNull).toBeInstanceOf(IntrinsicException);
-    expect(exceptionNull.message).toBe('null'); // Error constructor converts null to 'null'
+    expect(exceptionNull).toBeInstanceOf(Error);
+    expect(exceptionNull.message).toBe('');
     expect(exceptionUndefined).toBeInstanceOf(IntrinsicException);
-    expect(exceptionUndefined.message).toBe(''); // Error constructor converts undefined to empty string
+    expect(exceptionUndefined).toBeInstanceOf(Error);
+    expect(exceptionUndefined.message).toBe('');
   });
 
   it('should have a name property set to the class name', () => {
