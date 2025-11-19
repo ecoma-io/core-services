@@ -1,4 +1,10 @@
-import { DynamicModule, Module, Type } from '@nestjs/common';
+import {
+  DynamicModule,
+  ForwardReference,
+  Module,
+  Provider,
+  Type,
+} from '@nestjs/common';
 import { HealthCheckController } from './health-check.controller';
 import { HealthCheckService } from './health-check.service';
 
@@ -17,11 +23,23 @@ export class HealthCheckModule {
    * @param implementation {Type<HealthCheckService>} Concrete service implementing health checks.
    * @returns {DynamicModule} Configured dynamic module instance.
    */
-  static register(implementation: Type<HealthCheckService>): DynamicModule {
+  static register(
+    implementation: Type<HealthCheckService>,
+    options?: {
+      imports?: Array<
+        Type<any> | DynamicModule | Promise<DynamicModule> | ForwardReference
+      >;
+      extras?: Provider[];
+    }
+  ): DynamicModule {
     return {
       module: HealthCheckModule,
+      imports: [...(options?.imports || [])],
       controllers: [HealthCheckController],
-      providers: [{ provide: HealthCheckService, useClass: implementation }],
+      providers: [
+        { provide: HealthCheckService, useClass: implementation },
+        ...(options?.extras || []),
+      ],
       exports: [HealthCheckService],
     };
   }
