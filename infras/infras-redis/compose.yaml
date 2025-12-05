@@ -1,0 +1,24 @@
+networks:
+  default:
+    external:
+      name: dev-infras
+
+volumes:
+  redis-data:
+
+services:
+  redis:
+    build: .
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT}:6379'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli -a $$REDIS_PASSWORD ping']
+      interval: 30s
+      timeout: 5s
+      retries: 30
