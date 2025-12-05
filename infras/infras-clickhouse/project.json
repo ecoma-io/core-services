@@ -1,0 +1,53 @@
+{
+  "name": "infras-clickhouse",
+  "projectType": "library",
+  "root": "infras/infras-clickhouse",
+  "sourceRoot": "infras/infras-clickhouse/src",
+  "implicitDependencies": ["infras-core"],
+  "tags": ["type:infras"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker run --rm -i hadolint/hadolint:latest-alpine < Dockerfile",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose build",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "up": {
+      "dependsOn": ["^up"],
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["docker compose up --wait -d"],
+        "cwd": "{projectRoot}"
+      }
+    },
+    "down": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["docker compose down"],
+        "cwd": "{projectRoot}"
+      }
+    },
+    "restart": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose down && docker compose up --wait -d",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "restart:clear": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose down -v && docker compose up --wait -d",
+        "cwd": "{projectRoot}"
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+networks:
+  default:
+    external:
+      name: dev-infras
+
+volumes:
+  clickhouse_data:
+
+services:
+  clickhouse:
+    build: .
+    container_name: clickhouse
+    restart: unless-stopped
+    ports:
+      - '${CLICK_HOUSE_HTTP_PORT}:8123' # HTTP
+      - '${CLICK_HOUSE_TCP_PORT}:9000' # native TCP
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    environment:
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+      - CLICKHOUSE_USER=${CLICK_HOUSE_USER}
+      - CLICKHOUSE_PASSWORD=${CLICK_HOUSE_PASSWORD}
+      - CLICKHOUSE_DATABASES=${CLICK_HOUSE_DATABASES}
+    ulimits:
+      nofile:
+        soft: '262144'
+        hard: '262144'
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8123/?query=SELECT%201 || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 30
