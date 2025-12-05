@@ -15,7 +15,12 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@ecoma-io/common": ["packages/common/src/index.ts"]
+      "@ecoma-io/common": ["packages/common/src/index.ts"],
+      "@ecoma-io/ddd-common": ["packages/ddd-common/src/index.ts"],
+      "@ecoma-io/node-observability": [
+        "packages/node-observability/src/index.ts"
+      ],
+      "@ecoma-io/nx-docker": ["packages/nx-docker/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
