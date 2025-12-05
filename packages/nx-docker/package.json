@@ -1,0 +1,12 @@
+{
+  "name": "@ecoma-io/nx-docker",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "executors": "./executors.json",
+  "generators": "./generators.json",
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "@nx/devkit": "^22.0.2"
+  }
+}

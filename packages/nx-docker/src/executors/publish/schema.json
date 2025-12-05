@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the Docker image"
+    },
+    "dockerfile": {
+      "type": "string",
+      "description": "Path to the Dockerfile"
+    },
+    "syncRepoVersion": {
+      "type": "boolean",
+      "default": false,
+      "description": "Sync version from root package.json"
+    },
+    "additionalProperties": true
+  },
+  "required": ["name"]
+}
