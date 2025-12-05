@@ -1,4 +1,4 @@
 export default {
-  displayName: 'observability',
+  displayName: 'node-observability',
   preset: '../../jest.preset.js',
 };

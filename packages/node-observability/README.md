@@ -44,7 +44,7 @@ Examples
 Basic initialization:
 
 ```ts
-import { StandardizedLogger } from '@ecoma-io/observability';
+import { StandardizedLogger } from '@ecoma-io/node-observability';
 
 StandardizedLogger.initialize({
   level: 'info',
@@ -108,7 +108,7 @@ Important note: StandardizedTracer already adds HttpInstrumentation by default d
 Initialization example (OTLP exporter + instrumentations):
 
 ```ts
-import { StandardizedTracer } from '@ecoma-io/observability';
+import { StandardizedTracer } from '@ecoma-io/node-observability';
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 
 StandardizedTracer.initialize(

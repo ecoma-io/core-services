@@ -1,5 +1,5 @@
 {
-  "name": "@ecoma-io/observability",
+  "name": "@ecoma-io/node-observability",
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
