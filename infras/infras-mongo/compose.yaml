@@ -1,0 +1,26 @@
+networks:
+  default:
+    name: dev-infras
+    external: true
+
+volumes:
+  mongo_data:
+
+services:
+  mongo:
+    build: .
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - '${MONGO_PORT}:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_DATABASES: ${MONGO_DATABASES}
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ['CMD-SHELL', 'mongosh --eval "db.adminCommand(\"ping\")" --quiet']
+      interval: 10s
+      timeout: 5s
+      retries: 30
