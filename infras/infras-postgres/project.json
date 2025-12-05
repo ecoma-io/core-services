@@ -1,0 +1,48 @@
+{
+  "name": "infras-postgres",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "infras/infras-postgres",
+  "projectType": "application",
+  "implicitDependencies": ["infras-core"],
+  "tags": ["type:infras"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker run --rm -i hadolint/hadolint:latest-alpine < Dockerfile",
+        "forwardAllArgs": false,
+        "cwd": "{projectRoot}"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose build",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "up": {
+      "dependsOn": ["^up"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose up --wait -d",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "restart": {
+      "dependsOn": ["^up"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose down && docker compose up --wait",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "restart:clear": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose down -v && docker compose up --wait",
+        "cwd": "{projectRoot}"
+      }
+    }
+  }
+}
