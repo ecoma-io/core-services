@@ -20,7 +20,8 @@
       "@ecoma-io/node-observability": [
         "packages/node-observability/src/index.ts"
       ],
-      "@ecoma-io/nx-docker": ["packages/nx-docker/src/index.ts"]
+      "@ecoma-io/nx-docker": ["packages/nx-docker/src/index.ts"],
+      "@ecoma-io/integrator": ["packages/integrator/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

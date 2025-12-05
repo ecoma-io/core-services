@@ -1,0 +1,12 @@
+{
+  "name": "@ecoma-io/integrator",
+  "type": "commonjs",
+  "types": "./src/index.d.ts",
+  "main": "./src/index.js",
+  "dependencies": {
+    "@testcontainers/toxiproxy": "^11.7.2",
+    "testcontainers": "^11.7.2",
+    "uuidv7": "^1.0.2",
+    "tslib": "^2.3.0"
+  }
+}
