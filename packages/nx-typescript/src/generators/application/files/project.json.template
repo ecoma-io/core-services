@@ -1,0 +1,65 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "<%= name %>",
+  "sourceRoot": "apps/<%= name %>/src",
+  "projectType": "application",
+  "tags": ["type:apps"],
+  "implicitDependencies": [],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "webpack-cli build",
+        "args": ["--node-env=production"],
+        "cwd": "{projectRoot}"
+      },
+      "configurations": {
+        "development": {
+          "args": ["--node-env=development"]
+        }
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "{projectName}:build",
+        "runBuildTargetDependencies": false,
+        "inspect": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "{projectName}:build:development"
+        },
+        "production": {
+          "buildTarget": "{projectName}:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{projectRoot}/coverage/"],
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.mjs"
+      }
+    },
+    "docker:build": {
+      "executor": "@ecoma-io/nx-docker:build",
+      "options": {
+        "name": "{projectName}"
+      }
+    },
+    "publish": {
+      "executor": "@ecoma-io/nx-docker:publish",
+      "options": {
+        "name": "ghcr.io/ecoma-io/{projectName}",
+        "syncRepoVersion": true
+      }
+    }
+  }
+}

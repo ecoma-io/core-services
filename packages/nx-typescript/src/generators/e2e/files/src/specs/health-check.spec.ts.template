@@ -1,0 +1,39 @@
+import { TestEnvironment } from '../support/test.environment';
+
+/**
+ * Test suite for health check endpoints in the IAM command service.
+ * This suite verifies liveness and readiness health checks, including scenarios with simulated failures using ToxiProxy.
+ */
+describe('Healthcheck', () => {
+  const environment = new TestEnvironment();
+
+  /**
+   * Sets up the test environment with proxy before running tests.
+   * @param {number} timeout - Timeout in milliseconds.
+   */
+  beforeAll(async () => {
+    await environment.start();
+  }, 60000);
+
+  /**
+   * Tears down the test environment after running tests.
+   * @param {number} timeout - Timeout in milliseconds.
+   */
+  afterAll(async () => {
+    await environment.stop();
+  }, 30000);
+
+  /**
+   * Tests the liveness health check endpoint.
+   */
+  it('GET /health/liveness -> 200', async () => {
+    // skelation only
+  });
+
+  /**
+   * Tests the readiness health check endpoint when database is up.
+   */
+  it('GET /health/readiness -> 200', async () => {
+    // skelation only
+  });
+});

@@ -1,0 +1,22 @@
+{
+  "name": "<%= name %>",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "e2e/<%= name %>/src",
+  "projectType": "application",
+  "tags": [
+    "type:e2e"
+  ],
+  "implicitDependencies": [],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "e2e": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.mjs",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

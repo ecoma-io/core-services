@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "type": "object",
+  "properties": {
+    "root": {
+      "type": "string",
+      "description": "The root directory of the package to publish",
+      "default": "{projectRoot}/dist"
+    },
+    "syncRepoVersion": {
+      "type": "boolean",
+      "default": false,
+      "description": "Sync version from root package.json"
+    },
+    "dryRun": {
+      "type": "boolean",
+      "default": false,
+      "description": "Run in dry-run mode"
+    },
+    "private": {
+      "type": "boolean",
+      "default": false,
+      "description": "Publish as a private package"
+    }
+  },
+  "required": []
+}

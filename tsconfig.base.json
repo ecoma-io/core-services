@@ -22,7 +22,8 @@
       ],
       "@ecoma-io/nx-docker": ["packages/nx-docker/src/index.ts"],
       "@ecoma-io/integrator": ["packages/integrator/src/index.ts"],
-      "@ecoma-io/nestjs-common": ["packages/nestjs-common/src/index.ts"]
+      "@ecoma-io/nestjs-common": ["packages/nestjs-common/src/index.ts"],
+      "@ecoma-io/nx-typescript": ["packages/nx-typescript/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -1,0 +1,21 @@
+import { BaseIntegrationEnvironment } from '@ecoma-io/core-project-integration-environment';
+import { IProxyOptions } from '@ecoma-io/integration-hybridize';
+import { StartedTestContainer } from 'testcontainers';
+
+/**
+ * Test environment class for setting up integration tests with PostgreSQL, MinIO, and service containers.
+ * Extends BaseIntegrationEnvironment to provide a configured DataSource and containerized services.
+ */
+export class TestEnvironment extends BaseIntegrationEnvironment {
+  /**
+   * Constructor for TestEnvironment with proxy options.
+   * @param proxyOptions - Proxy configuration options.
+   */
+  constructor(proxyOptions: IProxyOptions | boolean = true) {
+    super({ proxy: proxyOptions });
+  }
+
+  protected initAppContainers(): Promise<Array<StartedTestContainer>> {
+    throw new Error('Method not implemented.');
+  }
+}
