@@ -209,6 +209,24 @@ export default [
     rules: {
       // Ensure package.json dependencies are properly declared
       '@nx/dependency-checks': ['error'],
+
+      // Enforce that projects have correct 'type' tag keep architecture consistent
+      '@nx/workspace-enforce-project-tag-type': ['error'],
+
+      // Prevent hardcoded versions in internal package dependencies (use "*")
+      '@nx/workspace-no-specific-internal-deps-version': ['error'],
+
+      // Disallow 'version' field in package.json (except root package.json)
+      // Version should be managed centrally at workspace level
+      '@nx/workspace-no-package-version': ['error'],
+
+      // Enforce package name follows @ecoma-io/* scope pattern
+      '@nx/workspace-enforce-scope': [
+        'error',
+        {
+          pattern: '^@ecoma-io*/.*',
+        },
+      ],
     },
     languageOptions: {
       parser: await import('jsonc-eslint-parser'),
