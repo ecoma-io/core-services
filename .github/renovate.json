@@ -1,0 +1,85 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":separateMajorReleases",
+    ":ignoreUnstable",
+    ":prImmediately",
+    ":rebaseStalePrs",
+    "group:monorepos"
+  ],
+  "baseBranchPatterns": ["dev"],
+  "branchPrefix": "renovate/",
+  "schedule": ["after 1am on Monday"],
+  "automerge": true,
+  "major": {
+    "automerge": false
+  },
+  "dependencyDashboard": true,
+  "labels": ["dependencies"],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["after 1pm on Tuesday"]
+  },
+  "packageRules": [
+    {
+      "groupName": "nestjs-packages",
+      "schedule": ["after 1am on Monday"],
+      "matchPackageNames": ["/^@nestjs//", "/^nestjs-otel$/"],
+      "matchManagers": ["npm"]
+    },
+    {
+      "groupName": "opentelemetry-packages",
+      "schedule": ["after 1am on Monday"],
+      "matchPackageNames": ["/^@opentelemetry//"],
+      "matchManagers": ["npm"]
+    },
+    {
+      "groupName": "types-packages",
+      "schedule": ["after 1am on Monday"],
+      "automerge": true,
+      "matchPackageNames": ["/^@types//"],
+      "matchManagers": ["npm"]
+    },
+    {
+      "groupName": "tooling-packages",
+      "schedule": ["after 1am on Monday"],
+      "matchPackageNames": [
+        "/^eslint/",
+        "/^@eslint/",
+        "/prettier/",
+        "/typescript/",
+        "/jest/",
+        "/^@commitlint/",
+        "/lint-staged/"
+      ],
+      "matchManagers": ["npm"]
+    },
+    {
+      "groupName": "nx-packages",
+      "schedule": ["after 1am on Monday"],
+      "automerge": false,
+      "matchPackageNames": ["/@nx//", "/^nx$/"],
+      "matchManagers": ["npm"]
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "matchManagers": ["npm"]
+    },
+    {
+      "matchUpdateTypes": ["minor"],
+      "automerge": true,
+      "automergeType": "pr",
+      "matchManagers": ["npm"],
+      "schedule": ["after 1am on Monday"]
+    },
+    {
+      "matchUpdateTypes": ["pin", "digest"],
+      "automerge": true,
+      "automergeType": "pr",
+      "schedule": ["after 1am on Monday"]
+    }
+  ]
+}

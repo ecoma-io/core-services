@@ -1,0 +1,47 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/README.md"
+    ],
+    "sharedGlobals": [
+      "{workspaceRoot}/nx.json",
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/pnpm-lock.yaml",
+      "{workspaceRoot}/tsconfig.base.json",
+      "{workspaceRoot}/eslint.config.[js|cjs|mjs|ts]",
+      "{workspaceRoot}/jest.preset.[js|cjs|mjs|ts]"
+    ]
+  },
+  "targetDefaults": {
+    "@nx/js:tsc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "publish": {
+      "cache": false,
+      "dependsOn": ["^build"],
+      "inputs": ["default", "^production"]
+    },
+    "docker:build": {
+      "cache": false,
+      "dependsOn": ["build"],
+      "inputs": ["production", "^production"]
+    },
+    "e2e": {
+      "cache": false,
+      "dependsOn": ["^up", "^docker:build"]
+    },
+    "serve": {
+      "cache": false,
+      "dependsOn": ["build", "^up"]
+    }
+  },
+  "tui": {
+    "enabled": false
+  }
+}

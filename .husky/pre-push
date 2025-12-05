@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Pre-push hook: Run comprehensive checks on all Nx projects
+
+# This ensures code quality before pushing changes to the repository
+
+# Executes linting, unit tests, build, and end-to-end tests across the monorepo
+
+npx nx run-many -t lint test build e2e
+
+# Exit with the status of the last command to fail the push if any check fails
+
+exit $?

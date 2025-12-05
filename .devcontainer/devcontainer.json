@@ -1,0 +1,85 @@
+{
+  "name": "Ecoma core services devcontainer",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
+  "runArgs": ["--name", "ecoma-core-services-devcontainer"],
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": "true",
+      "installOhMyZsh": "true",
+      "configureZshAsDefaultShell": true,
+      "installOhMyZshConfig": true
+    },   
+    "./features/omz": {
+      "preInstalledPlugins": ["git", "git-auto-fetch"],
+      "customPlugins": [
+        "zsh-syntax-highlighting:https://github.com/zsh-users/zsh-syntax-highlighting.git",
+        "you-should-use:https://github.com/MichaelAquilina/zsh-you-should-use.git",
+        "zsh-autosuggestions:https://github.com/zsh-users/zsh-autosuggestions/archive/refs/tags/v0.7.1.zip"
+      ],
+      "deleteInactive": true
+    },
+    "./features/powerlevel10k": {
+      "deletePreinstalledThemes": true
+    },
+     "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true
+    }
+  },
+  "containerEnv": {
+    "NX_DAEMON": "true"
+  },
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/workspaces/core-services/node_modules/.bin"
+  },
+  "appPort": [80, 443],
+  "postCreateCommand": "sh .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "mcp": {
+        "servers": {
+          "filesystem": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@modelcontextprotocol/server-filesystem",
+              "/workspaces/core-services"
+            ]
+          },
+          "sequential-thinking": {
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+          },
+          "git": {
+            "type": "stdio",
+            "command": "npx",
+            "args": ["@cyanheads/git-mcp-server@latest"],
+            "env": {
+              "MCP_TRANSPORT_TYPE": "stdio",
+              "MCP_LOG_LEVEL": "info",
+              "LOGS_DIR": "/var/log/git-mcp-server/"
+            }
+          }
+        }
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "firsttris.vscode-jest-runner",
+        "EditorConfig.EditorConfig",
+        "ms-vscode-remote.remote-containers",
+        "nrwl.angular-console",
+        "exiasr.hadolint",
+        "eamodio.gitlens",
+        "korostylov.gherkin-highlight"
+      ],
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "remote.autoForwardPorts": false,
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } }
+      }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+name: Delivery
+# Delivery workflow: publishes packages/images when a semver tag is pushed.
+# Trigger: any tag matching `v*.*.*` (e.g. v1.2.3).
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish:
+    # Publish job: logs in to GHCR and runs the monorepo publish target.
+    # Note: this job is intentionally minimal — authentication is handled
+    # via the repository `GITHUB_TOKEN` and `NPM_TOKEN` (provided as secrets).
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@71cf2267d89c5cb81562390fa70a37fa40b1305e
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish
+        # Run the publish target across projects. The workflow currently
+        # runs with `--dryRun` to preview publications — remove `--dryRun`
+        # to perform a real publish. Environment variables below are used
+        # by various package registries and Nx targets during publish.
+        run: npx nx run-many -t publish --dryRun
+        env:
+          # Used by actions that interact with GitHub (e.g., pushing tags to ghcr)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Used by npm publish / package registries
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

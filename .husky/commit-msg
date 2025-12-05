@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# This script runs commitlint to validate the commit message format.
+# It uses npx to execute commitlint without installing it globally,
+# and passes the commit message file as an argument for editing.
+
+npx --no -- commitlint --edit "$1"
