@@ -8,7 +8,9 @@
       "installOhMyZsh": "true",
       "configureZshAsDefaultShell": true,
       "installOhMyZshConfig": true
-    },   
+    },
+    "ghcr.io/devcontainers/features/hadolint:1": {},
+    "ghcr.io/devcontainers/features/git:1": {},
     "./features/omz": {
       "preInstalledPlugins": ["git", "git-auto-fetch"],
       "customPlugins": [
@@ -21,7 +23,7 @@
     "./features/powerlevel10k": {
       "deletePreinstalledThemes": true
     },
-     "ghcr.io/devcontainers/features/docker-in-docker:2": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
       "moby": true
     }
