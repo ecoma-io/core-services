@@ -1,0 +1,62 @@
+networks:
+  default:
+    driver: bridge
+    name: dev-infras
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.168.0.0/16
+          gateway: 172.168.186.168
+          ip_range: 172.168.0.0/24
+
+volumes:
+  hyperdx-data:
+
+services:
+  # Traefik reverse proxy for routing and SSL termination
+  traefik:
+    build: .
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - '80:80' # HTTP port
+      - '443:443' # HTTPS port
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Access Docker socket for dynamic config
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.traefik.rule=Host(`traefik.fbi.com`)' # Route for Traefik dashboard
+      - 'traefik.http.routers.traefik.entrypoints=websecure'
+      - 'traefik.http.routers.traefik.service=api@internal'
+      - 'traefik.http.routers.traefik.tls=true' # Enable TLS
+    healthcheck:
+      test: ['CMD', 'traefik', 'healthcheck']
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 5s
+
+  hyperdx:
+    image: hyperdx/hyperdx-local:2.8.0
+    container_name: hyperdx
+    environment:
+      HYPERDX_APP_PORT: 8080
+      HYPERDX_API_PORT: 8099
+    ports:
+      - '${HYPERDX_OLTP_GRPC_PORT}:4317'
+      - '${HYPERDX_OLTP_HTTP_PORT}:4318'
+    volumes:
+      - hyperdx-data:/var/lib/hyperdx
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.hyperdx.rule=Host(`hyperdx.fbi.com`)'
+      - 'traefik.http.routers.hyperdx.entrypoints=websecure'
+      - 'traefik.http.routers.hyperdx.service=hyperdx'
+      - 'traefik.http.services.hyperdx.loadbalancer.server.port=8080'
+      - 'traefik.http.routers.hyperdx.tls=true'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:8080']
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 5s

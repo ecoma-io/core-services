@@ -1,0 +1,46 @@
+# Static Traefik configuration (static file provider)
+# This configuration defines providers, entry points, API settings, logging, and access logging for Traefik.
+# It uses Docker and file providers to dynamically route traffic based on container labels and external config files.
+
+providers:
+  docker:
+    # Connect to Docker daemon via Unix socket for automatic service discovery
+    endpoint: 'unix:///var/run/docker.sock'
+    # Expose services by default unless explicitly disabled in container labels
+    exposedByDefault: false
+  file:
+    # Load dynamic configuration (e.g., TLS certificates, custom routers/middlewares) from this file
+    filename: /etc/traefik/dynamic.yml
+    # Watch for changes to the dynamic config file and reload automatically
+    watch: true
+
+entryPoints:
+  web:
+    # HTTP entry point on port 80
+    address: ':80'
+    http:
+      redirections:
+        entryPoint:
+          # Redirect all HTTP traffic to HTTPS
+          to: websecure
+          scheme: https
+  websecure:
+    # HTTPS entry point on port 443
+    address: ':443'
+  ping:
+    address: ':8082'
+
+# Enable the Traefik API and dashboard for monitoring and configuration
+api:
+  dashboard: true
+  insecure: false
+
+log:
+  # Set logging level to INFO for balanced verbosity
+  level: INFO
+
+# Enable access logging to track incoming requests
+accessLog: {}
+
+ping:
+  entryPoint: 'ping'
