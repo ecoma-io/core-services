@@ -1,0 +1,33 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "ddd-common",
+  "sourceRoot": "libs/ddd-common/src",
+  "projectType": "library",
+  "tags": ["type:packages"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "{projectRoot}/dist",
+        "main": "{projectRoot}/src/index.ts",
+        "tsConfig": "{projectRoot}/tsconfig.lib.json",
+        "assets": ["*.md"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{projectRoot}/coverage/"],
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.mjs"
+      }
+    },
+    "publish": {
+      "executor": "@ecoma-io/nx-typescript:publish",
+      "options": { "syncRepoVersion": true }
+    }
+  }
+}
