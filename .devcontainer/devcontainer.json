@@ -89,7 +89,8 @@
         "nrwl.angular-console",
         "exiasr.hadolint",
         "eamodio.gitlens",
-        "korostylov.gherkin-highlight"
+        "korostylov.gherkin-highlight",
+        "ms-azuretools.vscode-containers"
       ],
       "settings": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
