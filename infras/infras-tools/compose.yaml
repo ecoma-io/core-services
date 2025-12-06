@@ -1,0 +1,113 @@
+# Docker Compose configuration for dev tools extracted from dev-infras
+networks:
+  default:
+    external:
+      name: dev-infras
+
+services:
+  # Nginx documentation server
+  docs:
+    build: ./docs
+    container_name: docs
+    restart: unless-stopped
+    volumes:
+      - ./docs/vitepress/config.mts:/app/.vitepress/config.mts:ro
+      - ./docs/vitepress/theme:/app/.vitepress/theme:ro
+      - ./docs/index.md:/app/index.md:ro
+      - ../../docs:/app/docs:ro
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.docs.rule=Host(`docs.fbi.com`)'
+      - 'traefik.http.routers.docs.entrypoints=websecure'
+      - 'traefik.http.routers.docs.service=docs'
+      - 'traefik.http.routers.docs.tls=true'
+      - 'traefik.http.services.docs.loadbalancer.server.port=3000'
+
+  nx-graph:
+    build: ./nx-graph
+    container_name: nx-graph
+    restart: always
+    volumes:
+      - ../../:/node/app
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.nx-graph.rule=Host(`graph.fbi.com`)'
+      - 'traefik.http.routers.nx-graph.entrypoints=websecure'
+      - 'traefik.http.routers.nx-graph.service=nx-graph'
+      - 'traefik.http.services.nx-graph.loadbalancer.server.port=8080'
+      - 'traefik.http.routers.nx-graph.tls=true'
+
+  # Adminer database management tool for PostgreSQL
+  postgres-adminer:
+    build: ./adminer
+    container_name: postgres-adminer
+    restart: unless-stopped
+    environment:
+      ADMINER_DEBUG: true
+      ADMINER_DRIVER: pgsql
+      ADMINER_SERVER: postgres
+      ADMINER_USERNAME: ${POSTGRES_USERNAME}
+      ADMINER_PASSWORD: ${POSTGRES_PASSWORD}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.postgres-adminer.rule=Host(`postgres.fbi.com`)'
+      - 'traefik.http.routers.postgres-adminer.entrypoints=websecure'
+      - 'traefik.http.routers.postgres-adminer.service=postgres-adminer'
+      - 'traefik.http.services.postgres-adminer.loadbalancer.server.port=80'
+      - 'traefik.http.routers.postgres-adminer.tls=true'
+
+  # Adminer database management tool for Elasticsearch
+  elastic-adminer:
+    build: ./adminer
+    container_name: elastic-adminer
+    restart: unless-stopped
+    environment:
+      ADMINER_DEBUG: true
+      ADMINER_DRIVER: elastic
+      ADMINER_SERVER: 172.168.186.168:${ELASTIC_PORT}
+      ADMINER_USERNAME: elastic
+      ADMINER_PASSWORD: ${ELASTIC_PASSWORD}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.elastic-adminer.rule=Host(`elastic.fbi.com`)'
+      - 'traefik.http.routers.elastic-adminer.entrypoints=websecure'
+      - 'traefik.http.routers.elastic-adminer.service=elastic-adminer'
+      - 'traefik.http.services.elastic-adminer.loadbalancer.server.port=80'
+      - 'traefik.http.routers.elastic-adminer.tls=true'
+
+  # Redis Commander (Redis Management Interface)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: db0:172.168.186.168:${REDIS_PORT}:0:${REDIS_PASSWORD},db1:172.168.186.168:${REDIS_PORT}:1:${REDIS_PASSWORD},db2:172.168.186.168:${REDIS_PORT}:2:${REDIS_PASSWORD},db3:172.168.186.168:${REDIS_PORT}:3:${REDIS_PASSWORD},db4:172.168.186.168:${REDIS_PORT}:4:${REDIS_PASSWORD},db5:172.168.186.168:${REDIS_PORT}:5:${REDIS_PASSWORD},db6:172.168.186.168:${REDIS_PORT}:6:${REDIS_PASSWORD},db7:172.168.186.168:${REDIS_PORT}:7:${REDIS_PASSWORD},db8:172.168.186.168:${REDIS_PORT}:8:${REDIS_PASSWORD},db9:172.168.186.168:${REDIS_PORT}:9:${REDIS_PASSWORD},db10:172.168.186.168:${REDIS_PORT}:10:${REDIS_PASSWORD},db11:172.168.186.168:${REDIS_PORT}:11:${REDIS_PASSWORD},db12:172.168.186.168:${REDIS_PORT}:12:${REDIS_PASSWORD},db13:172.168.186.168:${REDIS_PORT}:13:${REDIS_PASSWORD},db14:172.168.186.168:${REDIS_PORT}:14:${REDIS_PASSWORD}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.redis-commander.rule=Host(`redis.fbi.com`)'
+      - 'traefik.http.routers.redis-commander.entrypoints=websecure'
+      - 'traefik.http.routers.redis-commander.service=redis-commander'
+      - 'traefik.http.services.redis-commander.loadbalancer.server.port=8081'
+      - 'traefik.http.routers.redis-commander.tls=true'
+
+  # Mongo Express (MongoDB Management Interface)
+  mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    container_name: mongo-express
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: true
+      ME_CONFIG_OPTIONS_FULLWIDTH_LAYOUT: true
+      ME_CONFIG_BASICAUTH: false
+      ME_CONFIG_BASICAUTH_ENABLED: false
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.mongo-express.rule=Host(`mongodb.fbi.com`)'
+      - 'traefik.http.routers.mongo-express.entrypoints=websecure'
+      - 'traefik.http.routers.mongo-express.service=mongo-express'
+      - 'traefik.http.services.mongo-express.loadbalancer.server.port=8081'
+      - 'traefik.http.routers.mongo-express.tls=true'

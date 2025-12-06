@@ -1,0 +1,59 @@
+{
+  "name": "infras-tools",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "infras/infras-tools",
+  "projectType": "application",
+  "implicitDependencies": [
+    "infras-core",
+    "infras-postgres",
+    "infras-redis",
+    "infras-mongo",
+    "infras-clickhouse",
+    "infras-elastic"
+  ],
+  "tags": ["type:infras"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "forwardAllArgs": false,
+        "commands": [
+          "echo \"Linting adminer\" && docker run --rm -i hadolint/hadolint:latest-alpine < adminer/Dockerfile",
+          "echo \"Linting nx-graph\" && docker run --rm -i hadolint/hadolint:latest-alpine < nx-graph/Dockerfile",
+          "echo \"Linting docs\" && docker run --rm -i hadolint/hadolint:latest-alpine < docs/Dockerfile"
+        ],
+        "cwd": "{projectRoot}"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose build",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "up": {
+      "dependsOn": ["^up"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose up --wait -d",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "down": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["docker compose down"],
+        "cwd": "{projectRoot}"
+      }
+    },
+    "restart": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose down && docker compose up --wait -d",
+        "cwd": "{projectRoot}"
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+.plugins {
+  display: none;
+}
+
+.logout {
+  width: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#menu {
+  top: 0;
+  margin-top: 0 !important;
+}
+
+#menu > h1 {
+  display: none;
+}
+
+#breadcrumb {
+  right: 20px;
+}
