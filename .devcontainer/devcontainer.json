@@ -1,7 +1,12 @@
 {
   "name": "Ecoma core services devcontainer",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
-  "runArgs": ["--name", "ecoma-core-services-devcontainer"],
+  "runArgs": [
+    "--name",
+    "ecoma-core-services-devcontainer",
+    "--ulimit",
+    "nofile=256536:256536"
+  ],
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": "true",
@@ -9,10 +14,13 @@
       "configureZshAsDefaultShell": true,
       "installOhMyZshConfig": true
     },
-    "ghcr.io/devcontainers/features/hadolint:1": {},
+    "ghcr.io/dhoeric/features/hadolint:1": {},
     "ghcr.io/devcontainers/features/git:1": {},
     "./features/omz": {
-      "preInstalledPlugins": ["git", "git-auto-fetch"],
+      "preInstalledPlugins": [
+        "git",
+        "git-auto-fetch"
+      ],
       "customPlugins": [
         "zsh-syntax-highlighting:https://github.com/zsh-users/zsh-syntax-highlighting.git",
         "you-should-use:https://github.com/MichaelAquilina/zsh-you-should-use.git",
@@ -34,7 +42,10 @@
   "remoteEnv": {
     "PATH": "${containerEnv:PATH}:/workspaces/core-services/node_modules/.bin"
   },
-  "appPort": [80, 443],
+  "appPort": [
+    80,
+    443
+  ],
   "postCreateCommand": "sh .devcontainer/post-create.sh",
   "customizations": {
     "vscode": {
@@ -50,12 +61,17 @@
           },
           "sequential-thinking": {
             "command": "npx",
-            "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+            "args": [
+              "-y",
+              "@modelcontextprotocol/server-sequential-thinking"
+            ]
           },
           "git": {
             "type": "stdio",
             "command": "npx",
-            "args": ["@cyanheads/git-mcp-server@latest"],
+            "args": [
+              "@cyanheads/git-mcp-server@latest"
+            ],
             "env": {
               "MCP_TRANSPORT_TYPE": "stdio",
               "MCP_LOG_LEVEL": "info",
@@ -80,7 +96,11 @@
         "editor.formatOnSave": true,
         "remote.autoForwardPorts": false,
         "terminal.integrated.defaultProfile.linux": "zsh",
-        "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } }
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/bin/zsh"
+          }
+        }
       }
     }
   }
