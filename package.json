@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.922.0",
+    "@clickhouse/client": "^1.14.0",
     "@elastic/elasticsearch": "^9.2.0",
     "@eventstore/db-client": "^6.2.1",
     "@golevelup/nestjs-rabbitmq": "^6.0.2",
@@ -15,6 +16,7 @@
     "@mikro-orm/nestjs": "^6.1.1",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
+    "@nestjs/elasticsearch": "^11.1.0",
     "@nestjs/jwt": "^11.0.1",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.0",
