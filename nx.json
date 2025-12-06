@@ -8,6 +8,7 @@
       "!{projectRoot}/README.md"
     ],
     "sharedGlobals": [
+      "!{workspaceRoot}/README.md",
       "{workspaceRoot}/nx.json",
       "{workspaceRoot}/package.json",
       "{workspaceRoot}/pnpm-lock.yaml",
