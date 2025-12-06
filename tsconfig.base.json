@@ -10,21 +10,42 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "lib": [
+      "es2020",
+      "dom"
+    ],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@ecoma-io/common": ["packages/common/src/index.ts"],
-      "@ecoma-io/ddd-common": ["packages/ddd-common/src/index.ts"],
+      "@ecoma-io/common": [
+        "packages/common/src/index.ts"
+      ],
+      "@ecoma-io/ddd-common": [
+        "packages/ddd-common/src/index.ts"
+      ],
       "@ecoma-io/node-observability": [
         "packages/node-observability/src/index.ts"
       ],
-      "@ecoma-io/nx-docker": ["packages/nx-docker/src/index.ts"],
-      "@ecoma-io/integrator": ["packages/integrator/src/index.ts"],
-      "@ecoma-io/nestjs-common": ["packages/nestjs-common/src/index.ts"],
-      "@ecoma-io/nx-typescript": ["packages/nx-typescript/src/index.ts"]
+      "@ecoma-io/nx-docker": [
+        "packages/nx-docker/src/index.ts"
+      ],
+      "@ecoma-io/integrator": [
+        "packages/integrator/src/index.ts"
+      ],
+      "@ecoma-io/nestjs-common": [
+        "packages/nestjs-common/src/index.ts"
+      ],
+      "@ecoma-io/nx-typescript": [
+        "packages/nx-typescript/src/index.ts"
+      ],
+      "@ecoma-io/project-integrator": [
+        "libs/project-integrator/src/index.ts"
+      ]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }
