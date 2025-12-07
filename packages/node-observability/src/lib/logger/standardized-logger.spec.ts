@@ -1,7 +1,7 @@
 // Use jest to mock the 'pino' module so we can validate calls into the underlying logger
 jest.mock('pino');
 
-describe('StandardizedLogger', () => {
+describe('standardizedLogger', () => {
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
@@ -101,7 +101,7 @@ describe('StandardizedLogger', () => {
     const calledWith = fakeLogger.error.mock.calls[0][0];
     expect(calledWith).toHaveProperty('err');
     expect(calledWith.err).toBeInstanceOf(Error);
-    expect(calledWith.err.message).toEqual('something failed');
+    expect(calledWith.err.message).toStrictEqual('something failed');
   });
 
   test('should merge object messages and pass through interpolation values', () => {
@@ -419,7 +419,7 @@ describe('StandardizedLogger', () => {
 
     const out = captured.formatLog({ x: 2 });
     // Without extra configured and spanContext missing formatter should return base only
-    expect(out).toEqual({ x: 2 });
+    expect(out).toStrictEqual({ x: 2 });
   });
 
   test('object as interpolation (not merged) when message requires interpolation', () => {
@@ -495,7 +495,7 @@ describe('StandardizedLogger', () => {
 
     expect(typeof captured.formatLog).toBe('function');
     const out = captured.formatLog({ a: 1 });
-    expect(out).toEqual({ a: 1 });
+    expect(out).toStrictEqual({ a: 1 });
   });
 
   test('formatters.log merges config.extra into base when there is no active span', () => {
@@ -681,7 +681,7 @@ describe('StandardizedLogger', () => {
     const firstArg = fakeLogger.error.mock.calls[0][0];
     // merging object was non-object so log object should only include err
     expect(firstArg).toMatchObject({ err });
-    expect(Object.keys(firstArg)).toEqual(expect.arrayContaining(['err']));
+    expect(Object.keys(firstArg)).toStrictEqual(expect.arrayContaining(['err']));
   });
 
   test('private handleExceptionHandlerContract handles non-object mergingObject (no spread)', () => {

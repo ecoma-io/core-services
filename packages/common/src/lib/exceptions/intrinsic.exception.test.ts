@@ -1,6 +1,6 @@
 import { IntrinsicException } from './intrinsic.exception';
 
-describe('IntrinsicException', () => {
+describe('intrinsicException', () => {
   it('should be defined', () => {
     // Arrange: No special setup needed for class definition check.
     // Act: Attempt to access the class.

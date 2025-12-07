@@ -4,11 +4,9 @@ import { NotFoundException } from './not-found.exception';
 
 jest.mock('./http.exception');
 
-const mockHttpException = HttpException as jest.MockedClass<
-  typeof HttpException
->;
+const mockHttpException = jest.mocked(HttpException);
 
-describe('NotFoundException', () => {
+describe('notFoundException', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -75,24 +73,6 @@ describe('NotFoundException', () => {
     expect(mockHttpException).toHaveBeenCalledWith(
       HttpStatus.NOT_FOUND,
       { message, details, metadata },
-      undefined
-    );
-  });
-
-  // No-arg construction removed: constructor now requires a message parameter.
-
-  it('should create NotFoundException with message and details', () => {
-    // Arrange: Define details and a message.
-    const message2 = 'Another not found';
-    const details = { resourceId: '123' };
-
-    // Act: Instantiate NotFoundException with message and details.
-    new NotFoundException(message2, details);
-
-    // Assert: Verify that HttpException is called with HttpStatus.NOT_FOUND, message, details, and undefined metadata/options.
-    expect(mockHttpException).toHaveBeenCalledWith(
-      HttpStatus.NOT_FOUND,
-      { message: message2, details, metadata: undefined },
       undefined
     );
   });

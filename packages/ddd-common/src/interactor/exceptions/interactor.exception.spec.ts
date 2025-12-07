@@ -2,7 +2,7 @@ import { InteractorException } from './interactor.exception';
 
 class ExampleError extends InteractorException {}
 
-describe('InteractorException', () => {
+describe('interactorException', () => {
   it('type guard returns true for instances', () => {
     const e = new ExampleError('boom');
     expect(InteractorException.isInteractorException(e)).toBe(true);

@@ -39,7 +39,7 @@ describe('utils type smoke tests (compile-time + runtime)', () => {
     return v;
   }
 
-  test('ID accepts string and number at compile-time and runtime', () => {
+  test('iD accepts string and number at compile-time and runtime', () => {
     // Arrange: Prepare test values
     const strValue = 'abc';
     const numValue = 123;
@@ -53,7 +53,7 @@ describe('utils type smoke tests (compile-time + runtime)', () => {
     expect(typeof n === 'string' || typeof n === 'number').toBe(true);
   });
 
-  test('NullableOptional / Nullable / Optional behave at compile-time', () => {
+  test('nullableOptional / Nullable / Optional behave at compile-time', () => {
     // Arrange: Prepare test values for different nullable/optional types
     const nullVal = null;
     const undefinedVal = undefined;
@@ -78,7 +78,7 @@ describe('utils type smoke tests (compile-time + runtime)', () => {
     expect([a, b, c, n1, n2, o1, o2].length).toBeGreaterThan(0);
   });
 
-  test('DeepPartial & ExtractArrayType used in a minimal scenario', () => {
+  test('deepPartial & ExtractArrayType used in a minimal scenario', () => {
     // Arrange: Define a type and prepare partial data
     type Foo = { a: { b: number }; list: string[] };
     const partialData: DeepPartial<Foo> = { a: {} };

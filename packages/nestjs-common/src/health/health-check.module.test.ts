@@ -4,7 +4,7 @@ import {
 } from './health-check.module';
 import { HealthCheckController } from './health-check.controller';
 
-describe('HealthCheckModule', () => {
+describe('healthCheckModule', () => {
   test('register returns DynamicModule with controller and providers', () => {
     // Arrange
     class DummyChecker {}

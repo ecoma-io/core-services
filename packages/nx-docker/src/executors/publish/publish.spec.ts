@@ -25,8 +25,8 @@ describe('publishExecutor', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (existsSync as jest.Mock).mockReturnValue(true);
-    (readFileSync as jest.Mock).mockReturnValue(
+    (jest.mocked(existsSync)).mockReturnValue(true);
+    (jest.mocked(readFileSync)).mockReturnValue(
       JSON.stringify({ version: '1.2.3' })
     );
     context = {
@@ -58,13 +58,13 @@ describe('publishExecutor', () => {
     // Arrange
     const options: IPublishExecutorOptions = { name: 'my-image' };
 
-    (execSync as jest.Mock).mockImplementation(() => undefined);
+    (jest.mocked(execSync)).mockImplementation(() => undefined);
 
     // Act
     const result = await publishExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --push -t my-image -f /workspace/apps/test-project/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
@@ -75,13 +75,13 @@ describe('publishExecutor', () => {
     // Arrange
     const options: IPublishExecutorOptions = { name: '{projectRoot}/latest' };
 
-    (execSync as jest.Mock).mockImplementation(() => undefined);
+    (jest.mocked(execSync)).mockImplementation(() => undefined);
 
     // Act
     const result = await publishExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --push -t workspace-apps-test-project/latest -f /workspace/apps/test-project/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
@@ -95,13 +95,13 @@ describe('publishExecutor', () => {
       syncRepoVersion: true,
     };
 
-    (execSync as jest.Mock).mockImplementation(() => undefined);
+    (jest.mocked(execSync)).mockImplementation(() => undefined);
 
     // Act
     const result = await publishExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --push -t my-image:1.2.3 -f /workspace/apps/test-project/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
@@ -114,13 +114,13 @@ describe('publishExecutor', () => {
       name: 'myregistry.com/myuser/myimage',
     };
 
-    (execSync as jest.Mock).mockImplementation(() => undefined);
+    (jest.mocked(execSync)).mockImplementation(() => undefined);
 
     // Act
     const result = await publishExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --push -t myregistry.com/myuser/myimage -f /workspace/apps/test-project/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
@@ -134,13 +134,13 @@ describe('publishExecutor', () => {
       syncRepoVersion: true,
     };
 
-    (execSync as jest.Mock).mockImplementation(() => undefined);
+    (jest.mocked(execSync)).mockImplementation(() => undefined);
 
     // Act
     const result = await publishExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --push -t myregistry.com/myuser/myimage:1.2.3 -f /workspace/apps/test-project/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
@@ -151,13 +151,13 @@ describe('publishExecutor', () => {
     // Arrange
     const options: IPublishExecutorOptions = { name: 'my-image', dryRun: true };
 
-    (execSync as jest.Mock).mockImplementation(() => undefined);
+    (jest.mocked(execSync)).mockImplementation(() => undefined);
 
     // Act
     const result = await publishExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build -t my-image -f /workspace/apps/test-project/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
@@ -171,13 +171,13 @@ describe('publishExecutor', () => {
     // Arrange
     const options: IPublishExecutorOptions = { name: 'my-image' };
 
-    (existsSync as jest.Mock).mockReturnValue(false);
+    (jest.mocked(existsSync)).mockReturnValue(false);
 
     // Act
     const result = await publishExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: false });
+    expect(result).toStrictEqual({ success: false });
   });
 
   it('should fail if name is invalid', async () => {
@@ -188,7 +188,7 @@ describe('publishExecutor', () => {
     const result = await publishExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: false });
+    expect(result).toStrictEqual({ success: false });
   });
 
   it('should fail if name is missing', async () => {
@@ -202,14 +202,14 @@ describe('publishExecutor', () => {
     );
 
     // Assert
-    expect(result).toEqual({ success: false });
+    expect(result).toStrictEqual({ success: false });
   });
 
   it('should fail on execSync error', async () => {
     // Arrange
     const options: IPublishExecutorOptions = { name: 'my-image' };
 
-    (execSync as jest.Mock).mockImplementation(() => {
+    (jest.mocked(execSync)).mockImplementation(() => {
       throw new Error('Docker build failed');
     });
 
@@ -217,13 +217,13 @@ describe('publishExecutor', () => {
     const result = await publishExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: false });
+    expect(result).toStrictEqual({ success: false });
   });
 
   it('should handle missing projectName by using workspaceRoot', async () => {
     const options: IPublishExecutorOptions = { name: '{workspaceRoot}/latest' };
 
-    (execSync as jest.Mock).mockImplementation(() => undefined);
+    (jest.mocked(execSync)).mockImplementation(() => undefined);
 
     // simulate missing projectName
 
@@ -238,7 +238,7 @@ describe('publishExecutor', () => {
 
     const result = await publishExecutor(options, context as ExecutorContext);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --push -t workspace/latest -f /workspace/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace' }
@@ -251,11 +251,11 @@ describe('publishExecutor', () => {
       dockerfile: '/tmp/Dockerfile',
     } as IPublishExecutorOptions;
 
-    (execSync as jest.Mock).mockImplementation(() => undefined);
+    (jest.mocked(execSync)).mockImplementation(() => undefined);
 
     const result = await publishExecutor(options, context as ExecutorContext);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --push -t my-image -f /tmp/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
@@ -265,7 +265,7 @@ describe('publishExecutor', () => {
   it('should handle non-Error thrown from execSync', async () => {
     const options: IPublishExecutorOptions = { name: 'my-image' };
 
-    (execSync as jest.Mock).mockImplementation(() => {
+    (jest.mocked(execSync)).mockImplementation(() => {
       // throw a non-Error value to exercise the String(err) path
 
       throw 'unexpected';
@@ -273,13 +273,13 @@ describe('publishExecutor', () => {
 
     const result = await publishExecutor(options, context as ExecutorContext);
 
-    expect(result).toEqual({ success: false });
+    expect(result).toStrictEqual({ success: false });
   });
 
   it('should succeed when project node is missing', async () => {
     const options: IPublishExecutorOptions = { name: 'my-image' };
 
-    (execSync as jest.Mock).mockImplementation(() => undefined);
+    (jest.mocked(execSync)).mockImplementation(() => undefined);
 
     // remove nodes entry to simulate missing project node
 
@@ -290,7 +290,7 @@ describe('publishExecutor', () => {
     (context as any).projectGraph.nodes = {} as any;
     const result = await publishExecutor(options, context as ExecutorContext);
 
-    expect(result).toEqual({ success: false });
+    expect(result).toStrictEqual({ success: false });
   });
 
   it('should fail when placeholder interpolation produces invalid name (empty sourceRoot)', async () => {
@@ -298,7 +298,7 @@ describe('publishExecutor', () => {
       name: '{projectName}-{sourceRoot}',
     };
 
-    (execSync as jest.Mock).mockImplementation(() => undefined);
+    (jest.mocked(execSync)).mockImplementation(() => undefined);
 
     // remove sourceRoot to create an empty replacement
 
@@ -309,13 +309,13 @@ describe('publishExecutor', () => {
 
     const result = await publishExecutor(options, context as ExecutorContext);
     // publish uses a more permissive regex; interpolation with workspace defaults yields valid name
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
   });
 
   it('should handle projectConfig missing root/sourceRoot by using workspace defaults', async () => {
     const options: IPublishExecutorOptions = { name: 'my-image' };
 
-    (execSync as jest.Mock).mockImplementation(() => undefined);
+    (jest.mocked(execSync)).mockImplementation(() => undefined);
 
     // make project data present but without root/sourceRoot
 
@@ -324,7 +324,7 @@ describe('publishExecutor', () => {
 
     const result = await publishExecutor(options, context as ExecutorContext);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --push -t my-image -f /workspace/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace' }

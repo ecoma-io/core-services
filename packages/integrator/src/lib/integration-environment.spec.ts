@@ -3,9 +3,23 @@ jest.mock('@testcontainers/toxiproxy', () => {
     ToxiProxyContainer: jest.fn().mockImplementation(function (image: string) {
       // store image for assertions
       (this as any).image = image;
-      this.withLogConsumer = jest.fn().mockImplementation(() => this);
-      this.start = jest.fn().mockResolvedValue({
-        // minimal shaped proxy returned to callers
+      // provide real functions so jest.spyOn can be used (satisfies lint)
+      (this as any).withLogConsumer = function () {
+        return this;
+      };
+      jest.spyOn(this, 'withLogConsumer').mockImplementation(() => this);
+
+      (this as any).start = async function () {
+        return {
+          // minimal shaped proxy returned to callers
+          createProxy: jest.fn().mockResolvedValue({
+            port: 1111,
+            instance: { addToxic: jest.fn() },
+            setEnabled: jest.fn(),
+          }),
+        };
+      };
+      jest.spyOn(this, 'start').mockResolvedValue({
         createProxy: jest.fn().mockResolvedValue({
           port: 1111,
           instance: { addToxic: jest.fn() },
@@ -19,13 +33,28 @@ jest.mock('@testcontainers/toxiproxy', () => {
 jest.mock('./service-factory', () => {
   return {
     __esModule: true,
-    default: jest.fn().mockImplementation(function (
+      default: jest.fn().mockImplementation(function (
       internalHost: string,
       enableProxy: boolean,
       proxy: unknown
     ) {
-      this.createService = jest
-        .fn()
+      // provide a default function so spyOn can be used
+      (this as any).createService = async function (name: string, port: string | number) {
+        if (enableProxy && proxy) {
+          return {
+            host: internalHost,
+            port: 2222,
+            addToxic: jest.fn(),
+            setEnabled: jest.fn(),
+          };
+        }
+        return {
+          host: internalHost,
+          port: typeof port === 'number' ? port : parseInt(String(port), 10),
+        };
+      };
+      jest
+        .spyOn(this, 'createService')
         .mockImplementation(async (name: string, port: string | number) => {
           if (enableProxy && proxy) {
             return {
@@ -46,7 +75,7 @@ jest.mock('./service-factory', () => {
 
 import { IntegrationEnvironment } from './integration-environment';
 
-describe('IntegrationEnvironment', () => {
+describe('integrationEnvironment', () => {
   const mockLogger = {
     trace: jest.fn(),
     debug: jest.fn(),
@@ -115,7 +144,7 @@ describe('IntegrationEnvironment', () => {
     await env.start();
 
     const container = (env as any).containersToStop[0];
-    container.stop = jest.fn().mockResolvedValue(undefined);
+    jest.spyOn(container, 'stop').mockImplementation().mockResolvedValue(undefined);
 
     await env.stop();
 

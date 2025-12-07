@@ -4,9 +4,7 @@ import * as fs from 'fs';
 jest.mock('fs');
 
 describe('ensurePackageJsonExists', () => {
-  const mockExistsSync = fs.existsSync as jest.MockedFunction<
-    typeof fs.existsSync
-  >;
+  const mockExistsSync = jest.mocked(fs.existsSync);
 
   beforeEach(() => {
     jest.clearAllMocks();

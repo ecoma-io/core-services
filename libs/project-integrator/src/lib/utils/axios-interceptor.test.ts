@@ -32,7 +32,7 @@ describe('createAxiosInterceptor', () => {
     const { propagation } = require('@opentelemetry/api');
     expect(propagation.inject).toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalled();
-    expect(out).toEqual(config);
+    expect(out).toStrictEqual(config);
   });
 
   test('falls back to GET when method is undefined', () => {
@@ -55,7 +55,7 @@ describe('createAxiosInterceptor', () => {
     const out = hostFn(config);
 
     // Assert
-    expect(out).toEqual(config);
+    expect(out).toStrictEqual(config);
     expect(tracer.startActiveSpan).toHaveBeenCalled();
   });
 

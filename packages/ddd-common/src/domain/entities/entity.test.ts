@@ -6,7 +6,7 @@ class TestEntity extends Entity<number> {
   }
 }
 
-describe('Entity', () => {
+describe('entity', () => {
   test('id getter returns provided id or undefined', () => {
     const withId = new TestEntity(42);
     const withoutId = new TestEntity();
@@ -40,9 +40,9 @@ describe('Entity', () => {
 
   test('toJSON returns plain object with id', () => {
     const e = new TestEntity(7);
-    expect(e.toJSON()).toEqual({ id: 7 });
+    expect(e.toJSON()).toStrictEqual({ id: 7 });
     const empty = new TestEntity();
-    expect(empty.toJSON()).toEqual({ id: undefined });
+    expect(empty.toJSON()).toStrictEqual({ id: undefined });
   });
 
   test('instances are instanceof Entity', () => {

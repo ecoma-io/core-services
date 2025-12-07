@@ -8,7 +8,7 @@ class TestHealthChecker extends HealthChecker {
   }
 }
 
-test('HealthChecker concrete implementation returns ServiceHealthStatus', async () => {
+test('healthChecker concrete implementation returns ServiceHealthStatus', async () => {
   // Arrange
   const c = new TestHealthChecker();
 

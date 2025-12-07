@@ -1,13 +1,13 @@
 import { ServiceHealthStatus } from './health.details';
 
-describe('ServiceHealthStatus and HealthDetails', () => {
+describe('serviceHealthStatus and HealthDetails', () => {
   test('enum values are expected strings', () => {
     expect(ServiceHealthStatus.UP).toBe('up');
     expect(ServiceHealthStatus.DOWN).toBe('down');
     expect(ServiceHealthStatus.UNKNOWN).toBe('unknown');
   });
 
-  test('HealthDetails shape can map service ids to statuses', () => {
+  test('healthDetails shape can map service ids to statuses', () => {
     const details: Record<string, ServiceHealthStatus> = {
       database: ServiceHealthStatus.UP,
       cache: ServiceHealthStatus.DOWN,

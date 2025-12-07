@@ -22,7 +22,7 @@ type Captured = { opts?: any; nodeSdkOpts?: any };
  * - Span context management
  */
 
-describe('StandardizedTracer', (): void => {
+describe('standardizedTracer', (): void => {
   beforeEach((): void => {
     // Reset module registry so static singletons are fresh for each test.
     jest.resetModules();
@@ -36,7 +36,7 @@ describe('StandardizedTracer', (): void => {
     jest.restoreAllMocks();
   });
 
-  describe('Basic lifecycle and initialization', (): void => {
+  describe('basic lifecycle and initialization', (): void => {
     test('initialize starts the NodeSDK and creates a singleton', async (): Promise<void> => {
       // Arrange: mock NodeSDK, TraceProcessor and TraceExporter before importing
       const startSpy = jest.fn();
@@ -245,7 +245,7 @@ describe('StandardizedTracer', (): void => {
     });
   });
 
-  describe('Exporter selection and configuration', (): void => {
+  describe('exporter selection and configuration', (): void => {
     // Exporter + sampling configuration tests were moved into separate
     // unit tests (exporter-factory.spec.ts and sampler-factory.spec.ts).
     // Here we intentionally avoid duplicating those assertions and keep the
@@ -303,7 +303,7 @@ describe('StandardizedTracer', (): void => {
     expect(fakePinoLogger.error).toHaveBeenCalled();
   });
 
-  describe('Sampler configuration (smoke)', (): void => {
+  describe('sampler configuration (smoke)', (): void => {
     test('accepts sampler option and passes it to NodeSDK options', (): void => {
       // Minimal assert that ensures StandardizedTracer forwards sampler options
       const captured: Captured = {};
@@ -336,7 +336,7 @@ describe('StandardizedTracer', (): void => {
     });
   });
 
-  describe('Shutdown and error handling', (): void => {
+  describe('shutdown and error handling', (): void => {
     test('shutdown logs errors when spanProcessor.forceFlush throws', async (): Promise<void> => {
       const captured: Captured = {};
 
@@ -572,7 +572,7 @@ describe('StandardizedTracer', (): void => {
     });
   });
 
-  describe('Span context management', (): void => {
+  describe('span context management', (): void => {
     test('withSpanContext starts/ends a span and returns the inner value', async (): Promise<void> => {
       // Arrange: mock SDK + processor/exporter
       const startSpy = jest.fn();
@@ -795,7 +795,7 @@ describe('StandardizedTracer', (): void => {
     });
   });
 
-  test('HttpInstrumentation ignoreIncomingRequestHook handles /metrics and /health', async (): Promise<void> => {
+  test('httpInstrumentation ignoreIncomingRequestHook handles /metrics and /health', async (): Promise<void> => {
     const captured: { httpOpts?: any } = {};
 
     const fakePinoLogger = {

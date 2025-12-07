@@ -7,16 +7,10 @@ jest.mock('fs');
 jest.mock('@nx/devkit');
 
 describe('checkWildcardDependencies', () => {
-  const mockExistsSync = fs.existsSync as jest.MockedFunction<
-    typeof fs.existsSync
-  >;
-  const mockReadFileSync = fs.readFileSync as jest.MockedFunction<
-    typeof fs.readFileSync
-  >;
-  const mockWriteFileSync = fs.writeFileSync as jest.MockedFunction<
-    typeof fs.writeFileSync
-  >;
-  const mockLoggerInfo = logger.info as jest.MockedFunction<typeof logger.info>;
+  const mockExistsSync = jest.mocked(fs.existsSync);
+  const mockReadFileSync = jest.mocked(fs.readFileSync);
+  const mockWriteFileSync = jest.mocked(fs.writeFileSync);
+  const mockLoggerInfo = jest.mocked(logger.info);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -110,7 +104,7 @@ describe('checkWildcardDependencies', () => {
     );
 
     // nothing should be written because no project package.json files exist
-    const fsWrite = (require('fs').writeFileSync as jest.Mock) || jest.fn();
+    const fsWrite = (jest.mocked(require('fs').writeFileSync)) || jest.fn();
     expect(fsWrite).not.toHaveBeenCalled();
   });
 
@@ -198,7 +192,7 @@ describe('checkWildcardDependencies', () => {
     );
 
     // nothing should be written and function should complete
-    const fsWrite = (require('fs').writeFileSync as jest.Mock) || jest.fn();
+    const fsWrite = (jest.mocked(require('fs').writeFileSync)) || jest.fn();
     expect(fsWrite).not.toHaveBeenCalled();
   });
 

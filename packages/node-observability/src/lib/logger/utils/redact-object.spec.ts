@@ -48,7 +48,7 @@ describe('redactObject', () => {
     const out = redactObject(src, ['secret'], { maxDepth: 1 });
 
     // Assert: with maxDepth 1, nested object under 'a' should be untouched
-    expect(out.a).toEqual({ b: { secret: 'x' } });
+    expect(out.a).toStrictEqual({ b: { secret: 'x' } });
   });
 
   test('ignores non-object values', () => {

@@ -24,33 +24,33 @@ import {
   StandardizedTracer,
 } from '@ecoma-io/node-observability';
 
-describe('Observability integrations', () => {
-  test('NestStandardizedLogger forwards initialize and shutdown', () => {
+describe('observability integrations', () => {
+  test('nestStandardizedLogger forwards initialize and shutdown', () => {
     const cfg = { redact: [] } as any;
     NestStandardizedLogger.initialize(cfg);
-    expect((StandardizedLogger.initialize as jest.Mock).mock.calls).toHaveLength(
+    expect((jest.mocked(StandardizedLogger.initialize)).mock.calls).toHaveLength(
       1
     );
 
     NestStandardizedLogger.shutdown();
-    expect((StandardizedLogger.shutdown as jest.Mock).mock.calls).toHaveLength(
+    expect((jest.mocked(StandardizedLogger.shutdown)).mock.calls).toHaveLength(
       1
     );
   });
 
-  test('NestStandardizedTracer forwards initialize, shutdown and withSpanContext', async () => {
+  test('nestStandardizedTracer forwards initialize, shutdown and withSpanContext', async () => {
     const cfg = {} as any;
     NestStandardizedTracer.initialize(cfg, []);
-    expect((StandardizedTracer.initialize as jest.Mock).mock.calls).toHaveLength(
+    expect((jest.mocked(StandardizedTracer.initialize)).mock.calls).toHaveLength(
       1
     );
-    const initArgs = (StandardizedTracer.initialize as jest.Mock).mock.calls[0];
+    const initArgs = (jest.mocked(StandardizedTracer.initialize)).mock.calls[0];
     // second arg should be an array with ExpressInstrumentation as first element
     expect(Array.isArray(initArgs[1])).toBe(true);
     expect(initArgs[1][0]).toBeDefined();
 
     await NestStandardizedTracer.shutdown();
-    expect((StandardizedTracer.shutdown as jest.Mock).mock.calls).toHaveLength(
+    expect((jest.mocked(StandardizedTracer.shutdown)).mock.calls).toHaveLength(
       1
     );
 
@@ -60,11 +60,11 @@ describe('Observability integrations', () => {
     );
     expect(result).toBe('ok');
     expect(
-      (StandardizedTracer.withSpanContext as jest.Mock).mock.calls
+      (jest.mocked(StandardizedTracer.withSpanContext)).mock.calls
     ).toHaveLength(1);
   });
 
-  test('ObservabilityModule is importable (covers module initialization lines)', () => {
+  test('observabilityModule is importable (covers module initialization lines)', () => {
     expect(ObservabilityModule).toBeDefined();
   });
 });

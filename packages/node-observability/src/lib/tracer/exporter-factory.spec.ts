@@ -68,7 +68,7 @@ describe('exporter-factory', () => {
 
       expect(captured.httpOpts).toBeDefined();
       expect(captured.httpOpts.url).toContain('/v1/traces');
-      expect(captured.httpOpts.headers).toEqual(headers);
+      expect(captured.httpOpts.headers).toStrictEqual(headers);
 
       expect(captured.wrapperExporter).toBeDefined();
       expect(captured.wrapperLogger).toBe(fakeLogger);

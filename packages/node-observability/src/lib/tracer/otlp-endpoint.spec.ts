@@ -9,7 +9,7 @@ describe('parseOtlpEndpoint', () => {
     const parsed = parseOtlpEndpoint(input);
 
     // Assert
-    expect(parsed).toEqual({ protocol: 'http', url: 'http://localhost:4318' });
+    expect(parsed).toStrictEqual({ protocol: 'http', url: 'http://localhost:4318' });
   });
 
   test('returns https protocol and url for https endpoints', () => {
@@ -20,7 +20,7 @@ describe('parseOtlpEndpoint', () => {
     const parsed = parseOtlpEndpoint(input);
 
     // Assert
-    expect(parsed).toEqual({ protocol: 'https', url: 'https://example.com' });
+    expect(parsed).toStrictEqual({ protocol: 'https', url: 'https://example.com' });
   });
 
   test('returns grpc protocol and host for grpc endpoints', () => {
@@ -31,7 +31,7 @@ describe('parseOtlpEndpoint', () => {
     const parsed = parseOtlpEndpoint(input);
 
     // Assert
-    expect(parsed).toEqual({ protocol: 'grpc', host: 'host:4317' });
+    expect(parsed).toStrictEqual({ protocol: 'grpc', host: 'host:4317' });
   });
 
   test('returns grpcs protocol and host for grpcs endpoints', () => {
@@ -42,7 +42,7 @@ describe('parseOtlpEndpoint', () => {
     const parsed = parseOtlpEndpoint(input);
 
     // Assert
-    expect(parsed).toEqual({ protocol: 'grpcs', host: 'host:4317' });
+    expect(parsed).toStrictEqual({ protocol: 'grpcs', host: 'host:4317' });
   });
 
   test('throws for unsupported protocol', () => {
@@ -71,6 +71,6 @@ describe('parseOtlpEndpoint', () => {
     const parsed = parseOtlpEndpoint(input);
 
     // Assert
-    expect(parsed).toEqual({ protocol: 'http', url: 'http://a:4318' });
+    expect(parsed).toStrictEqual({ protocol: 'http', url: 'http://a:4318' });
   });
 });

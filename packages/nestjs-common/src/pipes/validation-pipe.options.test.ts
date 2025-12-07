@@ -53,7 +53,7 @@ import { UnprocessableEntityException } from '../exceptions';
  * Test suite for ValidationPipe Configuration (validationPipeOptions).
  * Verifies the configuration options and exception factory behavior.
  */
-describe('ValidationPipe Configuration (validationPipeOptions)', () => {
+describe('validationPipe Configuration (validationPipeOptions)', () => {
   // Type definition for the MockException instance
   type MockException = InstanceType<typeof UnprocessableEntityException> & {
     _initialMessage?: string;
@@ -142,7 +142,7 @@ describe('ValidationPipe Configuration (validationPipeOptions)', () => {
       // Act: Call the factory with mock validation errors.
       const exception = factory(mockValidationErrors) as MockException;
       // Assert: Verify the saved error payload matches expected.
-      expect(exception.validationPayload).toEqual(expectedErrorsPayload);
+      expect(exception.validationPayload).toStrictEqual(expectedErrorsPayload);
     });
 
     /**
@@ -173,7 +173,7 @@ describe('ValidationPipe Configuration (validationPipeOptions)', () => {
       // Act: Call the factory with single error.
       const exception = factory(singleError) as MockException;
       // Assert: Verify the saved error payload matches expected.
-      expect(exception.validationPayload).toEqual(expectedErrorsPayload);
+      expect(exception.validationPayload).toStrictEqual(expectedErrorsPayload);
     });
   });
 });

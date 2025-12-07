@@ -8,7 +8,7 @@ describe('redact-if-needed', () => {
     const out = redactIfNeeded(original, ['secret']);
 
     // Assert
-    expect(out).toEqual({ a: 1, secret: '***' });
+    expect(out).toStrictEqual({ a: 1, secret: '***' });
   });
 
   test('returns non-objects unchanged', () => {

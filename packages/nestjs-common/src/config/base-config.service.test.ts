@@ -27,7 +27,7 @@ class TestConfigService extends BaseConfigService<
   }
 }
 
-describe('BaseConfigService', () => {
+describe('baseConfigService', () => {
   let mockExpandEnv: jest.MockedFunction<typeof expandEnv>;
   let mockValidateConfig: jest.MockedFunction<typeof validateConfig>;
   let mockValidator: ClassConstructor<BaseProcessEnvironment & { key: string }>;
@@ -36,10 +36,8 @@ describe('BaseConfigService', () => {
     // Reset static property before each test
     (BaseConfigService as any).environments = undefined;
 
-    mockExpandEnv = expandEnv as jest.MockedFunction<typeof expandEnv>;
-    mockValidateConfig = validateConfig as jest.MockedFunction<
-      typeof validateConfig
-    >;
+    mockExpandEnv = jest.mocked(expandEnv);
+    mockValidateConfig = jest.mocked(validateConfig);
     mockValidator = {} as ClassConstructor<
       BaseProcessEnvironment & { key: string }
     >;
@@ -65,7 +63,7 @@ describe('BaseConfigService', () => {
     // Assert: Check that environments are set and methods were called correctly
     expect(mockExpandEnv).toHaveBeenCalledWith(process.env);
     expect(mockValidateConfig).toHaveBeenCalledWith(expandedEnv, mockValidator);
-    expect(service.getEnvironments()).toEqual(validatedEnv);
+    expect(service.getEnvironments()).toStrictEqual(validatedEnv);
   });
 
   test('should not re-initialize environments on subsequent instantiations', () => {
@@ -82,8 +80,8 @@ describe('BaseConfigService', () => {
     // Assert: expandEnv and validateConfig should only be called once
     expect(mockExpandEnv).toHaveBeenCalledTimes(1);
     expect(mockValidateConfig).toHaveBeenCalledTimes(1);
-    expect(service1.getEnvironments()).toEqual(validatedEnv);
-    expect(service2.getEnvironments()).toEqual(validatedEnv);
+    expect(service1.getEnvironments()).toStrictEqual(validatedEnv);
+    expect(service2.getEnvironments()).toStrictEqual(validatedEnv);
   });
 
   test('should throw error if validateConfig fails (error handling)', () => {
@@ -117,7 +115,7 @@ describe('BaseConfigService', () => {
     // Assert: Should still work with empty env
     expect(mockExpandEnv).toHaveBeenCalledWith({});
     expect(mockValidateConfig).toHaveBeenCalledWith(expandedEnv, mockValidator);
-    expect(service.getEnvironments()).toEqual(validatedEnv);
+    expect(service.getEnvironments()).toStrictEqual(validatedEnv);
   });
 
   test('should handle null process.env (edge case)', () => {
@@ -136,7 +134,7 @@ describe('BaseConfigService', () => {
     // Assert: Should handle null env gracefully
     expect(mockExpandEnv).toHaveBeenCalledWith(null);
     expect(mockValidateConfig).toHaveBeenCalledWith(expandedEnv, mockValidator);
-    expect(service.getEnvironments()).toEqual(validatedEnv);
+    expect(service.getEnvironments()).toStrictEqual(validatedEnv);
 
     // Restore
     process.env = originalEnv;

@@ -63,7 +63,7 @@ describe('execute fixer bodies to increase coverage', () => {
     expect(ctx.__reports).toHaveLength(1);
     const fixFn = ctx.__reports[0].fix as (f: any) => any;
     const res = fixFn({ removeRange: (r: any[]) => ({ removed: r }) });
-    expect(res.removed).toEqual([0, 18]);
+    expect(res.removed).toStrictEqual([0, 18]);
   });
 
   it('executes fix for enforce-project-tag-type missingTags (empty object)', () => {

@@ -21,18 +21,23 @@ const mockShutdownTracer = jest.fn(() => Promise.resolve());
 class MockStandardizedLogger {
   constructor(_: any) {}
   static shutdown = mockShutdownLogger;
-  debug!: jest.Mock;
-  info!: jest.Mock;
-  verbose!: jest.Mock;
-  error!: jest.Mock;
-  warn!: jest.Mock;
+  debug!: any;
+  info!: any;
+  verbose!: any;
+  error!: any;
+  warn!: any;
 }
-// attach jest.fn() implementations on prototype to ensure functions exist
-MockStandardizedLogger.prototype.debug = jest.fn();
-MockStandardizedLogger.prototype.info = jest.fn();
-MockStandardizedLogger.prototype.verbose = jest.fn();
-MockStandardizedLogger.prototype.error = jest.fn();
-MockStandardizedLogger.prototype.warn = jest.fn();
+// attach jest.spyOn() implementations on prototype to satisfy lint while keeping tests working
+MockStandardizedLogger.prototype.debug = function () {};
+jest.spyOn(MockStandardizedLogger.prototype, 'debug').mockImplementation();
+MockStandardizedLogger.prototype.info = function () {};
+jest.spyOn(MockStandardizedLogger.prototype, 'info').mockImplementation();
+MockStandardizedLogger.prototype.verbose = function () {};
+jest.spyOn(MockStandardizedLogger.prototype, 'verbose').mockImplementation();
+MockStandardizedLogger.prototype.error = function () {};
+jest.spyOn(MockStandardizedLogger.prototype, 'error').mockImplementation();
+MockStandardizedLogger.prototype.warn = function () {};
+jest.spyOn(MockStandardizedLogger.prototype, 'warn').mockImplementation();
 class MockStandardizedTracer {
   static shutdown = mockShutdownTracer;
 }
@@ -140,7 +145,7 @@ class TestEnvironment extends ProductIntegratorEnvironment {
   }
 }
 
-describe('ProductIntegratorEnvironment', () => {
+describe('productIntegratorEnvironment', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // sensible defaults used by constructor
@@ -175,7 +180,7 @@ describe('ProductIntegratorEnvironment', () => {
 
     // Assert
     expect(mockFormatLog).toHaveBeenCalledWith('stdout', payload);
-    expect(result).toEqual({ level: 'info', message: payload });
+    expect(result).toStrictEqual({ level: 'info', message: payload });
   });
 
   test('stop calls static shutdowns and clears internal caches', async () => {
@@ -196,7 +201,7 @@ describe('ProductIntegratorEnvironment', () => {
   });
 });
 
-describe('ProjectIntegrator getters and caching', () => {
+describe('projectIntegrator getters and caching', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.HYPERDX_OLTP_GRPC_PORT = '1111';
@@ -208,7 +213,7 @@ describe('ProjectIntegrator getters and caching', () => {
     const a = await env.getPostgres();
     const b = await env.getPostgres();
     expect(mockCreatePostgres).toHaveBeenCalledTimes(1);
-    expect(a).toEqual(b);
+    expect(a).toStrictEqual(b);
     expect(a).toHaveProperty('dataSource', 'ds');
   });
 
@@ -217,7 +222,7 @@ describe('ProjectIntegrator getters and caching', () => {
     const r1 = await env.getRedis();
     const r2 = await env.getRedis();
     expect(mockCreateRedis).toHaveBeenCalledTimes(1);
-    expect(r1).toEqual(r2);
+    expect(r1).toStrictEqual(r2);
     expect(r1).toHaveProperty('redis');
   });
 
@@ -226,7 +231,7 @@ describe('ProjectIntegrator getters and caching', () => {
     const m1 = await env.getMinio();
     const m2 = await env.getMinio();
     expect(mockCreateMinio).toHaveBeenCalledTimes(1);
-    expect(m1).toEqual(m2);
+    expect(m1).toStrictEqual(m2);
     expect(m1).toHaveProperty('bucketName', 'test-bucket');
   });
 
@@ -241,7 +246,7 @@ describe('ProjectIntegrator getters and caching', () => {
     const env = new TestEnvironment({ projectName: 'p', projectVersion: 'v' });
     const a = await env.getMaildev();
     const b = await env.getMaildev();
-    expect(a).toEqual(b);
+    expect(a).toStrictEqual(b);
   });
 
   test('getMongo caches result', async () => {
@@ -249,7 +254,7 @@ describe('ProjectIntegrator getters and caching', () => {
     const m1 = await env.getMongo();
     const m2 = await env.getMongo();
     expect(mockCreateMongo).toHaveBeenCalledTimes(1);
-    expect(m1).toEqual(m2);
+    expect(m1).toStrictEqual(m2);
     expect(m1).toHaveProperty('databaseName', 'mongo_db');
   });
 
@@ -258,7 +263,7 @@ describe('ProjectIntegrator getters and caching', () => {
     const e1 = await env.getElasticsearch();
     const e2 = await env.getElasticsearch();
     expect(mockCreateElastic).toHaveBeenCalledTimes(1);
-    expect(e1).toEqual(e2);
+    expect(e1).toStrictEqual(e2);
     expect(e1).toHaveProperty('indexName', 'idx');
   });
 
@@ -267,7 +272,7 @@ describe('ProjectIntegrator getters and caching', () => {
     const r1 = await env.getRabbitMQ();
     const r2 = await env.getRabbitMQ();
     expect(mockCreateRabbit).toHaveBeenCalledTimes(1);
-    expect(r1).toEqual(r2);
+    expect(r1).toStrictEqual(r2);
     expect(r1).toHaveProperty('vhost');
   });
 
@@ -276,7 +281,7 @@ describe('ProjectIntegrator getters and caching', () => {
     const e1 = await env.getEventStoreDB();
     const e2 = await env.getEventStoreDB();
     expect(mockCreateEventstore).toHaveBeenCalledTimes(1);
-    expect(e1).toEqual(e2);
+    expect(e1).toStrictEqual(e2);
     expect(e1).toHaveProperty('streamPrefix', 'sp');
   });
 
@@ -285,12 +290,12 @@ describe('ProjectIntegrator getters and caching', () => {
     const c1 = await env.getClickhouse();
     const c2 = await env.getClickhouse();
     expect(mockCreateClickhouse).toHaveBeenCalledTimes(1);
-    expect(c1).toEqual(c2);
+    expect(c1).toStrictEqual(c2);
     expect(c1).toHaveProperty('databaseName', 'click_db');
   });
 });
 
-describe('ProjectIntegrator branch coverage', () => {
+describe('projectIntegrator branch coverage', () => {
   test('constructor handles missing logger (optional chaining branch)', () => {
     // Recreate module with IntegrationEnvironment that sets logger undefined to exercise optional chaining
     jest.resetModules();

@@ -25,7 +25,7 @@ describe('responses shapes - compile-time and runtime checks', () => {
     return v;
   }
 
-  test('SuccessResponse accepts typical payloads and runtime fields', () => {
+  test('successResponse accepts typical payloads and runtime fields', () => {
     // Arrange: build an offset paging metadata payload and data object
     const paging: OffsetPagingMetadata = {
       totalItems: 100,
@@ -45,11 +45,11 @@ describe('responses shapes - compile-time and runtime checks', () => {
 
     // Assert: runtime structure matches expectations
     expect(success.message).toBeDefined();
-    expect(success.data).toEqual(data);
+    expect(success.data).toStrictEqual(data);
     expect((success.metadata as OffsetPagingMetadata).currentPage).toBe(1);
   });
 
-  test('ErrorResponse requires message and can carry details/metadata', () => {
+  test('errorResponse requires message and can carry details/metadata', () => {
     // Arrange
     const details = { code: 'NOT_FOUND' };
     const meta: CursorPagingMetadata = {

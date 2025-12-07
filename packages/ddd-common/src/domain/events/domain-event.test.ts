@@ -6,7 +6,7 @@ class TestEvent extends DomainEvent<{ x: number }> {
   }
 }
 
-test('DomainEvent sets id and occurredAt when missing and freezes payload', () => {
+test('domainEvent sets id and occurredAt when missing and freezes payload', () => {
   // Arrange & Act
   const e = new TestEvent({
     version: '1.0.0',

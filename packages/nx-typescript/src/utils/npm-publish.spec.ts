@@ -6,10 +6,8 @@ jest.mock('child_process');
 jest.mock('@nx/devkit');
 
 describe('runNpmPublish', () => {
-  const mockExecSync = child_process.execSync as jest.MockedFunction<
-    typeof child_process.execSync
-  >;
-  const mockLoggerInfo = logger.info as jest.MockedFunction<typeof logger.info>;
+  const mockExecSync = jest.mocked(child_process.execSync);
+  const mockLoggerInfo = jest.mocked(logger.info);
 
   beforeEach(() => {
     jest.clearAllMocks();

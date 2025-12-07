@@ -20,7 +20,7 @@ class InMemoryESUoW implements IEventSourcingUnitOfWork {
   }
 }
 
-describe('EventSourcingUnitOfWork (in-memory)', () => {
+describe('eventSourcingUnitOfWork (in-memory)', () => {
   it('increments version by number of events', async () => {
     const uow = new InMemoryESUoW();
     const events = [{ type: 'x' } as unknown as DomainEvent];

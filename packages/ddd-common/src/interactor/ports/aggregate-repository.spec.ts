@@ -14,14 +14,14 @@ class InMemoryAggregateRepository implements AggregateRepository<Agg> {
   }
 }
 
-describe('AggregateRepository (in-memory)', () => {
+describe('aggregateRepository (in-memory)', () => {
   it('saves and loads aggregates', async () => {
     const repo = new InMemoryAggregateRepository();
     const agg: Agg = { id: 'a1', value: 1 };
     await repo.save(agg);
     const loaded = await repo.load('a1');
     expect(loaded).not.toBeNull();
-    expect(loaded).toEqual(agg);
+    expect(loaded).toStrictEqual(agg);
   });
 
   it('returns null for missing aggregate', async () => {

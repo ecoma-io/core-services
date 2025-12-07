@@ -6,11 +6,9 @@ jest.mock('./http.exception', () => ({
   HttpException: jest.fn(),
 }));
 
-const mockHttpException = HttpException as jest.MockedClass<
-  typeof HttpException
->;
+const mockHttpException = jest.mocked(HttpException);
 
-describe('UnauthorizedException', () => {
+describe('unauthorizedException', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });

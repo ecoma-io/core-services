@@ -17,8 +17,8 @@ describe('analyze-params', () => {
 
     // Assert
     expect(r.context).toBe('ctx');
-    expect(r.interpolationValues).toEqual(['bob']);
-    expect(r.mergeObject).toEqual({});
+    expect(r.interpolationValues).toStrictEqual(['bob']);
+    expect(r.mergeObject).toStrictEqual({});
   });
 
   test('detects stack trace case and preserves instance context', () => {
@@ -43,6 +43,6 @@ describe('analyze-params', () => {
     const r = analyzeParams(msg, 'info' as Level, ['hello', obj, 'ctx']);
 
     // Assert: With two placeholders ('%s' and '%j') the object is used for interpolation
-    expect(r.mergeObject).toEqual({});
+    expect(r.mergeObject).toStrictEqual({});
   });
 });

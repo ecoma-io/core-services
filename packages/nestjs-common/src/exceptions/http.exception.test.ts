@@ -3,11 +3,9 @@ import { HttpException } from './http.exception';
 
 jest.mock('@ecoma-io/common');
 
-const mockIntrinsicException = IntrinsicException as jest.MockedClass<
-  typeof IntrinsicException
->;
+const mockIntrinsicException = jest.mocked(IntrinsicException);
 
-describe('HttpException', () => {
+describe('httpException', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -27,7 +25,7 @@ describe('HttpException', () => {
 
     // Assert: Verify properties are set correctly.
     expect(exception.getStatus()).toBe(status);
-    expect(exception.getResponse()).toEqual(response);
+    expect(exception.getResponse()).toStrictEqual(response);
     expect(exception.cause).toBe(cause);
     expect(mockIntrinsicException).toHaveBeenCalledTimes(1);
   });

@@ -4,7 +4,7 @@ import { HealthCheckController } from './health-check.controller';
 import { HttpException } from '../exceptions';
 import { NestStandardizedLogger } from '../observability';
 
-describe('HealthCheckController', () => {
+describe('healthCheckController', () => {
   // prevent the logger from trying to access real initialized instance
   beforeAll(() => {
     jest
@@ -19,7 +19,7 @@ describe('HealthCheckController', () => {
     // Act
     const res = controller.liveness();
     // Assert
-    expect(res).toEqual({ message: 'Service still alive' });
+    expect(res).toStrictEqual({ message: 'Service still alive' });
   });
 
   test('readiness with no services returns success', async () => {
@@ -29,7 +29,7 @@ describe('HealthCheckController', () => {
     const result = await controller.readiness();
     // Assert
     expect(result.message).toBe('Service are readiness');
-    expect(result.data).toEqual({});
+    expect(result.data).toStrictEqual({});
   });
 
   test('readiness with all services UP returns aggregated statuses', async () => {
@@ -47,7 +47,7 @@ describe('HealthCheckController', () => {
     expect(result.message).toBe('Service are readiness');
     // Note: the implementation currently shadows the inner data variable and
     // returns the outer (empty) data object. Assert current behaviour.
-    expect(result.data).toEqual({});
+    expect(result.data).toStrictEqual({});
   });
 
   test('readiness with failing service throws HttpException and exposes details', async () => {

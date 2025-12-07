@@ -1,10 +1,10 @@
 import { ServiceFactory } from './service-factory';
 
-describe('ServiceFactory', () => {
+describe('serviceFactory', () => {
   it('returns direct service when proxy disabled', async () => {
     const f = new ServiceFactory('h', false, undefined as any);
     const svc = await f.createService('s', '3000');
-    expect(svc).toEqual({ host: 'h', port: 3000 });
+    expect(svc).toStrictEqual({ host: 'h', port: 3000 });
   });
 
   it('throws on invalid port', async () => {

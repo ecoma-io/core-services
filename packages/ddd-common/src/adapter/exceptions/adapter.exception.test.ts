@@ -6,7 +6,7 @@ class ConcreteAdapterException extends (AdapterException as any) {
   }
 }
 
-test('AdapterException marker and inheritance', () => {
+test('adapterException marker and inheritance', () => {
   // Arrange & Act
   const ex = new ConcreteAdapterException('adapter fail');
 

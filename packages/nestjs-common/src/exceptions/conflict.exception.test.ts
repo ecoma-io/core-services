@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { ConflictException } from './conflict.exception';
 
-describe('ConflictException', () => {
+describe('conflictException', () => {
   it('should create an instance with message, details, and metadata', () => {
     // Arrange: Define test inputs.
     const message = 'Conflict occurred';
@@ -13,7 +13,7 @@ describe('ConflictException', () => {
 
     // Assert: Verify the status and response structure.
     expect(exception.getStatus()).toBe(HttpStatus.CONFLICT);
-    expect(exception.getResponse()).toEqual({
+    expect(exception.getResponse()).toStrictEqual({
       message,
       details,
       metadata,
@@ -29,7 +29,7 @@ describe('ConflictException', () => {
 
     // Assert: Verify the status and response structure.
     expect(exception.getStatus()).toBe(HttpStatus.CONFLICT);
-    expect(exception.getResponse()).toEqual({
+    expect(exception.getResponse()).toStrictEqual({
       message,
       details: undefined,
       metadata: undefined,
@@ -50,7 +50,7 @@ describe('ConflictException', () => {
 
     // Assert: Verify the status and response structure.
     expect(exception.getStatus()).toBe(HttpStatus.CONFLICT);
-    expect(exception.getResponse()).toEqual({
+    expect(exception.getResponse()).toStrictEqual({
       message,
       details,
       metadata,
@@ -69,7 +69,7 @@ describe('ConflictException', () => {
 
     // Assert: Verify the status, response, and cause are handled.
     expect(exception.getStatus()).toBe(HttpStatus.CONFLICT);
-    expect(exception.getResponse()).toEqual({ message, details, metadata });
+    expect(exception.getResponse()).toStrictEqual({ message, details, metadata });
     expect(exception.cause).toBe(cause);
   });
 });

@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { UnprocessableEntityException } from './unprocessable-entity.exception';
 
-describe('UnprocessableEntityException', () => {
+describe('unprocessableEntityException', () => {
   it('should create an exception with message, details, and metadata (happy path)', () => {
     // Arrange: Define test inputs for a standard exception creation.
     const message = 'Validation failed';
@@ -17,7 +17,7 @@ describe('UnprocessableEntityException', () => {
 
     // Assert: Verify the exception has the correct status and response structure.
     expect(exception.getStatus()).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
-    expect(exception.getResponse()).toEqual({
+    expect(exception.getResponse()).toStrictEqual({
       message,
       details,
       metadata,
@@ -33,7 +33,7 @@ describe('UnprocessableEntityException', () => {
 
     // Assert: Verify the exception has the correct status and response with undefined details and metadata.
     expect(exception.getStatus()).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
-    expect(exception.getResponse()).toEqual({
+    expect(exception.getResponse()).toStrictEqual({
       message,
       details: undefined,
       metadata: undefined,
@@ -54,7 +54,7 @@ describe('UnprocessableEntityException', () => {
 
     // Assert: Verify the exception preserves the provided empty message.
     expect(exception.getStatus()).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
-    expect(exception.getResponse()).toEqual({
+    expect(exception.getResponse()).toStrictEqual({
       message,
       details,
       metadata,
@@ -78,7 +78,7 @@ describe('UnprocessableEntityException', () => {
 
     // Assert: Verify the exception has the correct status, response, and cause is passed.
     expect(exception.getStatus()).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
-    expect(exception.getResponse()).toEqual({ message, details, metadata });
+    expect(exception.getResponse()).toStrictEqual({ message, details, metadata });
     expect(exception.cause).toBe(cause);
   });
 

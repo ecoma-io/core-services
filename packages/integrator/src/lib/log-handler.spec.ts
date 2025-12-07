@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 import LogHandler from './log-handler';
 
-describe('LogHandler', () => {
+describe('logHandler', () => {
   const mockLogger = {
     info: jest.fn(),
     error: jest.fn(),
@@ -105,7 +105,12 @@ describe('LogHandler', () => {
       'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
     > = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
     const logger: any = {};
-    levels.forEach((l) => (logger[l] = jest.fn()));
+    // ensure the logger has callable methods so spies won't fail, then spyOn per lint rule
+    levels.forEach((l) => {
+      // provide a no-op implementation so spyOn can attach
+      logger[l] = () => undefined;
+      jest.spyOn(logger, l).mockImplementation(() => undefined);
+    });
 
     const handler = new LogHandler(logger, (_streamType, message) => {
       // rotate through levels to call each method

@@ -47,7 +47,7 @@ const mockHost = {
  * Test suite for GlobalExceptionsFilter.
  * Verifies exception handling behavior in various scenarios.
  */
-describe('GlobalExceptionsFilter', () => {
+describe('globalExceptionsFilter', () => {
   let filter: GlobalExceptionsFilter;
   let httpAdapterReply: jest.Mock;
   let errorSpy: jest.SpyInstance;
@@ -73,7 +73,7 @@ describe('GlobalExceptionsFilter', () => {
       .compile();
 
     filter = module.get<GlobalExceptionsFilter>(GlobalExceptionsFilter);
-    httpAdapterReply = mockHttpAdapterHost.httpAdapter.reply as jest.Mock;
+    httpAdapterReply = jest.mocked(mockHttpAdapterHost.httpAdapter.reply);
 
     const actualLoggerInstance = filter['logger'];
     // Spy on the 'error' method of the injected Logger instance to track calls.

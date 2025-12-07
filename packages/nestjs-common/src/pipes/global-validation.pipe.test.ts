@@ -7,11 +7,9 @@ jest.mock('@nestjs/common', () => ({
   ValidationPipe: jest.fn(),
 }));
 
-const mockValidationPipe = ValidationPipe as jest.MockedClass<
-  typeof ValidationPipe
->;
+const mockValidationPipe = jest.mocked(ValidationPipe);
 
-describe('GlobalValidationPipe', () => {
+describe('globalValidationPipe', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });

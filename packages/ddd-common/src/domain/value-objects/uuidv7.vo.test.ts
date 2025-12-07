@@ -1,7 +1,7 @@
 import { UuidV7VO } from './uuidv7.vo';
 import { uuidv7 } from 'uuidv7';
 
-test('UuidV7VO generates and validates uuidv7 values', () => {
+test('uuidV7VO generates and validates uuidv7 values', () => {
   // Arrange & Act: runtime constructor access
   const inst = new (UuidV7VO as any)();
   const v = inst.getValue();

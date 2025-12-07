@@ -196,8 +196,7 @@ describe('rabbitmq helpers and factory', () => {
 
   test('createRabbitMQService throws when amqp.connect fails', async () => {
     const amqp = require('amqplib');
-    amqp.connect.mockImplementationOnce(() =>
-      Promise.reject(new Error('amqp-fail'))
+    amqp.connect.mockRejectedValueOnce(new Error('amqp-fail')
     );
 
     const createServiceMulti = jest.fn().mockImplementation((name: string) => {
@@ -244,13 +243,12 @@ describe('rabbitmq helpers and factory', () => {
 
     // mock amqplib connect success
     const amqp = require('amqplib');
-    amqp.connect.mockImplementationOnce(() =>
-      Promise.resolve({
+    amqp.connect.mockResolvedValueOnce({
         createChannel: jest
           .fn()
           .mockResolvedValue({ close: jest.fn().mockResolvedValue(undefined) }),
         close: jest.fn().mockResolvedValue(undefined),
-      })
+      }
     );
 
     const res = await createRabbitMQService({
@@ -279,13 +277,12 @@ describe('rabbitmq helpers and factory', () => {
 
     // mock amqplib connect success
     const amqp = require('amqplib');
-    amqp.connect.mockImplementationOnce(() =>
-      Promise.resolve({
+    amqp.connect.mockResolvedValueOnce({
         createChannel: jest
           .fn()
           .mockResolvedValue({ close: jest.fn().mockResolvedValue(undefined) }),
         close: jest.fn().mockResolvedValue(undefined),
-      })
+      }
     );
 
     const waitToCloses: Array<() => Promise<void>> = [];
@@ -320,13 +317,12 @@ describe('rabbitmq helpers and factory', () => {
     };
 
     const amqp = require('amqplib');
-    amqp.connect.mockImplementationOnce(() =>
-      Promise.resolve({
+    amqp.connect.mockResolvedValueOnce({
         createChannel: jest.fn().mockResolvedValue({
           close: jest.fn().mockRejectedValue(new Error('ch-close-fail')),
         }),
         close: jest.fn().mockRejectedValue(new Error('conn-close-fail')),
-      })
+      }
     );
 
     const waitToCloses: Array<() => Promise<void>> = [];
@@ -378,13 +374,12 @@ describe('rabbitmq helpers and factory', () => {
     };
 
     const amqp = require('amqplib');
-    amqp.connect.mockImplementationOnce(() =>
-      Promise.resolve({
+    amqp.connect.mockResolvedValueOnce({
         createChannel: jest
           .fn()
           .mockResolvedValue({ close: jest.fn().mockResolvedValue(undefined) }),
         close: jest.fn().mockResolvedValue(undefined),
-      })
+      }
     );
 
     const res = await createRabbitMQService({
@@ -420,13 +415,12 @@ describe('rabbitmq helpers and factory', () => {
     };
 
     const amqp = require('amqplib');
-    amqp.connect.mockImplementationOnce(() =>
-      Promise.resolve({
+    amqp.connect.mockResolvedValueOnce({
         createChannel: jest
           .fn()
           .mockResolvedValue({ close: jest.fn().mockResolvedValue(undefined) }),
         close: jest.fn().mockResolvedValue(undefined),
-      })
+      }
     );
 
     // env provided so username/password are present
@@ -760,11 +754,10 @@ describe('rabbitmq helpers and factory', () => {
     };
 
     const amqp = require('amqplib');
-    amqp.connect.mockImplementationOnce(() =>
-      Promise.resolve({
+    amqp.connect.mockResolvedValueOnce({
         createChannel: jest.fn().mockRejectedValue(new Error('ch-fail')),
         close: jest.fn().mockResolvedValue(undefined),
-      })
+      }
     );
 
     await expect(

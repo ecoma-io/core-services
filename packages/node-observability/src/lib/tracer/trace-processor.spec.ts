@@ -1,6 +1,6 @@
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 
-describe('TraceProcessor', () => {
+describe('traceProcessor', () => {
   let fakeLogger: Record<string, jest.Mock>;
 
   beforeEach(() => {

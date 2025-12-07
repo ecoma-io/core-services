@@ -2,7 +2,7 @@ import { ValueObject } from './value-object';
 
 class TestVO extends ValueObject<{ a: number; b: Date; c: { d: string } }> {}
 
-test('ValueObject.equals handles nested objects and Date equality', () => {
+test('valueObject.equals handles nested objects and Date equality', () => {
   // Arrange
   const date = new Date('2020-01-01T00:00:00.000Z');
   const a = new TestVO({ a: 1, b: date, c: { d: 'x' } });
@@ -19,7 +19,7 @@ test('ValueObject.equals handles nested objects and Date equality', () => {
   expect(result).toBe(true);
 });
 
-test('ValueObject.equals returns false for different nested values', () => {
+test('valueObject.equals returns false for different nested values', () => {
   // Arrange
   const date = new Date('2020-01-01T00:00:00.000Z');
   const a = new TestVO({ a: 1, b: date, c: { d: 'x' } });
@@ -32,7 +32,7 @@ test('ValueObject.equals returns false for different nested values', () => {
   expect(result).toBe(false);
 });
 
-test('ValueObject.equals handles null/undefined and other.toJSON undefined', () => {
+test('valueObject.equals handles null/undefined and other.toJSON undefined', () => {
   const a = new TestVO({ a: 1, b: new Date(), c: { d: 'x' } });
   expect(a.equals(null as any)).toBe(false);
   expect(a.equals(undefined as any)).toBe(false);

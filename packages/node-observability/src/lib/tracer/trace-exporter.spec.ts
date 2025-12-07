@@ -3,7 +3,7 @@ import { SpanExporter, ReadableSpan } from '@opentelemetry/sdk-trace-base';
 
 jest.useRealTimers();
 
-describe('TraceExporter', () => {
+describe('traceExporter', () => {
   let fakeLogger: Record<string, jest.Mock>;
 
   beforeEach(() => {

@@ -24,7 +24,7 @@ describe('buildExecutor', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (existsSync as jest.Mock).mockReturnValue(true);
+    (jest.mocked(existsSync)).mockReturnValue(true);
     context = {
       root: '/workspace',
       projectName: 'test-project',
@@ -53,13 +53,13 @@ describe('buildExecutor', () => {
   it('should build successfully with basic options', async () => {
     // Arrange
     const options: IBuildExecutorOptions = { name: 'my-image' };
-    (execSync as jest.Mock).mockReturnValue(undefined);
+    (jest.mocked(execSync)).mockReturnValue(undefined);
 
     // Act
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --load=true -t my-image -f /workspace/apps/test-project/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
@@ -69,13 +69,13 @@ describe('buildExecutor', () => {
   it('should use default name when not provided', async () => {
     // Arrange
     const options = {} as IBuildExecutorOptions;
-    (execSync as jest.Mock).mockReturnValue(undefined);
+    (jest.mocked(execSync)).mockReturnValue(undefined);
 
     // Act
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --load=true -t test-project -f /workspace/apps/test-project/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
@@ -87,13 +87,13 @@ describe('buildExecutor', () => {
     const options: IBuildExecutorOptions = {
       name: '{projectName}-{sourceRoot}',
     };
-    (execSync as jest.Mock).mockReturnValue(undefined);
+    (jest.mocked(execSync)).mockReturnValue(undefined);
 
     // Act
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --load=true -t test-project-workspace-apps-test-project-src -f /workspace/apps/test-project/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
@@ -103,13 +103,13 @@ describe('buildExecutor', () => {
   it('should not add --load if load is false', async () => {
     // Arrange
     const options: IBuildExecutorOptions = { name: 'my-image', load: false };
-    (execSync as jest.Mock).mockReturnValue(undefined);
+    (jest.mocked(execSync)).mockReturnValue(undefined);
 
     // Act
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --load=false -t my-image -f /workspace/apps/test-project/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
@@ -123,13 +123,13 @@ describe('buildExecutor', () => {
       extra: 'value',
       another: 'arg',
     } as IBuildExecutorOptions;
-    (execSync as jest.Mock).mockReturnValue(undefined);
+    (jest.mocked(execSync)).mockReturnValue(undefined);
 
     // Act
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --load=true -t my-image -f /workspace/apps/test-project/Dockerfile extra=value another=arg .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
@@ -139,13 +139,13 @@ describe('buildExecutor', () => {
   it('should fail if dockerfile does not exist', async () => {
     // Arrange
     const options: IBuildExecutorOptions = { name: 'my-image' };
-    (existsSync as jest.Mock).mockReturnValue(false);
+    (jest.mocked(existsSync)).mockReturnValue(false);
 
     // Act
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: false });
+    expect(result).toStrictEqual({ success: false });
   });
 
   it('should fail if name is invalid', async () => {
@@ -156,13 +156,13 @@ describe('buildExecutor', () => {
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: false });
+    expect(result).toStrictEqual({ success: false });
   });
 
   it('should fail on execSync error', async () => {
     // Arrange
     const options: IBuildExecutorOptions = { name: 'my-image' };
-    (execSync as jest.Mock).mockImplementation(() => {
+    (jest.mocked(execSync)).mockImplementation(() => {
       throw new Error('Docker build failed');
     });
 
@@ -170,13 +170,13 @@ describe('buildExecutor', () => {
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: false });
+    expect(result).toStrictEqual({ success: false });
   });
 
   it('should return failure when project node is missing', async () => {
     // Arrange
     const options: IBuildExecutorOptions = { name: 'my-image' };
-    (execSync as jest.Mock).mockReturnValue(undefined);
+    (jest.mocked(execSync)).mockReturnValue(undefined);
 
     // simulate missing node key which causes executor to error
     (context as any).projectName = 'missing';
@@ -186,13 +186,13 @@ describe('buildExecutor', () => {
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: false });
+    expect(result).toStrictEqual({ success: false });
   });
 
   it('should handle projectConfig missing root/sourceRoot by using workspace defaults', async () => {
     // Arrange
     const options: IBuildExecutorOptions = { name: 'my-image' };
-    (execSync as jest.Mock).mockReturnValue(undefined);
+    (jest.mocked(execSync)).mockReturnValue(undefined);
 
     // make project data present but without root/sourceRoot
     (context as any).projectGraph.nodes['test-project'].data = {} as any;
@@ -201,7 +201,7 @@ describe('buildExecutor', () => {
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --load=true -t my-image -f /workspace/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace' }
@@ -211,7 +211,7 @@ describe('buildExecutor', () => {
   it('should handle non-Error thrown from execSync', async () => {
     // Arrange
     const options: IBuildExecutorOptions = { name: 'my-image' };
-    (execSync as jest.Mock).mockImplementation(() => {
+    (jest.mocked(execSync)).mockImplementation(() => {
       // throw a non-Error to exercise String(err) path
       throw 'unexpected';
     });
@@ -220,13 +220,13 @@ describe('buildExecutor', () => {
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: false });
+    expect(result).toStrictEqual({ success: false });
   });
 
   it('should handle missing projectName by using workspaceRoot', async () => {
     // Arrange
     const options: IBuildExecutorOptions = { name: '{workspaceRoot}' };
-    (execSync as jest.Mock).mockReturnValue(undefined);
+    (jest.mocked(execSync)).mockReturnValue(undefined);
 
     // simulate missing projectName
     (context as any).projectName = undefined;
@@ -239,7 +239,7 @@ describe('buildExecutor', () => {
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --load=true -t workspace -f /workspace/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace' }
@@ -252,13 +252,13 @@ describe('buildExecutor', () => {
       name: 'my-image',
       dockerfile: '/tmp/Dockerfile',
     } as IBuildExecutorOptions;
-    (execSync as jest.Mock).mockReturnValue(undefined);
+    (jest.mocked(execSync)).mockReturnValue(undefined);
 
     // Act
     const result = await buildExecutor(options, context as ExecutorContext);
 
     // Assert
-    expect(result).toEqual({ success: true });
+    expect(result).toStrictEqual({ success: true });
     expect(execSync).toHaveBeenCalledWith(
       'docker build --load=true -t my-image -f /tmp/Dockerfile .',
       { stdio: 'inherit', cwd: '/workspace/apps/test-project' }
