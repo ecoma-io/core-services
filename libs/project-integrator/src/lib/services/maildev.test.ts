@@ -33,7 +33,7 @@ describe('createMaildevService', () => {
     expect(createService).toHaveBeenCalledWith('maildev-test-id', '4567');
     expect(svc.client).toBe(fakeClient);
     // waitToCloses should receive one entry (no-op for axios)
-    expect(waitToCloses.length).toBe(1);
+    expect(waitToCloses).toHaveLength(1);
   });
 
   test('throws when axios.create fails', async (): Promise<void> => {
@@ -134,7 +134,7 @@ describe('createMaildevService', () => {
     expect(svc.client).toBe(fakeClient);
 
     // cleanup function was pushed and is callable and noop
-    expect(waitToCloses.length).toBe(1);
+    expect(waitToCloses).toHaveLength(1);
     expect(() => waitToCloses[0]()).not.toThrow();
   });
 
@@ -258,7 +258,7 @@ describe('createMaildevService', () => {
     const svc = await createMaildevService(opts);
 
     // Assert: original cleanup still present and callable
-    expect(waitToCloses.length).toBe(2);
+    expect(waitToCloses).toHaveLength(2);
     // call both
     expect(() => waitToCloses[0]()).not.toThrow();
     expect(called).toBe(true);
