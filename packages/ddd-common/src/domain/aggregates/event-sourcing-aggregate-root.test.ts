@@ -54,7 +54,7 @@ test('rehydrateFromSnapshot restores snapshot and replays eventsAfter', () => {
   // Assert
   expect(agg.value).toBe(13);
   expect(agg.version).toBe(7); // snapshot.lastEventPosition + eventsAfter.length
-  expect(agg.getDomainEvents().length).toBe(0);
+  expect(agg.getDomainEvents()).toHaveLength(0);
 });
 
 test('markEventsCommitted updates version and clears uncommitted events', () => {
@@ -70,14 +70,14 @@ test('markEventsCommitted updates version and clears uncommitted events', () => 
   );
 
   // Pre-assert
-  expect(agg.getDomainEvents().length).toBe(2);
+  expect(agg.getDomainEvents()).toHaveLength(2);
   const prevVersion = agg.version;
 
   // Commit without explicit position
   agg.markEventsCommitted();
 
   // Assert
-  expect(agg.getDomainEvents().length).toBe(0);
+  expect(agg.getDomainEvents()).toHaveLength(0);
   expect(agg.version).toBe(prevVersion + 2);
 });
 
@@ -104,14 +104,14 @@ test('markEventsCommitted with explicit lastCommittedPosition and rehydrateFromH
     })()
   );
 
-  expect(agg.getDomainEvents().length).toBe(1);
+  expect(agg.getDomainEvents()).toHaveLength(1);
 
   // Act: mark with explicit position
   agg.markEventsCommitted(42);
 
   // Assert
   expect(agg.version).toBe(42);
-  expect(agg.getDomainEvents().length).toBe(0);
+  expect(agg.getDomainEvents()).toHaveLength(0);
 
   // rehydrateFromHistory with explicit version
   agg.rehydrateFromHistory([], 7);

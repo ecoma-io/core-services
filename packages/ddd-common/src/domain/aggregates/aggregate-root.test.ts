@@ -67,7 +67,7 @@ test('addDomainEvent accepts valid event and store it', () => {
   const events = agg.getDomainEvents();
 
   // Assert
-  expect(events.length).toBe(1);
+  expect(events).toHaveLength(1);
   const ev = events[0] as DomainEvent<{ delta: number }>;
   expect(ev.aggregateId).toBe(agg.id);
   expect(ev.payload.delta).toBe(5);
