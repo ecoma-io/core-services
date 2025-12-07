@@ -37,7 +37,7 @@ describe('execute fixer bodies to increase coverage', () => {
     visitor.JSONProperty?.(fakeProperty);
 
     // Assert
-    expect(ctx.__reports.length).toBe(1);
+    expect(ctx.__reports).toHaveLength(1);
     const fixFn = ctx.__reports[0].fix as (f: any) => any;
     const res = fixFn({
       replaceText: (_node: any, text: string) => ({ replaced: text }),
@@ -60,7 +60,7 @@ describe('execute fixer bodies to increase coverage', () => {
     visitor.JSONProperty?.(fakeProperty);
 
     // Assert
-    expect(ctx.__reports.length).toBe(1);
+    expect(ctx.__reports).toHaveLength(1);
     const fixFn = ctx.__reports[0].fix as (f: any) => any;
     const res = fixFn({ removeRange: (r: any[]) => ({ removed: r }) });
     expect(res.removed).toEqual([0, 18]);
@@ -77,7 +77,7 @@ describe('execute fixer bodies to increase coverage', () => {
       parent: { type: 'JSONProgram' },
     });
     // Assert
-    expect(ctx.__reports.length).toBe(1);
+    expect(ctx.__reports).toHaveLength(1);
     const fixFn = ctx.__reports[0].fix as (f: any) => any;
     const res = fixFn({
       replaceTextRange: (_r: any[], txt: string) => ({ text: txt }),

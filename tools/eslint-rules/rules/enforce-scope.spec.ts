@@ -100,7 +100,7 @@ describe(`${RULE_NAME} - extra coverage`, () => {
     // Act
     const visitor = rule.create(ctx as any, []) as any;
     // Assert
-    expect(Object.keys(visitor).length).toBe(0);
+    expect(Object.keys(visitor)).toHaveLength(0);
   });
 
   it('reports missingName via JSONProgram when no name property present', () => {
@@ -110,7 +110,7 @@ describe(`${RULE_NAME} - extra coverage`, () => {
     const visitor = rule.create(ctx as any, []) as any;
     visitor.JSONProgram?.({ type: 'JSONProgram' });
     // Assert
-    expect(ctx.__reports.length).toBe(1);
+    expect(ctx.__reports).toHaveLength(1);
     expect(ctx.__reports[0].messageId).toBe('missingName');
   });
 
@@ -129,7 +129,7 @@ describe(`${RULE_NAME} - extra coverage`, () => {
     visitor.JSONProperty?.(fakeProperty);
 
     // Assert
-    expect(ctx.__reports.length).toBe(1);
+    expect(ctx.__reports).toHaveLength(1);
     expect(ctx.__reports[0].messageId).toBe('invalidScope');
   });
 
@@ -151,7 +151,7 @@ describe(`${RULE_NAME} - extra coverage`, () => {
     visitor.JSONProperty?.(nestedProperty);
 
     // Assert
-    expect(ctx.__reports.length).toBe(0);
+    expect(ctx.__reports).toHaveLength(0);
   });
 
   it('reports missingName when name property is missing', () => {
@@ -163,7 +163,7 @@ describe(`${RULE_NAME} - extra coverage`, () => {
     visitor.JSONProgram?.({ type: 'JSONProgram' });
 
     // Assert
-    expect(ctx.__reports.length).toBe(1);
+    expect(ctx.__reports).toHaveLength(1);
     expect(ctx.__reports[0].messageId).toBe('missingName');
   });
 
@@ -182,7 +182,7 @@ describe(`${RULE_NAME} - extra coverage`, () => {
     visitor.JSONProperty?.(arrayProperty);
 
     // Assert
-    expect(ctx.__reports.length).toBe(0);
+    expect(ctx.__reports).toHaveLength(0);
   });
 
   it('ignores non-string name values (number)', () => {
@@ -200,6 +200,6 @@ describe(`${RULE_NAME} - extra coverage`, () => {
     visitor.JSONProperty?.(numberProperty);
 
     // Assert
-    expect(ctx.__reports.length).toBe(0);
+    expect(ctx.__reports).toHaveLength(0);
   });
 });

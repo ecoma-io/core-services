@@ -153,7 +153,7 @@ describe(`${RULE_NAME} - extra coverage for path handling`, () => {
       parent: { type: 'JSONProgram' },
     });
     // Assert
-    expect(ctx.__reports.length).toBe(1);
+    expect(ctx.__reports).toHaveLength(1);
     expect(ctx.__reports[0].messageId).toBe('missingTags');
   });
 
@@ -168,7 +168,7 @@ describe(`${RULE_NAME} - extra coverage for path handling`, () => {
       parent: { type: 'JSONProgram' },
     });
     // Assert
-    expect(ctx.__reports.length).toBe(1);
+    expect(ctx.__reports).toHaveLength(1);
     expect(ctx.__reports[0].messageId).toBe('missingTags');
   });
 
@@ -183,7 +183,7 @@ describe(`${RULE_NAME} - extra coverage for path handling`, () => {
       parent: { type: 'JSONProperty' },
     });
     // Assert
-    expect(ctx.__reports.length).toBe(0);
+    expect(ctx.__reports).toHaveLength(0);
   });
 
   it('handles empty object body and adds tags', () => {
@@ -202,7 +202,7 @@ describe(`${RULE_NAME} - extra coverage for path handling`, () => {
     });
 
     // Assert
-    expect(ctx.__reports.length).toBe(1);
+    expect(ctx.__reports).toHaveLength(1);
     expect(ctx.__reports[0].messageId).toBe('missingTags');
   });
 
@@ -222,7 +222,7 @@ describe(`${RULE_NAME} - extra coverage for path handling`, () => {
     });
 
     // Assert
-    expect(ctx.__reports.length).toBe(1);
+    expect(ctx.__reports).toHaveLength(1);
     expect(ctx.__reports[0].messageId).toBe('missingTags');
   });
 });

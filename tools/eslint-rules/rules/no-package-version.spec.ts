@@ -104,7 +104,7 @@ describe(`${RULE_NAME} - extra coverage`, () => {
     // Act
     const visitor = rule.create(ctx as any, []) as any;
     // Assert
-    expect(Object.keys(visitor).length).toBe(0);
+    expect(Object.keys(visitor)).toHaveLength(0);
   });
 
   it('handles non-root version properties', () => {
@@ -126,7 +126,7 @@ describe(`${RULE_NAME} - extra coverage`, () => {
     visitor.JSONProperty?.(nestedProperty);
 
     // Assert
-    expect(ctx.__reports.length).toBe(0);
+    expect(ctx.__reports).toHaveLength(0);
   });
 
   it('handles version property with no commas around it', () => {
