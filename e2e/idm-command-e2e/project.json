@@ -1,0 +1,20 @@
+{
+  "name": "idm-command-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "e2e/idm-command-e2e/src",
+  "projectType": "application",
+  "implicitDependencies": ["idm-command"],
+  "tags": ["type:e2e"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "e2e": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.mjs",
+        "passWithNoTests": true
+      }
+    }
+  }
+}
