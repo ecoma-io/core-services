@@ -1,13 +1,40 @@
 #!/bin/bash
+set -e
 
-# Pre-push hook: Run comprehensive checks on all Nx projects
+# Prevent pushing to `main` and ensure local `main` exists.
+# If any pushed ref targets `refs/heads/main`, block the push.
+remote="$1"
+url="$2"
 
-# This ensures code quality before pushing changes to the repository
+# Read refs from stdin (git pre-push provides lines: <local ref> <local sha> <remote ref> <remote sha>)
+stdin=$(cat || true)
+if [ -n "$stdin" ]; then
+	while read -r local_ref local_sha remote_ref remote_sha; do
+		if [ "$local_ref" = "refs/heads/main" ] || [ "$remote_ref" = "refs/heads/main" ]; then
+			echo "Error: Pushing to 'main' is blocked. Create a branch and open a PR instead."
+			exit 1
+		fi
+	done <<< "$stdin"
+fi
 
-# Executes linting, unit tests, build, and end-to-end tests across the monorepo
+# Ensure local 'main' branch exists; if not, fetch it from origin into refs/heads/main
+if ! git show-ref --verify --quiet refs/heads/main; then
+	echo "Local branch 'main' not found. Fetching 'main' from 'origin'..."
+	if git remote | grep -q '^origin$'; then
+		if git fetch origin main:refs/heads/main; then
+			echo "Fetched 'origin/main' into local branch 'main'."
+		else
+			echo "Failed to fetch 'main' from 'origin'. Please run: git fetch origin main"
+			exit 1
+		fi
+	else
+		echo "Remote 'origin' not found. Cannot fetch 'main'."
+		exit 1
+	fi
+fi
 
-npx nx run-many -t lint test build e2e --base	origin/main
+# Run existing Nx affected checks
+npx nx affected -t lint test build e2e
 
-# Exit with the status of the last command to fail the push if any check fails
-
+# Exit with the status of the last command
 exit $?

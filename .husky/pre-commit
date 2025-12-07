@@ -1,8 +1,35 @@
-#!/bin/bash
 
-# Pre-commit hook to run Nx affected commands for linting, testing, building, and e2e tests
-# on the staged changes (not yet committed).
-# This ensures code quality checks before committing.
-# Exit with error if any command fails.
+#!/bin/sh
 
-npx nx affected -t lint test build e2e --uncommitted --base	origin/main
+set -e
+
+# Prevent direct commits to `main` and ensure local `main` exists.
+# If local `main` is missing, fetch it from `origin` without checking it out.
+
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --abbrev-ref HEAD 2>/dev/null)
+
+if [ "${branch}" = "main" ]; then
+	echo "Error: Direct commits to 'main' are blocked. Create a branch and open a PR instead."
+	exit 1
+fi
+
+# Ensure local 'main' branch exists; if not, fetch it from origin into refs/heads/main
+if ! git show-ref --verify --quiet refs/heads/main; then
+	echo "Local branch 'main' not found. Fetching 'main' from 'origin'..."
+	if git remote | grep -q '^origin$'; then
+		if git fetch origin main:refs/heads/main; then
+			echo "Fetched 'origin/main' into local branch 'main'."
+		else
+			echo "Failed to fetch 'main' from 'origin'. Please run: git fetch origin main"
+			exit 1
+		fi
+	else
+		echo "Remote 'origin' not found. Cannot fetch 'main'."
+		exit 1
+	fi
+fi
+
+# Run existing Nx affected checks
+npx nx affected -t lint test build e2e
+
+exit 0
