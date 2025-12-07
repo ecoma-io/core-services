@@ -5,4 +5,4 @@
 # This ensures code quality checks before committing.
 # Exit with error if any command fails.
 
-npx nx affected -t lint test build e2e --uncommitted
+npx nx affected -t lint test build e2e --uncommitted --base	origin/main
