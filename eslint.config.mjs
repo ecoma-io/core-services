@@ -1,5 +1,6 @@
 import nx from '@nx/eslint-plugin';
 import importPlugin from 'eslint-plugin-import';
+import pluginJest from 'eslint-plugin-jest';
 
 /**
  * ESLint configuration for Ecoma Core Services monorepo.
@@ -190,6 +191,10 @@ export default [
       '**/*.test.mjs',
       '**/*.spec.mjs',
     ],
+    plugins: { jest: pluginJest },
+    languageOptions: {
+      globals: pluginJest.environments.globals.globals,
+    },
     rules: {
       // Allow console statements in tests for debugging
       'no-console': 'off',
@@ -199,6 +204,38 @@ export default [
       '@typescript-eslint/empty-function': 'off',
       // Allow empty interfaces in test types
       '@typescript-eslint/empty-interface': 'off',
+      // Jest-specific rules to enforce best practices in tests
+      'jest/no-export': 'error',
+      // disallow skipped tests (test.skip) so they aren't forgotten
+      'jest/no-disabled-tests': 'error',
+      // disallow focused tests (test.only) which can block CI from running all tests
+      'jest/no-focused-tests': 'error',
+      // prevent duplicate test titles that can mask failures
+      'jest/no-identical-title': 'error',
+      // prefer toHaveLength() over manual length checks for clearer intent
+      'jest/prefer-to-have-length': 'warn',
+      // enforce setup/teardown hooks to be at top-level in test files for clarity
+      'jest/prefer-hooks-on-top': 'error',
+      // prefer lowercase test titles for consistency and readability
+      'jest/prefer-lowercase-title': 'error',
+      // prefer using expect(...).resolves/rejects for testing async code
+      'jest/prefer-expect-resolves': 'error',
+      // enforce setup/teardown hooks to be at top-level in test files for clarity
+      'jest/prefer-hooks-on-top': 'error',
+      // ensure spies are created with jest.spyOn() for better mock tracking
+      'jest/prefer-spy-on': 'error',
+      // prefer strict equality checks (toBe) over loose checks (toEqual) when appropriate
+      'jest/prefer-strict-equal': 'error',
+      // prefer using jest.mocked() for typed mocked modules
+'jest/prefer-jest-mocked':'error',
+      // prefer using the shorthand syntax for mocking promises
+            'jest/prefer-mock-promise-shorthand': 'error',
+      // prefer using expect(...).resolves/rejects for testing async code
+            'jest/prefer-expect-resolves': 'error',
+      // ensure test titles are valid strings for clarity in test reports,
+      'jest/valid-title': 'error',
+      // ensure expect() is used correctly to avoid false positives/negatives
+      'jest/valid-expect': 'error',
     },
   },
 
