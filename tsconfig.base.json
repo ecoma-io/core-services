@@ -41,6 +41,111 @@
       ],
       "@ecoma-io/project-integrator": [
         "libs/project-integrator/src/index.ts"
+      ],
+      "@ecoma-io/acm-domain": [
+        "domains/acm-domain/src/index.ts"
+      ],
+      "@ecoma-io/azm-domain": [
+        "domains/azm-domain/src/index.ts"
+      ],
+      "@ecoma-io/idm-domain": [
+        "domains/idm-domain/src/index.ts"
+      ],
+      "@ecoma-io/osc-domain": [
+        "domains/osc-domain/src/index.ts"
+      ],
+      "@ecoma-io/rsm-domain": [
+        "domains/rsm-domain/src/index.ts"
+      ],
+      "@ecoma-io/acm-command-interactor": [
+        "interactors/acm-command-interactor/src/index.ts"
+      ],
+      "@ecoma-io/acm-projector-interactor": [
+        "interactors/acm-projector-interactor/src/index.ts"
+      ],
+      "@ecoma-io/acm-query-interactor": [
+        "interactors/acm-query-interactor/src/index.ts"
+      ],
+      "@ecoma-io/azm-command-interactor": [
+        "interactors/azm-command-interactor/src/index.ts"
+      ],
+      "@ecoma-io/azm-projector-interactor": [
+        "interactors/azm-projector-interactor/src/index.ts"
+      ],
+      "@ecoma-io/azm-query-interactor": [
+        "interactors/azm-query-interactor/src/index.ts"
+      ],
+      "@ecoma-io/idm-command-interactor": [
+        "interactors/idm-command-interactor/src/index.ts"
+      ],
+      "@ecoma-io/idm-projector-interactor": [
+        "interactors/idm-projector-interactor/src/index.ts"
+      ],
+      "@ecoma-io/idm-query-interactor": [
+        "interactors/idm-query-interactor/src/index.ts"
+      ],
+      "@ecoma-io/ocs-command-interactor": [
+        "interactors/ocs-command-interactor/src/index.ts"
+      ],
+      "@ecoma-io/ocs-projector-interactor": [
+        "interactors/ocs-projector-interactor/src/index.ts"
+      ],
+      "@ecoma-io/ocs-query-interactor": [
+        "interactors/ocs-query-interactor/src/index.ts"
+      ],
+      "@ecoma-io/rsm-command-interactor": [
+        "interactors/rsm-command-interactor/src/index.ts"
+      ],
+      "@ecoma-io/rsm-projector-interactor": [
+        "interactors/rsm-projector-interactor/src/index.ts"
+      ],
+      "@ecoma-io/rsm-query-interactor": [
+        "interactors/rsm-query-interactor/src/index.ts"
+      ],
+      "@ecoma-io/acm-command-adapter": [
+        "adapters/acm-command-adapter/src/index.ts"
+      ],
+      "@ecoma-io/acm-projector-adapter": [
+        "adapters/acm-projector-adapter/src/index.ts"
+      ],
+      "@ecoma-io/acm-query-adapter": [
+        "adapters/acm-query-adapter/src/index.ts"
+      ],
+      "@ecoma-io/azm-command-adapter": [
+        "adapters/azm-command-adapter/src/index.ts"
+      ],
+      "@ecoma-io/azm-projector-adapter": [
+        "adapters/azm-projector-adapter/src/index.ts"
+      ],
+      "@ecoma-io/azm-query-adapter": [
+        "adapters/azm-query-adapter/src/index.ts"
+      ],
+      "@ecoma-io/idm-command-adapter": [
+        "adapters/idm-command-adapter/src/index.ts"
+      ],
+      "@ecoma-io/idm-projector-adapter": [
+        "adapters/idm-projector-adapter/src/index.ts"
+      ],
+      "@ecoma-io/idm-query-adapter": [
+        "adapters/idm-query-adapter/src/index.ts"
+      ],
+      "@ecoma-io/ocs-command-adapter": [
+        "adapters/ocs-command-adapter/src/index.ts"
+      ],
+      "@ecoma-io/ocs-projector-adapter": [
+        "adapters/ocs-projector-adapter/src/index.ts"
+      ],
+      "@ecoma-io/ocs-query-adapter": [
+        "adapters/ocs-query-adapter/src/index.ts"
+      ],
+      "@ecoma-io/rsm-command-adapter": [
+        "libs/rsm-command-adapter/src/index.ts"
+      ],
+      "@ecoma-io/rsm-query-adapter": [
+        "libs/rsm-query-adapter/src/index.ts"
+      ],
+      "@ecoma-io/rsm-projector-adapter": [
+        "libs/rsm-projector-adapter/src/index.ts"
       ]
     }
   },

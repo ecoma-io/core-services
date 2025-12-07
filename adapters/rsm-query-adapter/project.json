@@ -1,0 +1,19 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "rsm-query-adapter",
+  "sourceRoot": "adapters/rsm-query-adapter/src",
+  "projectType": "library",
+  "tags": ["type:adapters"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{projectRoot}/coverage/"],
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.mjs"
+      }
+    }
+  }
+}

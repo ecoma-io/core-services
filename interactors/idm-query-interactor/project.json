@@ -1,0 +1,19 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "idm-query-interactor",
+  "sourceRoot": "interactors/idm-query-interactor/src",
+  "projectType": "library",
+  "tags": ["type:interactors"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{projectRoot}/coverage/"],
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.mjs"
+      }
+    }
+  }
+}
