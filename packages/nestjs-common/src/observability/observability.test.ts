@@ -28,12 +28,12 @@ describe('Observability integrations', () => {
   test('NestStandardizedLogger forwards initialize and shutdown', () => {
     const cfg = { redact: [] } as any;
     NestStandardizedLogger.initialize(cfg);
-    expect((StandardizedLogger.initialize as jest.Mock).mock.calls.length).toBe(
+    expect((StandardizedLogger.initialize as jest.Mock).mock.calls).toHaveLength(
       1
     );
 
     NestStandardizedLogger.shutdown();
-    expect((StandardizedLogger.shutdown as jest.Mock).mock.calls.length).toBe(
+    expect((StandardizedLogger.shutdown as jest.Mock).mock.calls).toHaveLength(
       1
     );
   });
@@ -41,7 +41,7 @@ describe('Observability integrations', () => {
   test('NestStandardizedTracer forwards initialize, shutdown and withSpanContext', async () => {
     const cfg = {} as any;
     NestStandardizedTracer.initialize(cfg, []);
-    expect((StandardizedTracer.initialize as jest.Mock).mock.calls.length).toBe(
+    expect((StandardizedTracer.initialize as jest.Mock).mock.calls).toHaveLength(
       1
     );
     const initArgs = (StandardizedTracer.initialize as jest.Mock).mock.calls[0];
@@ -50,7 +50,7 @@ describe('Observability integrations', () => {
     expect(initArgs[1][0]).toBeDefined();
 
     await NestStandardizedTracer.shutdown();
-    expect((StandardizedTracer.shutdown as jest.Mock).mock.calls.length).toBe(
+    expect((StandardizedTracer.shutdown as jest.Mock).mock.calls).toHaveLength(
       1
     );
 
@@ -60,8 +60,8 @@ describe('Observability integrations', () => {
     );
     expect(result).toBe('ok');
     expect(
-      (StandardizedTracer.withSpanContext as jest.Mock).mock.calls.length
-    ).toBe(1);
+      (StandardizedTracer.withSpanContext as jest.Mock).mock.calls
+    ).toHaveLength(1);
   });
 
   test('ObservabilityModule is importable (covers module initialization lines)', () => {
